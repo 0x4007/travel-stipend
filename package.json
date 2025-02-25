@@ -18,9 +18,7 @@
     "knip": "knip --config .github/knip.ts",
     "knip-ci": "knip --no-exit-code --reporter json --config .github/knip.ts",
     "prepare": "husky install",
-    "test": "jest --setupFiles dotenv/config --coverage",
-    "cy:open": "cypress open",
-    "cy:run": "cypress run"
+    "test": "jest --setupFiles dotenv/config --coverage"
   },
   "keywords": [
     "typescript",
@@ -45,7 +43,6 @@
     "@types/jest": "29.5.12",
     "@types/node": "^20.11.19",
     "cspell": "^8.4.0",
-    "cypress": "13.6.6",
     "esbuild": "^0.20.1",
     "eslint": "9.14.0",
     "eslint-plugin-check-file": "^2.8.0",
