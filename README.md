@@ -14,7 +14,7 @@ This template repository includes support for the following:
 To start Jest tests, run
 
 ```shell
-yarn test
+bun run test
 ```
 
 ## Sync any repository to latest `ts-template`
