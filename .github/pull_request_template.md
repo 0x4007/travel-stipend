@@ -1,4 +1,4 @@
-<!--- 
+<!---
 Insert the issue number of the task you are completing if within this repository, or paste the url of the task.
 
 // EXAMPLE
@@ -9,7 +9,7 @@ Resolves #
 
 <!---
 We advise that you give a brief description of your changes, either that it meets
-the specification exactly as described or what you had to do outwith the spec to resolve it. 
+the specification exactly as described or what you had to do outwith the spec to resolve it.
 This is not required but again, it is advised.
 
 // EXAMPLE
@@ -48,4 +48,5 @@ Example: https://github.com/ubiquity/pay.ubq.fi/pull/226#issue-2290493538
 -->
 
 How to QA and setup:
+
 - ...
