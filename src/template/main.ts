@@ -1,5 +1,5 @@
+import { initializeState } from "../on-load";
 import { handleRouting, setupRouter } from "./router";
-import { initializeState } from "./on-load";
 
 setupRouter();
 

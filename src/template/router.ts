@@ -1,7 +1,7 @@
-import { loadPage1 } from "./controllers/page1";
-import { loadPage2 } from "./controllers/page2";
-import { redirectTo404 } from "./controllers/404";
-import { loadHomePage } from "./controllers/home";
+import { redirectTo404 } from "../controllers/404";
+import { loadHomePage } from "../controllers/home";
+import { loadPage1 } from "../controllers/page1";
+import { loadPage2 } from "../controllers/page2";
 
 // URL Path based routing
 export async function handleRouting() {

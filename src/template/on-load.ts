@@ -1,4 +1,4 @@
-import { GlobalState } from "./shared/types";
+import { GlobalState } from "../shared/types";
 
 export const globalState: GlobalState = {
   isLoading: false,
