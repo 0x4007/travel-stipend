@@ -1,4 +1,19 @@
-// travelStipendCalculator.ts
+// --- Configuration Constants ---
+
+// Fixed origin for travel (for example, your home base)
+const ORIGIN = "Seoul, Korea";
+
+// Cost-per-kilometer rate (USD per km)
+const COST_PER_KM = 0.2; // round trip
+
+// Base rates for lodging (per night) and meals (per day) at baseline cost-of-living
+const BASE_LODGING_PER_NIGHT = 150; // USD
+const BASE_MEALS_PER_DAY = 50; // USD
+
+// Default ticket price when not provided
+const DEFAULT_TICKET_PRICE = 1000; // USD
+
+//
 
 import crypto from "crypto";
 import { parse } from "csv-parse/sync";
@@ -117,21 +132,6 @@ function cached<T, TArgs extends unknown[]>(cache: Cache<T>, fn: (...args: TArgs
 const distanceCache = new PersistentCache<number>("fixtures/cache/distance-cache.json");
 const coordinatesCache = new PersistentCache<Coordinates>("fixtures/cache/coordinates-cache.json");
 const costOfLivingCache = new PersistentCache<number>("fixtures/cache/col-cache.json");
-
-// --- Configuration Constants ---
-
-// Fixed origin for travel (for example, your home base)
-const ORIGIN = "Seoul, Korea";
-
-// Cost-per-kilometer rate (USD per km)
-const COST_PER_KM = 0.2; // round trip
-
-// Base rates for lodging (per night) and meals (per day) at baseline cost-of-living
-const BASE_LODGING_PER_NIGHT = 150; // USD
-const BASE_MEALS_PER_DAY = 50; // USD
-
-// Default ticket price when not provided
-const DEFAULT_TICKET_PRICE = 1000; // USD
 
 // --- City Coordinates Mapping ---
 // A mapping of city names to their latitude/longitude coordinates.
