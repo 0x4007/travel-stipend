@@ -25,52 +25,193 @@ interface Coordinates {
   lng: number;
 }
 
-const cityCoordinates: { [city: string]: Coordinates } = {
-  "Seoul, Korea": { lat: 37.5665, lng: 126.978 },
-  "Hong Kong": { lat: 22.3193, lng: 114.1694 },
-  "Denver, USA": { lat: 39.7392, lng: -104.9903 },
-  "Milan, Italy": { lat: 45.4642, lng: 9.19 },
-  "Barcelona, Spain": { lat: 41.3851, lng: 2.1734 },
-  "Las Vegas, USA": { lat: 36.1699, lng: -115.1398 },
-  "San Francisco, USA": { lat: 37.7749, lng: -122.4194 },
-  "Grapevine, TX, USA": { lat: 32.9343, lng: -97.0781 },
-  "San Jose, USA": { lat: 37.3382, lng: -121.8863 },
-  "Chicago, USA": { lat: 41.8781, lng: -87.6298 },
-  "London, UK": { lat: 51.5074, lng: -0.1278 },
-  "Bangkok, Thailand": { lat: 13.7563, lng: 100.5018 },
-  "Berlin, Germany": { lat: 52.52, lng: 13.405 },
-  "Taipei, Taiwan": { lat: 25.033, lng: 121.5654 },
-  "Paris, France": { lat: 48.8566, lng: 2.3522 },
-  "Ho Chi Minh, Vietnam": { lat: 10.8231, lng: 106.6297 },
-  "Montreal, Canada": { lat: 45.5017, lng: -73.5673 },
-  "Tokyo, Japan": { lat: 35.6895, lng: 139.6917 },
-  Singapore: { lat: 1.3521, lng: 103.8198 },
-  "Dubai, UAE": { lat: 25.2048, lng: 55.2708 },
-  "Amsterdam, Netherlands": { lat: 52.3676, lng: 4.9041 },
-  "Amstardam, Netherlands": { lat: 52.3676, lng: 4.9041 }, // Typo in conferences.csv
-  "Lisbon, Portugal": { lat: 38.7223, lng: -9.1393 },
-  "Abu Dhabi, UAE": { lat: 24.4539, lng: 54.3773 },
-  "Prague, Czech Republic": { lat: 50.0755, lng: 14.4378 },
-  "Seattle, USA": { lat: 47.6062, lng: -122.3321 },
-  "New York, USA": { lat: 40.7128, lng: -74.006 },
-  "Geneva, Switzerland": { lat: 46.2044, lng: 6.1432 },
-  "Boston, USA": { lat: 42.3601, lng: -71.0589 },
-  "Munich, Germany": { lat: 48.1351, lng: 11.582 },
-  "Arlington, USA": { lat: 32.7357, lng: -97.1081 },
-  "Vilnius, Lithuania": { lat: 54.6872, lng: 25.2797 },
-  "Cannes, France": { lat: 43.5528, lng: 7.0174 },
-  "Kyoto, Japan": { lat: 35.0116, lng: 135.7681 },
-  "Helsinki, Finland": { lat: 60.1699, lng: 24.9384 },
-  // Additional cities from conferences.csv
-  "Turin, Italy": { lat: 45.0703, lng: 7.6869 },
-  "Austin, USA": { lat: 30.2672, lng: -97.7431 },
-  "Toronto, Canada": { lat: 43.6532, lng: -79.3832 },
-  "San Diego, USA": { lat: 32.7157, lng: -117.1611 },
-  "Jakarta, Indonesia": { lat: -6.2088, lng: 106.8456 },
-  "Zurich, Switzerland": { lat: 47.3769, lng: 8.5417 },
-  "Brooklyn, USA": { lat: 40.6782, lng: -73.9442 },
-  "Florence, Italy": { lat: 43.7696, lng: 11.2558 },
-};
+// Basic mapping of city names to coordinates
+interface CityCoordinatesMap {
+  [city: string]: Coordinates;
+}
+
+// Extended mapping class that includes fuzzy matching capabilities
+class CoordinatesMapping {
+  private _cityMap: CityCoordinatesMap = {};
+  private _cityNames: string[] = [];
+  private _cityVariants: { [normalizedName: string]: string } = {};
+
+  // Add a city with its coordinates
+  addCity(cityName: string, coordinates: Coordinates): void {
+    this._cityMap[cityName] = coordinates;
+    this._cityNames.push(cityName);
+  }
+
+  // Add a city variant (e.g., lowercase, alternative spelling)
+  addCityVariant(normalizedName: string, originalName: string): void {
+    this._cityVariants[normalizedName] = originalName;
+  }
+
+  // Get coordinates for a city
+  getCoordinates(cityName: string): Coordinates | undefined {
+    return this._cityMap[cityName];
+  }
+
+  // Get all city names
+  getCityNames(): string[] {
+    return this._cityNames;
+  }
+
+  // Get city variant mapping
+  getCityVariant(normalizedName: string): string | undefined {
+    return this._cityVariants[normalizedName];
+  }
+
+  // Get number of cities
+  size(): number {
+    return this._cityNames.length;
+  }
+}
+
+// Load coordinates from CSV file
+interface CoordinateRecord {
+  city: string;
+  city_ascii: string;
+  lat: string;
+  lng: string;
+  country: string;
+  iso2: string;
+  iso3: string;
+  admin_name: string;
+  capital: string;
+  population: string;
+  id: string;
+}
+
+// Fuzzy matching functions
+function levenshteinDistance(a: string, b: string): number {
+  const matrix: number[][] = [];
+
+  // Initialize the matrix
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  // Fill the matrix
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1, // deletion
+        matrix[i][j - 1] + 1, // insertion
+        matrix[i - 1][j - 1] + cost // substitution
+      );
+    }
+  }
+
+  return matrix[b.length][a.length];
+}
+
+function calculateSimilarity(a: string, b: string): number {
+  // Normalize strings for comparison
+  const normalizedA = a.toLowerCase().trim();
+  const normalizedB = b.toLowerCase().trim();
+
+  // Calculate Levenshtein distance
+  const distance = levenshteinDistance(normalizedA, normalizedB);
+
+  // Calculate similarity as a percentage (0-1)
+  // The max possible distance is the length of the longer string
+  const maxLength = Math.max(normalizedA.length, normalizedB.length);
+  if (maxLength === 0) return 1.0; // Both strings are empty
+
+  return 1 - distance / maxLength;
+}
+
+function findBestMatch(query: string, candidates: string[]): { match: string; similarity: number } {
+  let bestMatch = "";
+  let bestSimilarity = 0;
+
+  for (const candidate of candidates) {
+    const similarity = calculateSimilarity(query, candidate);
+    if (similarity > bestSimilarity) {
+      bestSimilarity = similarity;
+      bestMatch = candidate;
+    }
+  }
+
+  return { match: bestMatch, similarity: bestSimilarity };
+}
+
+function loadCoordinatesData(filePath: string): CoordinatesMapping {
+  try {
+    const content = fs.readFileSync(filePath, "utf-8");
+    const records: CoordinateRecord[] = parse(content, {
+      columns: true,
+      skip_empty_lines: true,
+    });
+
+    const mapping = new CoordinatesMapping();
+
+    for (const rec of records) {
+      // Create standard city format: "City, Country"
+      const cityName = `${rec.city}, ${rec.country}`;
+      const coords = {
+        lat: parseFloat(rec.lat),
+        lng: parseFloat(rec.lng),
+      };
+
+      // Add entry with full country name
+      mapping.addCity(cityName, coords);
+      mapping.addCityVariant(cityName.toLowerCase(), cityName);
+
+      // Also add entry with ISO code for countries commonly referenced with abbreviations
+      if (rec.iso2 && ["US", "UK", "UAE"].includes(rec.iso2)) {
+        const cityWithCode = `${rec.city}, ${rec.iso2}${rec.iso2 === "US" ? "A" : ""}`;
+        mapping.addCity(cityWithCode, coords);
+        mapping.addCityVariant(cityWithCode.toLowerCase(), cityWithCode);
+      }
+
+      // Add entry without country for unique city names
+      mapping.addCity(rec.city, coords);
+      mapping.addCityVariant(rec.city.toLowerCase(), rec.city);
+    }
+
+    // Add special case for typo in conferences.csv
+    const amsterdamCoords = mapping.getCoordinates("Amsterdam, Netherlands");
+    if (amsterdamCoords) {
+      mapping.addCity("Amstardam, Netherlands", amsterdamCoords);
+      mapping.addCityVariant("amstardam, netherlands", "Amstardam, Netherlands");
+    }
+
+    // Add special case for Singapore
+    const singaporeCoords = mapping.getCoordinates("Singapore, Singapore");
+    if (singaporeCoords) {
+      mapping.addCity("Singapore", singaporeCoords);
+      mapping.addCityVariant("singapore", "Singapore");
+    }
+
+    console.log(`Loaded ${mapping.size()} coordinate entries`);
+    return mapping;
+  } catch (error) {
+    console.error(`Could not load ${filePath}, using default mapping.`, error);
+    // Fallback to a minimal set of coordinates if file can't be loaded
+    const defaultMapping = new CoordinatesMapping();
+
+    defaultMapping.addCity("Seoul, Korea", { lat: 37.5665, lng: 126.978 });
+    defaultMapping.addCityVariant("seoul, korea", "Seoul, Korea");
+
+    defaultMapping.addCity("Tokyo, Japan", { lat: 35.6895, lng: 139.6917 });
+    defaultMapping.addCityVariant("tokyo, japan", "Tokyo, Japan");
+
+    defaultMapping.addCity("Jakarta, Indonesia", { lat: -6.2088, lng: 106.8456 });
+    defaultMapping.addCityVariant("jakarta, indonesia", "Jakarta, Indonesia");
+
+    return defaultMapping;
+  }
+}
+
+// Load the city coordinates mapping
+console.log("Loading city coordinates data...");
+const cityCoordinates = loadCoordinatesData("fixtures/coordinates.csv");
 
 // --- Haversine Formula Implementation ---
 
@@ -87,15 +228,44 @@ function haversineDistance(coord1: Coordinates, coord2: Coordinates): number {
   return R * c;
 }
 
+// Helper function to find city coordinates with fuzzy matching
+function findCityCoordinates(cityName: string, coordinates: CoordinatesMapping): Coordinates {
+  // Try exact match first
+  const exactMatch = coordinates.getCoordinates(cityName);
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  // Try lowercase match with variants
+  const normalizedName = cityName.toLowerCase().trim();
+  const variantMatch = coordinates.getCityVariant(normalizedName);
+  if (variantMatch) {
+    const variantCoords = coordinates.getCoordinates(variantMatch);
+    if (variantCoords) {
+      return variantCoords;
+    }
+  }
+
+  // If no match found, try fuzzy matching
+  const SIMILARITY_THRESHOLD = 0.6; // Minimum similarity score to consider a match
+  const cityNames = coordinates.getCityNames();
+  const { match, similarity } = findBestMatch(cityName, cityNames);
+
+  if (similarity >= SIMILARITY_THRESHOLD) {
+    console.log(`Fuzzy match found for "${cityName}": "${match}" (similarity: ${(similarity * 100).toFixed(1)}%)`);
+    const fuzzyMatchCoords = coordinates.getCoordinates(match);
+    if (fuzzyMatchCoords) {
+      return fuzzyMatchCoords;
+    }
+  }
+
+  throw new Error(`No matching city found for: ${cityName} (best match: ${match}, similarity: ${(similarity * 100).toFixed(1)}%)`);
+}
+
 function getDistanceKmFromCities(originCity: string, destinationCity: string): number {
-  const originCoords = cityCoordinates[originCity];
-  const destinationCoords = cityCoordinates[destinationCity];
-  if (!originCoords) {
-    throw new Error(`Coordinates not found for origin: ${originCity}`);
-  }
-  if (!destinationCoords) {
-    throw new Error(`Coordinates not found for destination: ${destinationCity}`);
-  }
+  const originCoords = findCityCoordinates(originCity, cityCoordinates);
+  const destinationCoords = findCityCoordinates(destinationCity, cityCoordinates);
+
   return haversineDistance(originCoords, destinationCoords);
 }
 
