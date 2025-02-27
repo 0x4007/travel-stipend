@@ -554,7 +554,8 @@ function calculateStipend(record: RealConferenceRecord): StipendBreakdown {
 
   console.log(`Conference duration: ${numberOfNights} nights, ${numberOfMealDays} meal days`);
 
-  const lodgingCost = adjustedLodgingRate * numberOfNights;
+  // If the origin city is the same as the destination, no lodging is needed
+  const lodgingCost = ORIGIN === destination ? 0 : adjustedLodgingRate * numberOfNights;
   const mealsCost = adjustedMealsRate * numberOfMealDays;
 
   // Use default ticket price since it's not in the CSV

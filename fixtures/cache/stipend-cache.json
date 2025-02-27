@@ -214,20 +214,20 @@
     "location": "Seoul, Korea",
     "distance_km": 0,
     "flight_cost": 0,
-    "lodging_cost": 300,
+    "lodging_cost": 0,
     "meals_cost": 150,
     "ticket_price": 1000,
-    "total_stipend": 1450
+    "total_stipend": 1150
   },
   "7df1eab5baeaff21bab7b4158636c26ea560f82121a7b932578ab5582a15b8cf": {
     "conference": "BUIDL Asia",
     "location": "Seoul, Korea",
     "distance_km": 0,
     "flight_cost": 0,
-    "lodging_cost": 150,
+    "lodging_cost": 0,
     "meals_cost": 100,
     "ticket_price": 1000,
-    "total_stipend": 1250
+    "total_stipend": 1100
   },
   "2705dfc5fbec8df6a178122ccca56b40fd7687b4974067e4cb419af949fe7c97": {
     "conference": "World Summit AI Montreal",
@@ -289,15 +289,15 @@
     "ticket_price": 1000,
     "total_stipend": 3600.3
   },
-  "80f5edff7426d227475a3ac99b72734d56a917ecf1da05b08bde105ec86cb73a": {
+  "dec6c10507796c72b2f8057a1aad6a95dd7c9bb5530a91070f314b093cf8e67b": {
     "conference": "ETHDam Amsterdam",
     "location": "Amsterdam, Netherlands",
     "distance_km": 8557.5,
     "flight_cost": 1711.5,
-    "lodging_cost": 300,
-    "meals_cost": 150,
+    "lodging_cost": 330,
+    "meals_cost": 165,
     "ticket_price": 1000,
-    "total_stipend": 3161.5
+    "total_stipend": 3206.5
   },
   "0af8556ce70abea044c1fb9bdf012cb12f3b66a7cb359777447e27eaafc28e33": {
     "conference": "ETH Lisbon",
@@ -334,10 +334,10 @@
     "location": "Seoul, Korea",
     "distance_km": 0,
     "flight_cost": 0,
-    "lodging_cost": 300,
+    "lodging_cost": 0,
     "meals_cost": 150,
     "ticket_price": 1000,
-    "total_stipend": 1450
+    "total_stipend": 1150
   },
   "a5514d26d7b3ce4d89c26d749bfcb34ba1ca2cfab0785e5ad4e0fca7f6ba9662": {
     "conference": "Gartner Digital Workplace Summit",
@@ -694,10 +694,10 @@
     "location": "Seoul, Korea",
     "distance_km": 0,
     "flight_cost": 0,
-    "lodging_cost": 750,
+    "lodging_cost": 0,
     "meals_cost": 300,
     "ticket_price": 1000,
-    "total_stipend": 2050
+    "total_stipend": 1300
   },
   "70a02cdd8e18d8e5e974d36c790f6fc65e87ca26470284107380705eed2e05c7": {
     "conference": "Token2049 Singapore",
@@ -729,15 +729,15 @@
     "ticket_price": 1000,
     "total_stipend": 2906.75
   },
-  "6db2d09fae6c18a7bcaa65ad6c1202db1fdfe90c5af9a132b500ff723b3ba83b": {
+  "cb4ece8e12a948316995e052f567ba2e7b878670e5dd39b90163c11da019c3b1": {
     "conference": "World Summit AI Amsterdam",
     "location": "Amsterdam, Netherlands",
     "distance_km": 8557.5,
     "flight_cost": 1711.5,
-    "lodging_cost": 150,
-    "meals_cost": 100,
+    "lodging_cost": 165,
+    "meals_cost": 110,
     "ticket_price": 1000,
-    "total_stipend": 2961.5
+    "total_stipend": 2986.5
   },
   "e993707722ef79ee49fd5f80d89b3998e616b54ecff757e09799575fc835c8e4": {
     "conference": "NexTech Week Tokyo Autumn",
@@ -834,10 +834,10 @@
     "location": "Seoul, Korea",
     "distance_km": 0,
     "flight_cost": 0,
-    "lodging_cost": 150,
+    "lodging_cost": 0,
     "meals_cost": 100,
     "ticket_price": 1000,
-    "total_stipend": 1250
+    "total_stipend": 1100
   },
   "1e4b75df171bd9d688ac4585b26b065e7b789704a0a66eeb09c53f9d4a35faf8": {
     "conference": "Microsoft Ignite",
@@ -898,25 +898,5 @@
     "meals_cost": 157.5,
     "ticket_price": 1000,
     "total_stipend": 2853.5
-  },
-  "dec6c10507796c72b2f8057a1aad6a95dd7c9bb5530a91070f314b093cf8e67b": {
-    "conference": "ETHDam Amsterdam",
-    "location": "Amsterdam, Netherlands",
-    "distance_km": 8557.5,
-    "flight_cost": 1711.5,
-    "lodging_cost": 330,
-    "meals_cost": 165,
-    "ticket_price": 1000,
-    "total_stipend": 3206.5
-  },
-  "cb4ece8e12a948316995e052f567ba2e7b878670e5dd39b90163c11da019c3b1": {
-    "conference": "World Summit AI Amsterdam",
-    "location": "Amsterdam, Netherlands",
-    "distance_km": 8557.5,
-    "flight_cost": 1711.5,
-    "lodging_cost": 165,
-    "meals_cost": 110,
-    "ticket_price": 1000,
-    "total_stipend": 2986.5
   }
 }
