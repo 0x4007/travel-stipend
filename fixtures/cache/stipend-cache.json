@@ -291,7 +291,7 @@
   },
   "80f5edff7426d227475a3ac99b72734d56a917ecf1da05b08bde105ec86cb73a": {
     "conference": "ETHDam Amsterdam",
-    "location": "Amstardam, Netherlands",
+    "location": "Amsterdam, Netherlands",
     "distance_km": 8557.5,
     "flight_cost": 1711.5,
     "lodging_cost": 300,
@@ -731,7 +731,7 @@
   },
   "6db2d09fae6c18a7bcaa65ad6c1202db1fdfe90c5af9a132b500ff723b3ba83b": {
     "conference": "World Summit AI Amsterdam",
-    "location": "Amstardam, Netherlands",
+    "location": "Amsterdam, Netherlands",
     "distance_km": 8557.5,
     "flight_cost": 1711.5,
     "lodging_cost": 150,
@@ -898,5 +898,25 @@
     "meals_cost": 157.5,
     "ticket_price": 1000,
     "total_stipend": 2853.5
+  },
+  "dec6c10507796c72b2f8057a1aad6a95dd7c9bb5530a91070f314b093cf8e67b": {
+    "conference": "ETHDam Amsterdam",
+    "location": "Amsterdam, Netherlands",
+    "distance_km": 8557.5,
+    "flight_cost": 1711.5,
+    "lodging_cost": 330,
+    "meals_cost": 165,
+    "ticket_price": 1000,
+    "total_stipend": 3206.5
+  },
+  "cb4ece8e12a948316995e052f567ba2e7b878670e5dd39b90163c11da019c3b1": {
+    "conference": "World Summit AI Amsterdam",
+    "location": "Amsterdam, Netherlands",
+    "distance_km": 8557.5,
+    "flight_cost": 1711.5,
+    "lodging_cost": 165,
+    "meals_cost": 110,
+    "ticket_price": 1000,
+    "total_stipend": 2986.5
   }
 }
