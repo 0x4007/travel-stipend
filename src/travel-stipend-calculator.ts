@@ -1,7 +1,125 @@
 // travelStipendCalculator.ts
 
+import crypto from "crypto";
 import { parse } from "csv-parse/sync";
 import fs from "fs";
+import path from "path";
+
+// --- Cache Implementation ---
+interface Cache<T> {
+  get(key: string): T | undefined;
+  set(key: string, value: T): void;
+  has(key: string): boolean;
+}
+
+class MemoryCache<T> implements Cache<T> {
+  private _cache: Map<string, T> = new Map();
+
+  get(key: string): T | undefined {
+    return this._cache.get(key);
+  }
+
+  set(key: string, value: T): void {
+    this._cache.set(key, value);
+  }
+
+  has(key: string): boolean {
+    return this._cache.has(key);
+  }
+
+  // Add a method to get all entries as a Record
+  getAllEntries(): Record<string, T> {
+    const entries: Record<string, T> = {};
+    this._cache.forEach((value, key) => {
+      entries[key] = value;
+    });
+    return entries;
+  }
+}
+
+class PersistentCache<T> implements Cache<T> {
+  private _memoryCache: MemoryCache<T> = new MemoryCache<T>();
+  private _filePath: string;
+
+  constructor(cacheFileName: string) {
+    this._filePath = path.join(process.cwd(), cacheFileName);
+    this._loadFromDisk();
+  }
+
+  private _loadFromDisk(): void {
+    try {
+      if (fs.existsSync(this._filePath)) {
+        const data = fs.readFileSync(this._filePath, 'utf-8');
+        const cacheData = JSON.parse(data);
+
+        for (const [key, value] of Object.entries(cacheData)) {
+          this._memoryCache.set(key, value as T);
+        }
+
+        console.log(`Loaded ${Object.keys(cacheData).length} cached entries from ${this._filePath}`);
+      }
+    } catch (error) {
+      console.error(`Error loading cache from ${this._filePath}:`, error);
+    }
+  }
+
+  saveToDisk(): void {
+    try {
+      // Get all entries from the memory cache
+      const cacheObject = this._memoryCache.getAllEntries();
+
+      fs.writeFileSync(this._filePath, JSON.stringify(cacheObject, null, 2));
+      console.log(`Saved cache to ${this._filePath}`);
+    } catch (error) {
+      console.error(`Error saving cache to ${this._filePath}:`, error);
+    }
+  }
+
+  get(key: string): T | undefined {
+    return this._memoryCache.get(key);
+  }
+
+  set(key: string, value: T): void {
+    this._memoryCache.set(key, value);
+  }
+
+  has(key: string): boolean {
+    return this._memoryCache.has(key);
+  }
+}
+
+// Helper function to create hash keys for caching
+function createHashKey(args: unknown[]): string {
+  const stringifiedArgs = JSON.stringify(args);
+  // Using SHA-256 instead of MD5 for better security
+  return crypto.createHash('sha256').update(stringifiedArgs).digest('hex');
+}
+
+// Function decorator for caching
+function cached<T, TArgs extends unknown[]>(
+  cache: Cache<T>,
+  fn: (...args: TArgs) => T
+): (...args: TArgs) => T {
+  return (...args: TArgs): T => {
+    const key = createHashKey(args);
+
+    if (cache.has(key)) {
+      const cachedResult = cache.get(key);
+      if (cachedResult !== undefined) {
+        return cachedResult;
+      }
+    }
+
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+}
+
+// Initialize caches
+const distanceCache = new PersistentCache<number>('fixtures/cache/distance-cache.json');
+const coordinatesCache = new PersistentCache<Coordinates>('fixtures/cache/coordinates-cache.json');
+const costOfLivingCache = new PersistentCache<number>('fixtures/cache/col-cache.json');
 
 // --- Configuration Constants ---
 
@@ -229,45 +347,53 @@ function haversineDistance(coord1: Coordinates, coord2: Coordinates): number {
 }
 
 // Helper function to find city coordinates with fuzzy matching
-function findCityCoordinates(cityName: string, coordinates: CoordinatesMapping): Coordinates {
-  // Try exact match first
-  const exactMatch = coordinates.getCoordinates(cityName);
-  if (exactMatch) {
-    return exactMatch;
-  }
-
-  // Try lowercase match with variants
-  const normalizedName = cityName.toLowerCase().trim();
-  const variantMatch = coordinates.getCityVariant(normalizedName);
-  if (variantMatch) {
-    const variantCoords = coordinates.getCoordinates(variantMatch);
-    if (variantCoords) {
-      return variantCoords;
+// Cache-wrapped version of findCityCoordinates
+const findCityCoordinates = cached(
+  coordinatesCache,
+  (cityName: string, coordinates: CoordinatesMapping): Coordinates => {
+    // Try exact match first
+    const exactMatch = coordinates.getCoordinates(cityName);
+    if (exactMatch) {
+      return exactMatch;
     }
-  }
 
-  // If no match found, try fuzzy matching
-  const SIMILARITY_THRESHOLD = 0.6; // Minimum similarity score to consider a match
-  const cityNames = coordinates.getCityNames();
-  const { match, similarity } = findBestMatch(cityName, cityNames);
-
-  if (similarity >= SIMILARITY_THRESHOLD) {
-    console.log(`Fuzzy match found for "${cityName}": "${match}" (similarity: ${(similarity * 100).toFixed(1)}%)`);
-    const fuzzyMatchCoords = coordinates.getCoordinates(match);
-    if (fuzzyMatchCoords) {
-      return fuzzyMatchCoords;
+    // Try lowercase match with variants
+    const normalizedName = cityName.toLowerCase().trim();
+    const variantMatch = coordinates.getCityVariant(normalizedName);
+    if (variantMatch) {
+      const variantCoords = coordinates.getCoordinates(variantMatch);
+      if (variantCoords) {
+        return variantCoords;
+      }
     }
+
+    // If no match found, try fuzzy matching
+    const SIMILARITY_THRESHOLD = 0.6; // Minimum similarity score to consider a match
+    const cityNames = coordinates.getCityNames();
+    const { match, similarity } = findBestMatch(cityName, cityNames);
+
+    if (similarity >= SIMILARITY_THRESHOLD) {
+      console.log(`Fuzzy match found for "${cityName}": "${match}" (similarity: ${(similarity * 100).toFixed(1)}%)`);
+      const fuzzyMatchCoords = coordinates.getCoordinates(match);
+      if (fuzzyMatchCoords) {
+        return fuzzyMatchCoords;
+      }
+    }
+
+    throw new Error(`No matching city found for: ${cityName} (best match: ${match}, similarity: ${(similarity * 100).toFixed(1)}%)`);
   }
+);
 
-  throw new Error(`No matching city found for: ${cityName} (best match: ${match}, similarity: ${(similarity * 100).toFixed(1)}%)`);
-}
+// Cache-wrapped version of getDistanceKmFromCities
+const getDistanceKmFromCities = cached(
+  distanceCache,
+  (originCity: string, destinationCity: string): number => {
+    const originCoords = findCityCoordinates(originCity, cityCoordinates);
+    const destinationCoords = findCityCoordinates(destinationCity, cityCoordinates);
 
-function getDistanceKmFromCities(originCity: string, destinationCity: string): number {
-  const originCoords = findCityCoordinates(originCity, cityCoordinates);
-  const destinationCoords = findCityCoordinates(destinationCity, cityCoordinates);
-
-  return haversineDistance(originCoords, destinationCoords);
-}
+    return haversineDistance(originCoords, destinationCoords);
+  }
+);
 
 // --- Load Open Source Cost-of-Living Data ---
 // Assume a CSV file "cost_of_living.csv" exists with columns: "Location", "Index"
@@ -299,34 +425,37 @@ console.log("Loading cost-of-living data...");
 const costOfLivingMapping = loadCostOfLivingData("fixtures/cost_of_living.csv");
 console.log(`Loaded ${Object.keys(costOfLivingMapping).length} cost-of-living entries`);
 
-// Retrieve cost-of-living factor from the loaded mapping (defaulting to 1.0 if not found).
-function getCostOfLivingFactor(location: string): number {
-  // Try exact match first
-  if (costOfLivingMapping[location.trim()]) {
-    const factor = costOfLivingMapping[location.trim()];
-    console.log(`Cost of living factor for ${location}: ${factor} (exact match)`);
-    return factor;
-  }
+// Cache-wrapped version of getCostOfLivingFactor
+const getCostOfLivingFactor = cached(
+  costOfLivingCache,
+  (location: string): number => {
+    // Try exact match first
+    if (costOfLivingMapping[location.trim()]) {
+      const factor = costOfLivingMapping[location.trim()];
+      console.log(`Cost of living factor for ${location}: ${factor} (exact match)`);
+      return factor;
+    }
 
-  // Try with comma
-  const withComma = location.replace(/ ([A-Z]+)$/, ", $1");
-  if (costOfLivingMapping[withComma]) {
-    const factor = costOfLivingMapping[withComma];
-    console.log(`Cost of living factor for ${location}: ${factor} (matched as ${withComma})`);
-    return factor;
-  }
+    // Try with comma
+    const withComma = location.replace(/ ([A-Z]+)$/, ", $1");
+    if (costOfLivingMapping[withComma]) {
+      const factor = costOfLivingMapping[withComma];
+      console.log(`Cost of living factor for ${location}: ${factor} (matched as ${withComma})`);
+      return factor;
+    }
 
-  // Try without comma
-  const withoutComma = location.replace(/, ([A-Z]+)$/, " $1");
-  if (costOfLivingMapping[withoutComma]) {
-    const factor = costOfLivingMapping[withoutComma];
-    console.log(`Cost of living factor for ${location}: ${factor} (matched as ${withoutComma})`);
-    return factor;
-  }
+    // Try without comma
+    const withoutComma = location.replace(/, ([A-Z]+)$/, " $1");
+    if (costOfLivingMapping[withoutComma]) {
+      const factor = costOfLivingMapping[withoutComma];
+      console.log(`Cost of living factor for ${location}: ${factor} (matched as ${withoutComma})`);
+      return factor;
+    }
 
-  console.log(`No cost of living factor found for ${location}, using default 1.0`);
-  return 1.0;
-}
+    console.log(`No cost of living factor found for ${location}, using default 1.0`);
+    return 1.0;
+  }
+);
 
 // --- Helper Functions for Date Handling ---
 
@@ -401,6 +530,80 @@ interface StipendBreakdown {
 
 // --- Main Function ---
 
+// Cache for the entire stipend calculation
+const stipendCache = new PersistentCache<StipendBreakdown>('fixtures/cache/stipend-cache.json');
+
+// Function to calculate stipend with caching
+function calculateStipend(record: RealConferenceRecord): StipendBreakdown {
+  const cacheKey = createHashKey([
+    record.Conference,
+    record.Location,
+    record.Start,
+    record.End,
+    ORIGIN,
+    COST_PER_KM,
+    BASE_LODGING_PER_NIGHT,
+    BASE_MEALS_PER_DAY,
+    DEFAULT_TICKET_PRICE
+  ]);
+
+  if (stipendCache.has(cacheKey)) {
+    const cachedResult = stipendCache.get(cacheKey);
+    if (cachedResult) {
+      console.log(`Using cached result for conference: ${record.Conference}`);
+      return cachedResult;
+    }
+  }
+
+  const destination = record["Location"];
+  const isPriority = record["❗️"] === "TRUE";
+
+  console.log(`Processing conference: ${record["Conference"]} in ${destination} (Priority: ${isPriority})`);
+
+  // Calculate distance (in km) using the haversine formula with our city coordinates.
+  const distanceKm = getDistanceKmFromCities(ORIGIN, destination);
+  console.log(`Distance from ${ORIGIN} to ${destination}: ${distanceKm.toFixed(1)} km`);
+
+  // Estimate flight cost.
+  const flightCost = distanceKm * COST_PER_KM;
+
+  // Get cost-of-living multiplier for the destination.
+  const colFactor = getCostOfLivingFactor(destination);
+
+  // Adjust lodging and meal base rates.
+  const adjustedLodgingRate = BASE_LODGING_PER_NIGHT * colFactor;
+  const adjustedMealsRate = BASE_MEALS_PER_DAY * colFactor;
+
+  // Calculate number of nights and meal days.
+  const numberOfNights = calculateDateDiff(record["Start"], record["End"]);
+  const numberOfMealDays = numberOfNights + 1; // meals provided each day.
+
+  console.log(`Conference duration: ${numberOfNights} nights, ${numberOfMealDays} meal days`);
+
+  const lodgingCost = adjustedLodgingRate * numberOfNights;
+  const mealsCost = adjustedMealsRate * numberOfMealDays;
+
+  // Use default ticket price since it's not in the CSV
+  const ticketPrice = DEFAULT_TICKET_PRICE;
+
+  // Total stipend is the sum of all expenses.
+  const totalStipend = flightCost + lodgingCost + mealsCost + ticketPrice;
+
+  const result = {
+    conference: record["Conference"],
+    location: destination,
+    distance_km: parseFloat(distanceKm.toFixed(1)),
+    flight_cost: parseFloat(flightCost.toFixed(2)),
+    lodging_cost: parseFloat(lodgingCost.toFixed(2)),
+    meals_cost: parseFloat(mealsCost.toFixed(2)),
+    ticket_price: ticketPrice,
+    total_stipend: parseFloat(totalStipend.toFixed(2)),
+  };
+
+  stipendCache.set(cacheKey, result);
+  return result;
+}
+
 async function main() {
   console.log("Starting travel stipend calculation...");
 
@@ -417,54 +620,18 @@ async function main() {
 
   for (const record of records) {
     try {
-      const destination = record["Location"];
-      const isPriority = record["❗️"] === "TRUE";
-
-      console.log(`Processing conference: ${record["Conference"]} in ${destination} (Priority: ${isPriority})`);
-
-      // Calculate distance (in km) using the haversine formula with our city coordinates.
-      const distanceKm = getDistanceKmFromCities(ORIGIN, destination);
-      console.log(`Distance from ${ORIGIN} to ${destination}: ${distanceKm.toFixed(1)} km`);
-
-      // Estimate flight cost.
-      const flightCost = distanceKm * COST_PER_KM;
-
-      // Get cost-of-living multiplier for the destination.
-      const colFactor = getCostOfLivingFactor(destination);
-
-      // Adjust lodging and meal base rates.
-      const adjustedLodgingRate = BASE_LODGING_PER_NIGHT * colFactor;
-      const adjustedMealsRate = BASE_MEALS_PER_DAY * colFactor;
-
-      // Calculate number of nights and meal days.
-      const numberOfNights = calculateDateDiff(record["Start"], record["End"]);
-      const numberOfMealDays = numberOfNights + 1; // meals provided each day.
-
-      console.log(`Conference duration: ${numberOfNights} nights, ${numberOfMealDays} meal days`);
-
-      const lodgingCost = adjustedLodgingRate * numberOfNights;
-      const mealsCost = adjustedMealsRate * numberOfMealDays;
-
-      // Use default ticket price since it's not in the CSV
-      const ticketPrice = DEFAULT_TICKET_PRICE;
-
-      // Total stipend is the sum of all expenses.
-      const totalStipend = flightCost + lodgingCost + mealsCost + ticketPrice;
-
-      results.push({
-        conference: record["Conference"],
-        location: destination,
-        distance_km: parseFloat(distanceKm.toFixed(1)),
-        flight_cost: parseFloat(flightCost.toFixed(2)),
-        lodging_cost: parseFloat(lodgingCost.toFixed(2)),
-        meals_cost: parseFloat(mealsCost.toFixed(2)),
-        ticket_price: ticketPrice,
-        total_stipend: parseFloat(totalStipend.toFixed(2)),
-      });
+      const result = calculateStipend(record);
+      results.push(result);
     } catch (error) {
       console.error(`Error processing conference "${record["Conference"]}":`, error);
     }
   }
+
+  // Save all caches to disk
+  distanceCache.saveToDisk();
+  coordinatesCache.saveToDisk();
+  costOfLivingCache.saveToDisk();
+  stipendCache.saveToDisk();
 
   // Output final results as structured JSON.
   const output = JSON.stringify({ results }, null, 2);
