@@ -49,7 +49,7 @@ class PersistentCache<T> implements Cache<T> {
   private _loadFromDisk(): void {
     try {
       if (fs.existsSync(this._filePath)) {
-        const data = fs.readFileSync(this._filePath, 'utf-8');
+        const data = fs.readFileSync(this._filePath, "utf-8");
         const cacheData = JSON.parse(data);
 
         for (const [key, value] of Object.entries(cacheData)) {
@@ -92,14 +92,11 @@ class PersistentCache<T> implements Cache<T> {
 function createHashKey(args: unknown[]): string {
   const stringifiedArgs = JSON.stringify(args);
   // Using SHA-256 instead of MD5 for better security
-  return crypto.createHash('sha256').update(stringifiedArgs).digest('hex');
+  return crypto.createHash("sha256").update(stringifiedArgs).digest("hex");
 }
 
 // Function decorator for caching
-function cached<T, TArgs extends unknown[]>(
-  cache: Cache<T>,
-  fn: (...args: TArgs) => T
-): (...args: TArgs) => T {
+function cached<T, TArgs extends unknown[]>(cache: Cache<T>, fn: (...args: TArgs) => T): (...args: TArgs) => T {
   return (...args: TArgs): T => {
     const key = createHashKey(args);
 
@@ -117,9 +114,9 @@ function cached<T, TArgs extends unknown[]>(
 }
 
 // Initialize caches
-const distanceCache = new PersistentCache<number>('fixtures/cache/distance-cache.json');
-const coordinatesCache = new PersistentCache<Coordinates>('fixtures/cache/coordinates-cache.json');
-const costOfLivingCache = new PersistentCache<number>('fixtures/cache/col-cache.json');
+const distanceCache = new PersistentCache<number>("fixtures/cache/distance-cache.json");
+const coordinatesCache = new PersistentCache<Coordinates>("fixtures/cache/coordinates-cache.json");
+const costOfLivingCache = new PersistentCache<number>("fixtures/cache/col-cache.json");
 
 // --- Configuration Constants ---
 
@@ -293,20 +290,6 @@ function loadCoordinatesData(filePath: string): CoordinatesMapping {
       mapping.addCityVariant(rec.city.toLowerCase(), rec.city);
     }
 
-    // Add special case for typo in conferences.csv
-    const amsterdamCoords = mapping.getCoordinates("Amsterdam, Netherlands");
-    if (amsterdamCoords) {
-      mapping.addCity("Amstardam, Netherlands", amsterdamCoords);
-      mapping.addCityVariant("amstardam, netherlands", "Amstardam, Netherlands");
-    }
-
-    // Add special case for Singapore
-    const singaporeCoords = mapping.getCoordinates("Singapore, Singapore");
-    if (singaporeCoords) {
-      mapping.addCity("Singapore", singaporeCoords);
-      mapping.addCityVariant("singapore", "Singapore");
-    }
-
     console.log(`Loaded ${mapping.size()} coordinate entries`);
     return mapping;
   } catch (error) {
@@ -348,52 +331,46 @@ function haversineDistance(coord1: Coordinates, coord2: Coordinates): number {
 
 // Helper function to find city coordinates with fuzzy matching
 // Cache-wrapped version of findCityCoordinates
-const findCityCoordinates = cached(
-  coordinatesCache,
-  (cityName: string, coordinates: CoordinatesMapping): Coordinates => {
-    // Try exact match first
-    const exactMatch = coordinates.getCoordinates(cityName);
-    if (exactMatch) {
-      return exactMatch;
-    }
-
-    // Try lowercase match with variants
-    const normalizedName = cityName.toLowerCase().trim();
-    const variantMatch = coordinates.getCityVariant(normalizedName);
-    if (variantMatch) {
-      const variantCoords = coordinates.getCoordinates(variantMatch);
-      if (variantCoords) {
-        return variantCoords;
-      }
-    }
-
-    // If no match found, try fuzzy matching
-    const SIMILARITY_THRESHOLD = 0.6; // Minimum similarity score to consider a match
-    const cityNames = coordinates.getCityNames();
-    const { match, similarity } = findBestMatch(cityName, cityNames);
-
-    if (similarity >= SIMILARITY_THRESHOLD) {
-      console.log(`Fuzzy match found for "${cityName}": "${match}" (similarity: ${(similarity * 100).toFixed(1)}%)`);
-      const fuzzyMatchCoords = coordinates.getCoordinates(match);
-      if (fuzzyMatchCoords) {
-        return fuzzyMatchCoords;
-      }
-    }
-
-    throw new Error(`No matching city found for: ${cityName} (best match: ${match}, similarity: ${(similarity * 100).toFixed(1)}%)`);
+const findCityCoordinates = cached(coordinatesCache, (cityName: string, coordinates: CoordinatesMapping): Coordinates => {
+  // Try exact match first
+  const exactMatch = coordinates.getCoordinates(cityName);
+  if (exactMatch) {
+    return exactMatch;
   }
-);
+
+  // Try lowercase match with variants
+  const normalizedName = cityName.toLowerCase().trim();
+  const variantMatch = coordinates.getCityVariant(normalizedName);
+  if (variantMatch) {
+    const variantCoords = coordinates.getCoordinates(variantMatch);
+    if (variantCoords) {
+      return variantCoords;
+    }
+  }
+
+  // If no match found, try fuzzy matching
+  const SIMILARITY_THRESHOLD = 0.6; // Minimum similarity score to consider a match
+  const cityNames = coordinates.getCityNames();
+  const { match, similarity } = findBestMatch(cityName, cityNames);
+
+  if (similarity >= SIMILARITY_THRESHOLD) {
+    console.log(`Fuzzy match found for "${cityName}": "${match}" (similarity: ${(similarity * 100).toFixed(1)}%)`);
+    const fuzzyMatchCoords = coordinates.getCoordinates(match);
+    if (fuzzyMatchCoords) {
+      return fuzzyMatchCoords;
+    }
+  }
+
+  throw new Error(`No matching city found for: ${cityName} (best match: ${match}, similarity: ${(similarity * 100).toFixed(1)}%)`);
+});
 
 // Cache-wrapped version of getDistanceKmFromCities
-const getDistanceKmFromCities = cached(
-  distanceCache,
-  (originCity: string, destinationCity: string): number => {
-    const originCoords = findCityCoordinates(originCity, cityCoordinates);
-    const destinationCoords = findCityCoordinates(destinationCity, cityCoordinates);
+const getDistanceKmFromCities = cached(distanceCache, (originCity: string, destinationCity: string): number => {
+  const originCoords = findCityCoordinates(originCity, cityCoordinates);
+  const destinationCoords = findCityCoordinates(destinationCity, cityCoordinates);
 
-    return haversineDistance(originCoords, destinationCoords);
-  }
-);
+  return haversineDistance(originCoords, destinationCoords);
+});
 
 // --- Load Open Source Cost-of-Living Data ---
 // Assume a CSV file "cost_of_living.csv" exists with columns: "Location", "Index"
@@ -426,36 +403,33 @@ const costOfLivingMapping = loadCostOfLivingData("fixtures/cost_of_living.csv");
 console.log(`Loaded ${Object.keys(costOfLivingMapping).length} cost-of-living entries`);
 
 // Cache-wrapped version of getCostOfLivingFactor
-const getCostOfLivingFactor = cached(
-  costOfLivingCache,
-  (location: string): number => {
-    // Try exact match first
-    if (costOfLivingMapping[location.trim()]) {
-      const factor = costOfLivingMapping[location.trim()];
-      console.log(`Cost of living factor for ${location}: ${factor} (exact match)`);
-      return factor;
-    }
-
-    // Try with comma
-    const withComma = location.replace(/ ([A-Z]+)$/, ", $1");
-    if (costOfLivingMapping[withComma]) {
-      const factor = costOfLivingMapping[withComma];
-      console.log(`Cost of living factor for ${location}: ${factor} (matched as ${withComma})`);
-      return factor;
-    }
-
-    // Try without comma
-    const withoutComma = location.replace(/, ([A-Z]+)$/, " $1");
-    if (costOfLivingMapping[withoutComma]) {
-      const factor = costOfLivingMapping[withoutComma];
-      console.log(`Cost of living factor for ${location}: ${factor} (matched as ${withoutComma})`);
-      return factor;
-    }
-
-    console.log(`No cost of living factor found for ${location}, using default 1.0`);
-    return 1.0;
+const getCostOfLivingFactor = cached(costOfLivingCache, (location: string): number => {
+  // Try exact match first
+  if (costOfLivingMapping[location.trim()]) {
+    const factor = costOfLivingMapping[location.trim()];
+    console.log(`Cost of living factor for ${location}: ${factor} (exact match)`);
+    return factor;
   }
-);
+
+  // Try with comma
+  const withComma = location.replace(/ ([A-Z]+)$/, ", $1");
+  if (costOfLivingMapping[withComma]) {
+    const factor = costOfLivingMapping[withComma];
+    console.log(`Cost of living factor for ${location}: ${factor} (matched as ${withComma})`);
+    return factor;
+  }
+
+  // Try without comma
+  const withoutComma = location.replace(/, ([A-Z]+)$/, " $1");
+  if (costOfLivingMapping[withoutComma]) {
+    const factor = costOfLivingMapping[withoutComma];
+    console.log(`Cost of living factor for ${location}: ${factor} (matched as ${withoutComma})`);
+    return factor;
+  }
+
+  console.log(`No cost of living factor found for ${location}, using default 1.0`);
+  return 1.0;
+});
 
 // --- Helper Functions for Date Handling ---
 
@@ -531,7 +505,7 @@ interface StipendBreakdown {
 // --- Main Function ---
 
 // Cache for the entire stipend calculation
-const stipendCache = new PersistentCache<StipendBreakdown>('fixtures/cache/stipend-cache.json');
+const stipendCache = new PersistentCache<StipendBreakdown>("fixtures/cache/stipend-cache.json");
 
 // Function to calculate stipend with caching
 function calculateStipend(record: RealConferenceRecord): StipendBreakdown {
@@ -544,7 +518,7 @@ function calculateStipend(record: RealConferenceRecord): StipendBreakdown {
     COST_PER_KM,
     BASE_LODGING_PER_NIGHT,
     BASE_MEALS_PER_DAY,
-    DEFAULT_TICKET_PRICE
+    DEFAULT_TICKET_PRICE,
   ]);
 
   if (stipendCache.has(cacheKey)) {
@@ -604,8 +578,48 @@ function calculateStipend(record: RealConferenceRecord): StipendBreakdown {
   return result;
 }
 
+// Parse command line arguments
+function parseArgs(): { sortBy?: keyof StipendBreakdown; reverse: boolean } {
+  const args = process.argv.slice(2);
+  const options: { sortBy?: keyof StipendBreakdown; reverse: boolean } = {
+    reverse: false,
+  };
+
+  const validColumns: (keyof StipendBreakdown)[] = [
+    "conference",
+    "location",
+    "distance_km",
+    "flight_cost",
+    "lodging_cost",
+    "meals_cost",
+    "ticket_price",
+    "total_stipend",
+  ];
+
+  // Check for reverse flag
+  options.reverse = args.includes("-r") || args.includes("--reverse");
+
+  // Find the sort flag and its value
+  const sortFlagIndex = args.findIndex((arg) => arg === "--sort" || arg === "-s");
+  if (sortFlagIndex !== -1 && sortFlagIndex < args.length - 1) {
+    const sortColumn = args[sortFlagIndex + 1];
+
+    // Check if the sort column is valid
+    if (validColumns.includes(sortColumn as keyof StipendBreakdown)) {
+      options.sortBy = sortColumn as keyof StipendBreakdown;
+    } else {
+      console.warn(`Invalid sort column: ${sortColumn}. Valid columns are: ${validColumns.join(", ")}`);
+    }
+  }
+
+  return options;
+}
+
 async function main() {
   console.log("Starting travel stipend calculation...");
+
+  // Parse command line arguments
+  const options = parseArgs();
 
   // Read conference data from CSV file.
   console.log("Reading fixtures/conferences.csv...");
@@ -625,6 +639,29 @@ async function main() {
     } catch (error) {
       console.error(`Error processing conference "${record["Conference"]}":`, error);
     }
+  }
+
+  // Sort results if a sort column was specified
+  if (options.sortBy) {
+    const sortDirection = options.reverse ? "descending" : "ascending";
+    console.log(`Sorting results by ${options.sortBy} (${sortDirection})`);
+
+    const sortColumn = options.sortBy;
+    results.sort((a, b) => {
+      const valueA = a[sortColumn];
+      const valueB = b[sortColumn];
+
+      let comparison = 0;
+      // Handle string vs number comparison
+      if (typeof valueA === "string" && typeof valueB === "string") {
+        comparison = valueA.localeCompare(valueB);
+      } else {
+        comparison = (valueA as number) - (valueB as number);
+      }
+
+      // Reverse the comparison if the reverse flag is set
+      return options.reverse ? -comparison : comparison;
+    });
   }
 
   // Save all caches to disk
