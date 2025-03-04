@@ -898,5 +898,905 @@
     "meals_cost": 157.5,
     "ticket_price": 1000,
     "total_stipend": 2853.5
+  },
+  "6064a39f5b29390053451dafb793badeded4b80a149a5207ecab7ab603eaeee7": {
+    "conference": "Consensus Hong Kong",
+    "location": "Hong Kong",
+    "distance_km": 2092.6,
+    "flight_cost": 418.51,
+    "lodging_cost": 360,
+    "meals_cost": 180,
+    "ticket_price": 1000,
+    "total_stipend": 1958.51
+  },
+  "df55870b59ea96fe3a3bc32f38b560d87ba097571608bc3c99e592e7178acb15": {
+    "conference": "ETH Denver",
+    "location": "Denver, USA",
+    "distance_km": 9920.8,
+    "flight_cost": 1984.17,
+    "lodging_cost": 997.5,
+    "meals_cost": 380,
+    "ticket_price": 0,
+    "total_stipend": 3361.67
+  },
+  "fec49a5c427520e74a0734f968e8201dd28c91b827be09dc3dbb6666f7c6be9b": {
+    "conference": "Pragma Denver",
+    "location": "Denver, USA",
+    "distance_km": 9920.8,
+    "flight_cost": 1984.17,
+    "lodging_cost": 285,
+    "meals_cost": 142.5,
+    "ticket_price": 0,
+    "total_stipend": 2411.67
+  },
+  "abe2e40000a24e369db67fed57ce8a47852882f0e370c792d07b175170d64fc0": {
+    "conference": "AI Festival",
+    "location": "Milan, Italy",
+    "distance_km": 8885.2,
+    "flight_cost": 1777.04,
+    "lodging_cost": 157.5,
+    "meals_cost": 105,
+    "ticket_price": 125,
+    "total_stipend": 2164.54
+  },
+  "cdf6290be9b5723ae53f518801acf8bb506a27c0afe2194bc978b27b2f47d253": {
+    "conference": "MWC 25",
+    "location": "Barcelona, Spain",
+    "distance_km": 9603.2,
+    "flight_cost": 1920.63,
+    "lodging_cost": 427.5,
+    "meals_cost": 190,
+    "ticket_price": 1,
+    "total_stipend": 2539.13
+  },
+  "61eb0e5cf0419a0801e6382ed3854a1a1e8631b207d0abc2ad23ea55cb149e43": {
+    "conference": "Human X",
+    "location": "Las Vegas, USA",
+    "distance_km": 10263,
+    "flight_cost": 2052.6,
+    "lodging_cost": 540,
+    "meals_cost": 225,
+    "ticket_price": 905,
+    "total_stipend": 3722.6
+  },
+  "062b9e18b197bd6bc8c1bd7292ba6ef2f49677fec9ac379d8ee435f77b625a64": {
+    "conference": "ETH San Francisco",
+    "location": "San Francisco, USA",
+    "distance_km": 9028.3,
+    "flight_cost": 1805.67,
+    "lodging_cost": 1350,
+    "meals_cost": 525,
+    "ticket_price": 0,
+    "total_stipend": 3680.67
+  },
+  "c215ef3774ef2018e65c51eed26b2a0c8f52e366dea55917397ea0b13cfd46b0": {
+    "conference": "CloudConf 2025",
+    "location": "Turin, Italy",
+    "distance_km": 8999.4,
+    "flight_cost": 1799.87,
+    "lodging_cost": 300,
+    "meals_cost": 150,
+    "ticket_price": 1000,
+    "total_stipend": 3249.87
+  },
+  "ffaa958c0bca4e163635b2f94b81d54b3fb1ae6b75f7f39f13dab7073cf88265": {
+    "conference": "Gartner Digital Workplace Summit",
+    "location": "Grapevine, TX, USA",
+    "distance_km": 10945.3,
+    "flight_cost": 2189.05,
+    "lodging_cost": 127.5,
+    "meals_cost": 85,
+    "ticket_price": 3,
+    "total_stipend": 2404.55
+  },
+  "f09e430449d551fabd2f77e7049a38d4207a60af6a2d064b9936303fb039f599": {
+    "conference": "Nvidia GTC",
+    "location": "San Jose, USA",
+    "distance_km": 9101.2,
+    "flight_cost": 1820.25,
+    "lodging_cost": 840,
+    "meals_cost": 350,
+    "ticket_price": 1,
+    "total_stipend": 3011.25
+  },
+  "2117648e72b56d9561e7e69f001906a0b916abb63a244ef03b9ad03cd9df26da": {
+    "conference": "Responsible AI Forum",
+    "location": "Chicago, USA",
+    "distance_km": 10511.9,
+    "flight_cost": 2102.39,
+    "lodging_cost": 300,
+    "meals_cost": 150,
+    "ticket_price": 299,
+    "total_stipend": 2851.39
+  },
+  "dde0c279b1376eb949acbf553e1c2119bf3c2f0e201e3e2a6ad7171062778037": {
+    "conference": "Business Innovation Summit",
+    "location": "London, UK",
+    "distance_km": 10860.4,
+    "flight_cost": 2172.08,
+    "lodging_cost": 195,
+    "meals_cost": 130,
+    "ticket_price": 1,
+    "total_stipend": 2498.08
+  },
+  "f297ee0cfd3004c661a45f018eddd40329045348ea6bf488b179ed5a3d765867": {
+    "conference": "SEA Blockchain Week",
+    "location": "Bangkok, Thailand",
+    "distance_km": 3723.3,
+    "flight_cost": 744.67,
+    "lodging_cost": 540,
+    "meals_cost": 210,
+    "ticket_price": 75,
+    "total_stipend": 1569.67
+  },
+  "bc1a2185d99e539680e6b0d8e9724a5c365206a07abe38b55f451c5852e5a1d9": {
+    "conference": "Chatbot Summit",
+    "location": "Berlin, Germany",
+    "distance_km": 8128,
+    "flight_cost": 1625.6,
+    "lodging_cost": 142.5,
+    "meals_cost": 95,
+    "ticket_price": 1,
+    "total_stipend": 1864.1
+  },
+  "3533034631edd83f52b4fc975d974809cef3af27f292e1185b93c3b73f04c957": {
+    "conference": "Pragma Taipei",
+    "location": "Taipei, Taiwan",
+    "distance_km": 1484.1,
+    "flight_cost": 296.82,
+    "lodging_cost": 240,
+    "meals_cost": 120,
+    "ticket_price": 0,
+    "total_stipend": 656.82
+  },
+  "d76e162e7729773dba9a91775e0cfdb9121b9a0eb1a4c633a807559422456eb1": {
+    "conference": "ETH Global Taipei",
+    "location": "Taipei, Taiwan",
+    "distance_km": 1484.1,
+    "flight_cost": 296.82,
+    "lodging_cost": 240,
+    "meals_cost": 120,
+    "ticket_price": 0,
+    "total_stipend": 656.82
+  },
+  "ef232f6585dac4d15bcfc7b28aa4cc954eead8d42c2220785ad7df923e1528c0": {
+    "conference": "Web3 Festival Hong Kong",
+    "location": "Hong Kong",
+    "distance_km": 2092.6,
+    "flight_cost": 418.51,
+    "lodging_cost": 540,
+    "meals_cost": 240,
+    "ticket_price": 599,
+    "total_stipend": 1797.51
+  },
+  "7a24cbe05ebec662caf7a02c9e19345c2854dfe02371af88b2dcb8835f127a11": {
+    "conference": "Paris Blockchain Week",
+    "location": "Paris, France",
+    "distance_km": 8966.9,
+    "flight_cost": 1793.38,
+    "lodging_cost": 360,
+    "meals_cost": 180,
+    "ticket_price": 913,
+    "total_stipend": 3246.38
+  },
+  "961cad3cf2bc1fe5c5858d224f010c589a9e508aaaf2b75480cb33a7ffa424d1": {
+    "conference": "GitHub at Google Cloud Next",
+    "location": "Las Vegas, USA",
+    "distance_km": 10263,
+    "flight_cost": 2052.6,
+    "lodging_cost": 270,
+    "meals_cost": 135,
+    "ticket_price": 1000,
+    "total_stipend": 3457.6
+  },
+  "93146a22e754a647c37aafaa560d1b9f72c94def9a43ac7c015a56583497bfb0": {
+    "conference": "Google Cloud Next",
+    "location": "Las Vegas, USA",
+    "distance_km": 10263,
+    "flight_cost": 2052.6,
+    "lodging_cost": 270,
+    "meals_cost": 135,
+    "ticket_price": 1000,
+    "total_stipend": 3457.6
+  },
+  "fa254f9e5378add56ac2421a7baaed6d388e8c2f1a9d9143a396de898f085fdf": {
+    "conference": "ETH Vietnam 2025",
+    "location": "Ho Chi Minh, Vietnam",
+    "distance_km": 3601.9,
+    "flight_cost": 720.38,
+    "lodging_cost": 165,
+    "meals_cost": 82.5,
+    "ticket_price": 0,
+    "total_stipend": 967.88
+  },
+  "b1bf3c738fefa8c3a2afb3e9021412008ce2e1b36753d650617bf7cd8a978fac": {
+    "conference": "ETH Seoul",
+    "location": "Seoul, Korea",
+    "distance_km": 0,
+    "flight_cost": 0,
+    "lodging_cost": 0,
+    "meals_cost": 150,
+    "ticket_price": 0,
+    "total_stipend": 150
+  },
+  "934f0d61b779d9678d0173f90af2764c97b5d51d72183aa9693b3e0a4db49ab7": {
+    "conference": "BUIDL Asia",
+    "location": "Seoul, Korea",
+    "distance_km": 0,
+    "flight_cost": 0,
+    "lodging_cost": 0,
+    "meals_cost": 100,
+    "ticket_price": 0,
+    "total_stipend": 100
+  },
+  "21ed1539a15e1a1b46f8d28ee3a2235f309eb869a8e0ec0f8b3fbff5506600b1": {
+    "conference": "World Summit AI Montreal",
+    "location": "Montreal, Canada",
+    "distance_km": 10551.8,
+    "flight_cost": 2110.35,
+    "lodging_cost": 135,
+    "meals_cost": 90,
+    "ticket_price": 860,
+    "total_stipend": 3195.35
+  },
+  "69d8ade9577b0ee5dc37d5501dea28de775c0d867d7dbc9a55b98f629e52e177": {
+    "conference": "NexTech Week Tokyo Spring",
+    "location": "Tokyo, Japan",
+    "distance_km": 1151.5,
+    "flight_cost": 230.3,
+    "lodging_cost": 330,
+    "meals_cost": 165,
+    "ticket_price": 0,
+    "total_stipend": 725.3
+  },
+  "35612eee274b86b7a1bf89a2d8cba09f003d6f818591829ec86cd8e05cc347ad": {
+    "conference": "Teamz Web3 & AI Summit",
+    "location": "Tokyo, Japan",
+    "distance_km": 1151.5,
+    "flight_cost": 230.3,
+    "lodging_cost": 165,
+    "meals_cost": 110,
+    "ticket_price": 150,
+    "total_stipend": 655.3
+  },
+  "01df293169e07905b287680e2c7717bfa37b94eefa7eac78d2bd2494d4b48ab3": {
+    "conference": "Running Remote",
+    "location": "Austin, USA",
+    "distance_km": 10125.4,
+    "flight_cost": 2025.07,
+    "lodging_cost": 150,
+    "meals_cost": 100,
+    "ticket_price": 1000,
+    "total_stipend": 3275.07
+  },
+  "0d431c5219d0f9ae556bcc7c43f838214d449732f4f1a5823d36d458d6aefde0": {
+    "conference": "CDAO Singapore",
+    "location": "Singapore",
+    "distance_km": 4678.1,
+    "flight_cost": 935.63,
+    "lodging_cost": 180,
+    "meals_cost": 120,
+    "ticket_price": 2,
+    "total_stipend": 1237.63
+  },
+  "a004e343d2325b33fbb5c24970ef35dc3703ba31a9e231bbdaf41f1d634b9732": {
+    "conference": "Token2049 Dubai",
+    "location": "Dubai, UAE",
+    "distance_km": 11626.5,
+    "flight_cost": 2325.3,
+    "lodging_cost": 165,
+    "meals_cost": 110,
+    "ticket_price": 799,
+    "total_stipend": 3399.3
+  },
+  "9823cc2370530ce4b4639bd097f4331991d4203db8ee5216b179d31b93f267fc": {
+    "conference": "ETHDam Amsterdam",
+    "location": "Amsterdam, Netherlands",
+    "distance_km": 8557.5,
+    "flight_cost": 1711.5,
+    "lodging_cost": 330,
+    "meals_cost": 165,
+    "ticket_price": 250,
+    "total_stipend": 2456.5
+  },
+  "f936f0b2bf451097f63da27bfebb7afa88f20d09179080156f7a918918dbcfe9": {
+    "conference": "ETH Lisbon",
+    "location": "Lisbon, Portugal",
+    "distance_km": 10419.2,
+    "flight_cost": 2083.83,
+    "lodging_cost": 240,
+    "meals_cost": 120,
+    "ticket_price": 0,
+    "total_stipend": 2443.83
+  },
+  "ad6abcaa689c92249df923fa554c207b08aab18a79e1b86d839bc209d87d6700": {
+    "conference": "AI eEverything Global Summit",
+    "location": "Abu Dhabi, UAE",
+    "distance_km": 6905,
+    "flight_cost": 1381,
+    "lodging_cost": 315,
+    "meals_cost": 157.5,
+    "ticket_price": 1000,
+    "total_stipend": 2853.5
+  },
+  "71dcfe41b1210d9549905e121779e2e7fd07c01dcca06a9bafa91b97143d86ed": {
+    "conference": "Consensus Toronto",
+    "location": "Toronto, Canada",
+    "distance_km": 10592.4,
+    "flight_cost": 2118.48,
+    "lodging_cost": 330,
+    "meals_cost": 165,
+    "ticket_price": 700,
+    "total_stipend": 3313.48
+  },
+  "5e7df0b13e00cf2447dcd196483ace8f93a3b47f51c5fef50ca7f64b58de32c1": {
+    "conference": "AI Expo Korea",
+    "location": "Seoul, Korea",
+    "distance_km": 0,
+    "flight_cost": 0,
+    "lodging_cost": 0,
+    "meals_cost": 150,
+    "ticket_price": 0,
+    "total_stipend": 150
+  },
+  "acc18fe35a0d84dacc3f0acc1373080398f5321c8367f9bdae3bfe82b982f23e": {
+    "conference": "Gartner Digital Workplace Summit",
+    "location": "London, UK",
+    "distance_km": 10860.4,
+    "flight_cost": 2172.08,
+    "lodging_cost": 195,
+    "meals_cost": 130,
+    "ticket_price": 4,
+    "total_stipend": 2501.08
+  },
+  "98ebdd18304b344f21f3baa229a3597a289033305397426690de5d58004e0a20": {
+    "conference": "ML Conference",
+    "location": "San Diego, USA",
+    "distance_km": 9754.7,
+    "flight_cost": 1950.94,
+    "lodging_cost": 780,
+    "meals_cost": 325,
+    "ticket_price": 1,
+    "total_stipend": 3056.94
+  },
+  "88a30798e98e9e6d02add6f98f3e6c110bd1c54e30eceee1b29db44dfee047d7": {
+    "conference": "CDAO Indonesia",
+    "location": "Jakarta, Indonesia",
+    "distance_km": 5293.3,
+    "flight_cost": 1058.67,
+    "lodging_cost": 180,
+    "meals_cost": 90,
+    "ticket_price": 1,
+    "total_stipend": 1329.67
+  },
+  "74c6351f00bdec175a28315698bd7908ca9ff87e05525234d90bc5238aa813b5": {
+    "conference": "The AI Summit Singapore",
+    "location": "Singapore",
+    "distance_km": 4678.1,
+    "flight_cost": 935.63,
+    "lodging_cost": 360,
+    "meals_cost": 180,
+    "ticket_price": 150,
+    "total_stipend": 1625.63
+  },
+  "e10cf3aaee9d5d07d8848e982c8fc4baca8702bee4bbc55a6608fcad78fb6d90": {
+    "conference": "ETH Prague",
+    "location": "Prague, Czech Republic",
+    "distance_km": 8250.1,
+    "flight_cost": 1650.01,
+    "lodging_cost": 225,
+    "meals_cost": 112.5,
+    "ticket_price": 0,
+    "total_stipend": 1987.51
+  },
+  "dbb5c15d258cff4a1e72dac610ff0faf2a30d2822d78a77a8e2c4166b36990eb": {
+    "conference": "Bitcoin 2025",
+    "location": "Las Vegas, USA",
+    "distance_km": 10263,
+    "flight_cost": 2052.6,
+    "lodging_cost": 270,
+    "meals_cost": 135,
+    "ticket_price": 1000,
+    "total_stipend": 3457.6
+  },
+  "e81188aca4ff5845c4609a635e1310b6cb62204775b7919ad72e6ff0356ac19b": {
+    "conference": "Imagine AI Live",
+    "location": "Las Vegas, USA",
+    "distance_km": 10263,
+    "flight_cost": 2052.6,
+    "lodging_cost": 270,
+    "meals_cost": 135,
+    "ticket_price": 1,
+    "total_stipend": 2458.6
+  },
+  "100fe1fa62c00ae3a468b9b76cd11e5bbf339e3243f8dd892297f1dbb5c3629d": {
+    "conference": "Pragma Prague",
+    "location": "Prague, Czech Republic",
+    "distance_km": 8250.1,
+    "flight_cost": 1650.01,
+    "lodging_cost": 225,
+    "meals_cost": 112.5,
+    "ticket_price": 0,
+    "total_stipend": 1987.51
+  },
+  "431d9ec539d38ca12f22a4aaebd11a6a83375004840a042cdf4bc775f32e4c4b": {
+    "conference": "ETH Global Prague",
+    "location": "Prague, Czech Republic",
+    "distance_km": 8250.1,
+    "flight_cost": 1650.01,
+    "lodging_cost": 225,
+    "meals_cost": 112.5,
+    "ticket_price": 0,
+    "total_stipend": 1987.51
+  },
+  "4f5b3632d599fa2a5f7a80f18ab8c27d9d91799ac4b55798f398e666a612b678": {
+    "conference": "AI Con USA",
+    "location": "Seattle, USA",
+    "distance_km": 8321.5,
+    "flight_cost": 1664.3,
+    "lodging_cost": 900,
+    "meals_cost": 360,
+    "ticket_price": 1,
+    "total_stipend": 2925.3
+  },
+  "156a1e4a0177186d2561e02f71ae5ab9cd76c1efd2a54d23eecdce5cf3803000": {
+    "conference": "Databricks Data & AI Summit",
+    "location": "San Francisco, USA",
+    "distance_km": 9028.3,
+    "flight_cost": 1805.67,
+    "lodging_cost": 675,
+    "meals_cost": 300,
+    "ticket_price": 1000,
+    "total_stipend": 3780.67
+  },
+  "210f4f5650eac7a07427260f159dbeaf2b4af7a45cf12f3a2863bb07ac2ad189": {
+    "conference": "The AI Summit London",
+    "location": "London, UK",
+    "distance_km": 10860.4,
+    "flight_cost": 2172.08,
+    "lodging_cost": 195,
+    "meals_cost": 130,
+    "ticket_price": 1,
+    "total_stipend": 2498.08
+  },
+  "678f8cdcee9ad541de5d6d37c3f886bb1d08d597b5cf93780d447df324305272": {
+    "conference": "DappCon",
+    "location": "Berlin, Germany",
+    "distance_km": 8128,
+    "flight_cost": 1625.6,
+    "lodging_cost": 285,
+    "meals_cost": 142.5,
+    "ticket_price": 0,
+    "total_stipend": 2053.1
+  },
+  "ff1c8559cca1460d5c96d28d21b37679b10aff56a0ee74cd8ec75639a51ed0ed": {
+    "conference": "SuperAI Singapore",
+    "location": "Singapore",
+    "distance_km": 4678.1,
+    "flight_cost": 935.63,
+    "lodging_cost": 180,
+    "meals_cost": 120,
+    "ticket_price": 999,
+    "total_stipend": 2234.63
+  },
+  "d7dadaac9cbf23bb573292d781b5c553a4e4a4560f4474042719381a455a7864": {
+    "conference": "BTC Prague",
+    "location": "Prague, Czech Republic",
+    "distance_km": 8250.1,
+    "flight_cost": 1650.01,
+    "lodging_cost": 225,
+    "meals_cost": 112.5,
+    "ticket_price": 1000,
+    "total_stipend": 2987.51
+  },
+  "2fa80ac8ae4dfa43d16dc0f2144fcb28a41a30b5e8655c3fe9b198c9baad5832": {
+    "conference": "DAWO25 European DAO Workshop",
+    "location": "Zurich, Switzerland",
+    "distance_km": 8771.5,
+    "flight_cost": 1754.29,
+    "lodging_cost": 225,
+    "meals_cost": 150,
+    "ticket_price": 222,
+    "total_stipend": 2351.29
+  },
+  "427d48669b24c7ab3aedd442c77397387b673840f759fe89c85a5763a87b61a5": {
+    "conference": "ETH Milan",
+    "location": "Milan, Italy",
+    "distance_km": 8885.2,
+    "flight_cost": 1777.04,
+    "lodging_cost": 315,
+    "meals_cost": 157.5,
+    "ticket_price": 0,
+    "total_stipend": 2249.54
+  },
+  "11b90cc29b4e5aaeae0c2f7a01fa2540402563bb2acbf16b04a0743e8ec583d4": {
+    "conference": "Permissionless IV",
+    "location": "Brooklyn, USA",
+    "distance_km": 10759.1,
+    "flight_cost": 2151.81,
+    "lodging_cost": 420,
+    "meals_cost": 210,
+    "ticket_price": 399,
+    "total_stipend": 3180.81
+  },
+  "b2355ca6c32eef86ab0585580b1d2797528a60425c973d5b5f289bd6b0e74a5e": {
+    "conference": "ETH Community Conference",
+    "location": "Cannes, France",
+    "distance_km": 9158,
+    "flight_cost": 1831.61,
+    "lodging_cost": 517.5,
+    "meals_cost": 230,
+    "ticket_price": 0,
+    "total_stipend": 2579.11
+  },
+  "5c71f5b653bd84bd8bf20ec1a6425048ae70e12e1423e32be6f230528147ffba": {
+    "conference": "IVS Crypto 2025",
+    "location": "Kyoto, Japan",
+    "distance_km": 835.9,
+    "flight_cost": 167.17,
+    "lodging_cost": 300,
+    "meals_cost": 150,
+    "ticket_price": 1000,
+    "total_stipend": 1617.17
+  },
+  "5301a0f4e0579e1009c02222f8ccafc6a6c4cee2f8a184d18768ced4cb4cb5ae": {
+    "conference": "Pragma Cannes",
+    "location": "Cannes, France",
+    "distance_km": 9158,
+    "flight_cost": 1831.61,
+    "lodging_cost": 345,
+    "meals_cost": 172.5,
+    "ticket_price": 0,
+    "total_stipend": 2349.11
+  },
+  "fc91e8b1f3ab597cc09d02274b635fcbacf815763b3321a898afad84ea67d3a8": {
+    "conference": "ETH Global Cannes",
+    "location": "Cannes, France",
+    "distance_km": 9158,
+    "flight_cost": 1831.61,
+    "lodging_cost": 345,
+    "meals_cost": 172.5,
+    "ticket_price": 0,
+    "total_stipend": 2349.11
+  },
+  "17886235fc16e3d4c36780fd7455d0f5ac70bc51ca5521478f6f671332347277": {
+    "conference": "RAISE Summit",
+    "location": "Paris, France",
+    "distance_km": 8966.9,
+    "flight_cost": 1793.38,
+    "lodging_cost": 180,
+    "meals_cost": 120,
+    "ticket_price": 457,
+    "total_stipend": 2550.38
+  },
+  "d7d82c631bc36ce44fe4734167484c26d99eb79187f83f04d74135b8b2250628": {
+    "conference": "WeAreDevelopers World Congress",
+    "location": "Berlin, Germany",
+    "distance_km": 8128,
+    "flight_cost": 1625.6,
+    "lodging_cost": 285,
+    "meals_cost": 142.5,
+    "ticket_price": 1000,
+    "total_stipend": 3053.1
+  },
+  "be5f583b72c31f5bfe820fcab25ec6fce0c4b8244160e4a045a7dacf5e5d0d1d": {
+    "conference": "AI for Good Global Summit",
+    "location": "Geneva, Switzerland",
+    "distance_km": 8992.2,
+    "flight_cost": 1798.43,
+    "lodging_cost": 630,
+    "meals_cost": 280,
+    "ticket_price": 0,
+    "total_stipend": 2708.43
+  },
+  "a73589f846a4186a2a579eabcd70a007528a58134b39b99e2b8e4ff03de7217a": {
+    "conference": "Ai4",
+    "location": "Las Vegas, USA",
+    "distance_km": 10263,
+    "flight_cost": 2052.6,
+    "lodging_cost": 270,
+    "meals_cost": 135,
+    "ticket_price": 1,
+    "total_stipend": 2458.6
+  },
+  "3ed780ab05570a1714c1d7c17b660c2d9d179e9aa2dfd434ea1406bd071f23a5": {
+    "conference": "Pragma New York",
+    "location": "New York, USA",
+    "distance_km": 11056.9,
+    "flight_cost": 2211.38,
+    "lodging_cost": 420,
+    "meals_cost": 210,
+    "ticket_price": 0,
+    "total_stipend": 2841.38
+  },
+  "4fab1d1940f5883d0eb4883c84f8c08807c2a20cd41f0472369b7ce510e293b8": {
+    "conference": "ETH Global New York",
+    "location": "New York, USA",
+    "distance_km": 11056.9,
+    "flight_cost": 2211.38,
+    "lodging_cost": 420,
+    "meals_cost": 210,
+    "ticket_price": 0,
+    "total_stipend": 2841.38
+  },
+  "836c206e397f59e64cfe77f21b4ea057739bb9a8c140a2ec917ebb5f90513021": {
+    "conference": "IJCAI Montreal",
+    "location": "Montreal, Canada",
+    "distance_km": 10551.8,
+    "flight_cost": 2110.35,
+    "lodging_cost": 810,
+    "meals_cost": 315,
+    "ticket_price": 0,
+    "total_stipend": 3235.35
+  },
+  "0fe6507729e350776c10034df29f744b6ca6f19a390eb83419187fd4adeb0635": {
+    "conference": "WebX",
+    "location": "Tokyo, Japan",
+    "distance_km": 1151.5,
+    "flight_cost": 230.3,
+    "lodging_cost": 165,
+    "meals_cost": 110,
+    "ticket_price": 69,
+    "total_stipend": 574.3
+  },
+  "598780c3a3e55c881e85fadae26171cf6dc0950a7254b6273f86a46ae186dff7": {
+    "conference": "Bitcoin Asia",
+    "location": "Hong Kong",
+    "distance_km": 2092.6,
+    "flight_cost": 418.51,
+    "lodging_cost": 180,
+    "meals_cost": 120,
+    "ticket_price": 1000,
+    "total_stipend": 1718.51
+  },
+  "72adc25b40fd01e92d74182ab8da0f74186afbb466b53742fc43ea8c81108a85": {
+    "conference": "Product Operations Summit",
+    "location": "San Francisco, USA",
+    "distance_km": 9028.3,
+    "flight_cost": 1805.67,
+    "lodging_cost": 225,
+    "meals_cost": 150,
+    "ticket_price": 1000,
+    "total_stipend": 3180.67
+  },
+  "ba63e05e02b4b243aba84cb764fa6eb93a745eddaa293bfb0eed3d5674def074": {
+    "conference": "ETH Tokyo Conference",
+    "location": "Tokyo, Japan",
+    "distance_km": 1151.5,
+    "flight_cost": 230.3,
+    "lodging_cost": 330,
+    "meals_cost": 165,
+    "ticket_price": 0,
+    "total_stipend": 725.3
+  },
+  "d2487808c29b230e365df40e5e69e72e30c00cce15bba537e0ba38515f7867d9": {
+    "conference": "ETH Tokyo Hackathon",
+    "location": "Tokyo, Japan",
+    "distance_km": 1151.5,
+    "flight_cost": 230.3,
+    "lodging_cost": 330,
+    "meals_cost": 165,
+    "ticket_price": 0,
+    "total_stipend": 725.3
+  },
+  "da685dce10b64d84cd1c3813bf147a08b1aa513a0cc8efae9fceb02f9f2bc435": {
+    "conference": "Momentum AI 2025",
+    "location": "Singapore",
+    "distance_km": 4678.1,
+    "flight_cost": 935.63,
+    "lodging_cost": 360,
+    "meals_cost": 180,
+    "ticket_price": 0,
+    "total_stipend": 1475.63
+  },
+  "d659a4ae936832cad252b98b8ab0610f67c76325063f052aa2443b730eba2cd5": {
+    "conference": "Korea Blockchain Week",
+    "location": "Seoul, Korea",
+    "distance_km": 0,
+    "flight_cost": 0,
+    "lodging_cost": 0,
+    "meals_cost": 300,
+    "ticket_price": 500,
+    "total_stipend": 800
+  },
+  "17bdf728494099d5fede694088bd15879e23a41e95531b3d7fd4b54b9035745a": {
+    "conference": "Token2049 Singapore",
+    "location": "Singapore",
+    "distance_km": 4678.1,
+    "flight_cost": 935.63,
+    "lodging_cost": 180,
+    "meals_cost": 120,
+    "ticket_price": 999,
+    "total_stipend": 2234.63
+  },
+  "db349750e485f18e04721c413c3c7906b98e3a4f19233cd38f6b62c9aa62719f": {
+    "conference": "GoLab Italy",
+    "location": "Florence, Italy",
+    "distance_km": 8898.8,
+    "flight_cost": 1779.77,
+    "lodging_cost": 330,
+    "meals_cost": 165,
+    "ticket_price": 1000,
+    "total_stipend": 3274.77
+  },
+  "5124f3b30481a8619f9c2132063faa309c619541e90283e871926acf2a7b7985": {
+    "conference": "AI & Business strategies",
+    "location": "Helsinki, Finland",
+    "distance_km": 7058.8,
+    "flight_cost": 1411.75,
+    "lodging_cost": 330,
+    "meals_cost": 165,
+    "ticket_price": 825,
+    "total_stipend": 2731.75
+  },
+  "753224ac741b52adc67a916314286a8116db6a038f2b95cca7162a5ea73fa142": {
+    "conference": "World Summit AI Amsterdam",
+    "location": "Amstardam, Netherlands",
+    "distance_km": 8557.5,
+    "flight_cost": 1711.5,
+    "lodging_cost": 150,
+    "meals_cost": 100,
+    "ticket_price": 570,
+    "total_stipend": 2531.5
+  },
+  "be5891be05e61a5b1f1c1d2b6092302f6220970ac322ad1202de597165dbb277": {
+    "conference": "NexTech Week Tokyo Autumn",
+    "location": "Tokyo, Japan",
+    "distance_km": 1151.5,
+    "flight_cost": 230.3,
+    "lodging_cost": 330,
+    "meals_cost": 165,
+    "ticket_price": 0,
+    "total_stipend": 725.3
+  },
+  "0ca4b8e92921128d31cfd8918400e64d294680f398416f3d2c3a1bf0d1b7ace0": {
+    "conference": "Future Blockchain Summit",
+    "location": "Dubai, UAE",
+    "distance_km": 11626.5,
+    "flight_cost": 2325.3,
+    "lodging_cost": 495,
+    "meals_cost": 220,
+    "ticket_price": 1000,
+    "total_stipend": 4040.3
+  },
+  "48c621ee61370fdc62a736dcc6d441fdcae33ef35d9152e1a4a817dab3beb378": {
+    "conference": "GITEX Global",
+    "location": "Dubai, UAE",
+    "distance_km": 11626.5,
+    "flight_cost": 2325.3,
+    "lodging_cost": 660,
+    "meals_cost": 275,
+    "ticket_price": 1000,
+    "total_stipend": 4260.3
+  },
+  "010f75fe1cc91f8b388e703b3480319b7e5b23611887e36fe777cc667be225b0": {
+    "conference": "Generative AI Summit Boston",
+    "location": "Boston, USA",
+    "distance_km": 10946.2,
+    "flight_cost": 2189.25,
+    "lodging_cost": 187.5,
+    "meals_cost": 125,
+    "ticket_price": 495,
+    "total_stipend": 2996.75
+  },
+  "80a09e8f0f744747dcb2f768c938b686f77618efca1146a79d3649a056c278e3": {
+    "conference": "PyTorch Conference 2025",
+    "location": "San Francisco, USA",
+    "distance_km": 9028.3,
+    "flight_cost": 1805.67,
+    "lodging_cost": 225,
+    "meals_cost": 150,
+    "ticket_price": 599,
+    "total_stipend": 2779.67
+  },
+  "41ae389a1960ff1387a1e0aa1130255505295f096cc6be4c17e55d6c1085f6fc": {
+    "conference": "GovAI",
+    "location": "Arlington, VA, USA",
+    "distance_km": 11078.8,
+    "flight_cost": 2215.77,
+    "lodging_cost": 300,
+    "meals_cost": 150,
+    "ticket_price": 1,
+    "total_stipend": 2666.77
+  },
+  "c1d7e6685dbc3047f8a8357a38638f2e0b82e9191a7dcb6f7b3ebaf0974e1087": {
+    "conference": "CASES Conversational AI & CE Summit",
+    "location": "Munich, Germany",
+    "distance_km": 8548.9,
+    "flight_cost": 1709.78,
+    "lodging_cost": 157.5,
+    "meals_cost": 105,
+    "ticket_price": 726,
+    "total_stipend": 2698.28
+  },
+  "421593575f944ba461e2cd9576c8ac39c0267de3343cf8af14e621ef4f4879eb": {
+    "conference": "Dot AI",
+    "location": "Paris, France",
+    "distance_km": 8966.9,
+    "flight_cost": 1793.38,
+    "lodging_cost": 360,
+    "meals_cost": 180,
+    "ticket_price": 415,
+    "total_stipend": 2748.38
+  },
+  "a6bdff9b9d35c7a36518cfedced42202948f8aee7e221913d17a3973006233e9": {
+    "conference": "Generative AI Summit London",
+    "location": "London, UK",
+    "distance_km": 10860.4,
+    "flight_cost": 2172.08,
+    "lodging_cost": 390,
+    "meals_cost": 195,
+    "ticket_price": 410,
+    "total_stipend": 3167.08
+  },
+  "5024ff341d528d8e724e0c4e07cd0d74f37022cee056a16b0c51fc34d44899f5": {
+    "conference": "AI Summit Seoul",
+    "location": "Seoul, Korea",
+    "distance_km": 0,
+    "flight_cost": 0,
+    "lodging_cost": 0,
+    "meals_cost": 100,
+    "ticket_price": 0,
+    "total_stipend": 100
+  },
+  "f1e4ed2b57c09aff7ecb669a8e8c0edf85d05791b0184ed6d7fab2204ba4c1cd": {
+    "conference": "Microsoft Ignite",
+    "location": "San Francisco, USA",
+    "distance_km": 9028.3,
+    "flight_cost": 1805.67,
+    "lodging_cost": 900,
+    "meals_cost": 375,
+    "ticket_price": 1000,
+    "total_stipend": 4080.67
+  },
+  "34b21198e9e90d2fccbd4a627c124629c648965a6410743be48b16ed8f0a0cc9": {
+    "conference": "CDAO Fall 2025",
+    "location": "Boston, USA",
+    "distance_km": 10946.2,
+    "flight_cost": 2189.25,
+    "lodging_cost": 187.5,
+    "meals_cost": 125,
+    "ticket_price": 399,
+    "total_stipend": 2900.75
+  },
+  "7160873820a8cedd094c84628ee8f63128a2f9bdc8bb201ea6984b0fe1aae128": {
+    "conference": "Big Data Conference Europe 2025",
+    "location": "Vilnius, Lithuania",
+    "distance_km": 7354.9,
+    "flight_cost": 1470.99,
+    "lodging_cost": 315,
+    "meals_cost": 140,
+    "ticket_price": 758,
+    "total_stipend": 2683.99
+  },
+  "dec9d7516c004aa11128073fcea068f68a1df52f37926d9fc571d1096c78afb7": {
+    "conference": "The AI Summit New York",
+    "location": "New York, USA",
+    "distance_km": 11056.9,
+    "flight_cost": 2211.38,
+    "lodging_cost": 210,
+    "meals_cost": 140,
+    "ticket_price": 1000,
+    "total_stipend": 3561.38
+  },
+  "9c27573ec86af2d7de5a53f49ef2c03840b73f194409208091ce5da203bea629": {
+    "conference": "GitHub Universe",
+    "location": "San Francisco, USA",
+    "distance_km": 9028.3,
+    "flight_cost": 1805.67,
+    "lodging_cost": 225,
+    "meals_cost": 150,
+    "ticket_price": 1000,
+    "total_stipend": 3180.67
+  },
+  "ad03e126ab58b546730932f27e8981a90420a10b1adbb64764ab1e6dfcc0069f": {
+    "conference": "Solana Breakpoint 2025",
+    "location": "Abu Dhabi, UAE",
+    "distance_km": 6905,
+    "flight_cost": 1381,
+    "lodging_cost": 315,
+    "meals_cost": 157.5,
+    "ticket_price": 1000,
+    "total_stipend": 2853.5
   }
 }

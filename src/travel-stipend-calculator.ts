@@ -489,6 +489,7 @@ interface RealConferenceRecord {
   Conference: string;
   Location: string; // E.g., "London, UK" or "Hong Kong"
   Description: string;
+  "Ticket Price"?: string; // New field for ticket price
 }
 
 interface StipendBreakdown {
@@ -518,7 +519,7 @@ function calculateStipend(record: RealConferenceRecord): StipendBreakdown {
     COST_PER_KM,
     BASE_LODGING_PER_NIGHT,
     BASE_MEALS_PER_DAY,
-    DEFAULT_TICKET_PRICE,
+    record["Ticket Price"] ?? DEFAULT_TICKET_PRICE,
   ]);
 
   if (stipendCache.has(cacheKey)) {
@@ -558,8 +559,8 @@ function calculateStipend(record: RealConferenceRecord): StipendBreakdown {
   const lodgingCost = ORIGIN === destination ? 0 : adjustedLodgingRate * numberOfNights;
   const mealsCost = adjustedMealsRate * numberOfMealDays;
 
-  // Use default ticket price since it's not in the CSV
-  const ticketPrice = DEFAULT_TICKET_PRICE;
+  // Use ticket price from CSV if available, otherwise use default
+  const ticketPrice = record["Ticket Price"] ? parseFloat(record["Ticket Price"].replace("$", "")) : DEFAULT_TICKET_PRICE;
 
   // Total stipend is the sum of all expenses.
   const totalStipend = flightCost + lodgingCost + mealsCost + ticketPrice;
