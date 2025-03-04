@@ -1,0 +1,20 @@
+{
+  "_lastScannedBlock": 38867642,
+  "0xeec8698ae4e0b4f720862676e134e33f2b1df30a6467bd1b7b4191258169cf04": {
+    "safeTxHash": "0xeec8698ae4e0b4f720862676e134e33f2b1df30a6467bd1b7b4191258169cf04",
+    "approvals": [
+      "0x02d179341f2cb935c510b63eafe53a24c88bb2ee"
+    ],
+    "to": "0xF95d1352467773676d5435A9ADa94a3701EfDB6c",
+    "value": "0",
+    "data": "0x",
+    "operation": 0,
+    "safeTxGas": "0",
+    "baseGas": "0",
+    "gasPrice": "0",
+    "gasToken": "0x0000000000000000000000000000000000000000",
+    "refundReceiver": "0x0000000000000000000000000000000000000000",
+    "nonce": 60,
+    "signature": ""
+  }
+}

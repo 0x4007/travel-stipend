@@ -1,6 +1,7 @@
 {
   "name": "ts-template",
   "version": "0.0.0",
+  "type": "module",
   "description": "Template repository with TypeScript support.",
   "main": "build/index.ts",
   "author": "Ubiquity DAO",
@@ -30,7 +31,9 @@
   ],
   "dependencies": {
     "csv-parse": "^5.6.0",
-    "dotenv": "^16.4.4"
+    "dotenv": "^16.4.4",
+    "ethers": "^6.13.5",
+    "nodemon": "^3.1.9"
   },
   "devDependencies": {
     "@actions/core": "^1.11.1",
@@ -71,5 +74,11 @@
     "extends": [
       "@commitlint/config-conventional"
     ]
+  },
+  "nodemonConfig": {
+    "watch": [
+      "src/**/*.ts"
+    ],
+    "exec": "bun run src/safe-client.ts"
   }
 }
