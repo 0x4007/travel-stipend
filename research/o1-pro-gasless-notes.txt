@@ -1,0 +1,112 @@
+How Gnosis Safe Enables Gasless Transactions (5 per Hour)
+
+Gnosis Safe leverages Gas Fee Sponsorship via Gelato’s 1Balance Relay to enable gasless (sponsored) transactions. The Safe web app integrates with backend services to cover gas fees on behalf of users, up to 5 free transactions per hour. Below, we breakdown the mechanisms, network calls, transaction structure, and ways to automate this process:
+
+1. Gasless Execution via Gelato’s Relay
+
+Key Mechanism: Safe routes transactions through the Gelato 1Balance Relay service, which is essentially a relayer that pays gas fees using a prepaid balance or sponsorship. When a user chooses the “Sponsored by Gnosis Chain” option (visible in the Safe UI during transactions), the Safe web app forwards the transaction to a Safe backend (Safe Transaction Service or Safe Client Gateway), which then calls Gelato’s Relay API:
+	•	Off-chain Signing: Safe collects all owners’ signatures off-chain (gas-less signatures) and uses them to form a transaction object ￼ ￼. This avoids on-chain signature overhead.
+	•	Forwarding to Gelato: The signed transaction is sent to Safe’s backend, which uses Gelato’s Relay API to execute the transaction on-chain. Gelato’s relay.executeTransaction is called with the signed Safe transaction and an option isSponsored: true.
+	•	Gelato Relayer Execution: Gelato’s network receives the transaction and submits it on-chain, paying the gas fee from its 1Balance (a prepaid pool or sponsored fund). This is confirmed by a task ID (relay.gelato.digital/tasks/status/...) which can be polled for status.
+	•	No Gas from User: Since Gelato pays the gas, the Safe transaction executes without the user’s wallet providing ETH. The Safe creation (contract deployment) is also covered by this sponsorship.
+
+API Endpoints & Parameters: In network traces or Safe’s code, you’d see calls to endpoints like:
+	•	Safe Client Gateway Relay Endpoint: POST /v1/chains/{chainId}/relay/{safeAddress} (part of Safe’s Client Gateway API) – This likely forwards the request to Gelato. The request includes the Safe transaction data (to, value, data, signatures, SafeTxGas, etc.) and a flag for sponsorship.
+	•	Gelato Relay API: Safe’s backend ultimately hits Gelato’s API (e.g., https://relay.gelato.digital endpoints) with an API key. The Gelato Relay API expects parameters like the target chain, target contract (Safe’s address), the encoded Safe transaction, and whether it’s sponsored (no fee charged to user). For example, using Gelato’s SDK:
+
+const response = await relayKit.executeTransaction({
+     executable: signedSafeTransaction,
+    options: { isSponsored: true }
+})
+console.log(`Task ID: ${response.taskId}`)
+
+This corresponds to the call that returns a taskId for tracking.
+
+	•	Authentication: The Safe backend uses a Gelato API key to authenticate the relay request. This key is required to use Gelato’s service and is likely stored server-side (not exposed to the client).
+
+2. Safe Transaction Structure for Relaying
+
+A Gnosis Safe transaction (multisig execution) has a specific structure, which is preserved even when relayed:
+	•	Transaction Object: Contains fields like to (destination address), value (ETH value to send), data (calldata of the function to call), as well as Safe-specific fields such as nonce and safeTxGas. These are bundled in a Safe transaction payload that all owners sign.
+	•	Signatures: All owner signatures are collected off-chain and appended. The last signer or the initiating user triggers the relay after threshold signatures are reached ￼ ￼.
+	•	Execution Call: Normally, an on-chain execTransaction call would be made by a Safe owner paying gas. In a gasless case, Gelato’s relayer instead performs this execTransaction on the Safe contract using the provided signatures. The Safe contract verifies the signatures and executes the transaction.
+	•	Relayer Parameters: When sending to Gelato, Safe’s backend likely wraps the Safe transaction in Gelato’s expected JSON format (including chainId, target Safe address, the Safe transaction’s safeTxHash, etc.). Gelato then handles the final eth_sendRawTransaction with the relayer’s own account.
+
+Example: Using Safe’s SDK with Gelato, you’d create a Safe transaction (an array of MetaTransactionData), mark it as isSponsored: true in MetaTransactionOptions, sign it, then send via relayKit.executeTransaction. Under the hood, this prepares the transaction for Gelato’s API.
+
+3. Sponsorship, Relayers & Rate Limits
+
+Sponsorship Model: Gelato’s 1Balance is essentially a pot of funds that pays for gas. For the Gnosis Chain promotion, Gnosis Chain (xDai) provided funds to Gelato to sponsor Safe transactions. The Safe team integrated this so users see a “Sponsored by Gnosis Chain” option and no need to hold xDai for gas.
+	•	Relayer/Paymaster: Gelato acts as a paymaster (in AA terms) or relayer. The Safe web app doesn’t directly interact with Gelato; instead, the Safe backend (Safe Client Gateway) acts as an intermediary, ensuring only authorized Safe transactions are relayed. This adds a layer of control (e.g., preventing abuse or enforcing the rate limit).
+	•	Rate Limits: There’s a hard limit of 5 sponsored transactions per Safe per hour. According to Safe’s support article, if you exceed this, you must wait for the limit reset or execute with your own key/gas. These limits are enforced likely by Safe’s backend or the Gelato Relay service:
+	•	Safe’s backend might count how many sponsored requests have been made for a Safe in the last hour and reject further ones (or Gelato might reject beyond a quota).
+	•	The RealT article suggests “5 free transactions a day” for Gnosis Chain Safe users, but official Safe docs say 5 per hour – possibly updated later to 5/hour.
+	•	Eligibility: Initially, the free sponsorship was a campaign on Gnosis Chain for 30 days, but as of late 2023 it became an ongoing feature on multiple networks (L2s and some L1s). You simply need to use Safe on a supported network (Gnosis Chain, Polygon, etc.) and the sponsorship is automatic. No extra steps are required by the user, aside from selecting the sponsored option if presented (the Safe web app might auto-select it if available).
+
+Security & Auth: Since Gelato will only execute transactions that are properly signed by Safe owners, and only for the intended Safe address, the security model remains intact. The Safe Gelato Relay Service (now part of Safe Client Gateway) ensures Gelato only executes what’s authorized (e.g., verifying the Safe’s transaction hash and signatures before relaying).
+
+4. Network Requests & API Endpoints
+
+Based on captured network activity and known Safe infrastructure:
+	•	Safe Transaction Service API: Often used to propose and aggregate signatures for multisig transactions. However, for execution, the Safe web app interacts with the Safe Client Gateway (which is a facade over multiple services).
+	•	Execution Request: When you click “execute” with sponsorship, the web app likely calls something like:
+
+POST https://safe-client.safe.global/v1/chains/100/relay/0xYourSafeAddress
+
+(assuming chainId 100 for Gnosis Chain). The payload would include the Safe transaction details (SafeTxHash, signatures, etc.). This endpoint is documented in Safe’s client gateway API, hinting at a /relay/{safeAddress} resource.
+
+	•	Gelato Endpoint: The Safe Client Gateway then uses Gelato’s relay API endpoint under the hood:
+	•	Possibly https://relay.gelato.digital/relays/v2 or similar, with the appropriate JSON body (as defined in Gelato’s docs) and Gelato API key in headers.
+	•	Safe’s open-source safe-gelato-relay-service (now archived) and Safe Client Gateway code mention a GelatoApiService which wraps these calls. It likely handles things like retry, response parsing, and error handling.
+	•	Returned Data: Gelato returns a taskId and status URL. The Safe web app likely polls the Safe Transaction Service or directly checks Gelato’s status API to see when the transaction is mined, then updates the interface.
+
+Captured Requests Example: You might find in your network logs a request to safe-client.safe.global/.../relay/... with a JSON payload containing safeTxHash and signature fields, and a response containing a Gelato task ID. Also, calls to the Safe Transaction Service (e.g., safe-transaction.safe.global) might show the transaction details or marks it as queued.
+
+5. Automating Gasless Transactions via Script
+
+To automate this process in a script (without using the Safe web UI):
+	•	Use Safe Core SDK: Safe provides the Safe Core SDK – Relay Kit which wraps the Gelato integration. This is ideal for scripting:
+	1.	Set up Safe SDK: Use @safe-global/protocol-kit to instantiate your Safe (requires a signer with Safe owner key, even if that signer has no ETH on that network).
+	2.	Prepare Transaction: Define the transaction(s) as MetaTransactionData objects (target address, value, data).
+	3.	Sign Transaction: Have the owner(s) sign the Safe transaction off-chain. In a script, if threshold = 1, just one signature (the script’s signer) is needed.
+	4.	Use Relay Kit: Initialize @safe-global/relay-kit with a Gelato API key (get one from Gelato’s dashboard). Set isSponsored: true in the options.
+	5.	Execute via Gelato: Call relayKit.executeTransaction({ signedSafeTransaction, options }). This sends the request to Gelato.
+	6.	Track Status: The call returns a taskId. Use Gelato’s status endpoint or SDK methods to wait for execution. The transaction is mined on-chain with no gas cost to you.
+	•	Manual API Calls: Alternatively, you can manually call Gelato’s Relay API:
+	•	Construct the Safe’s execTransaction call data and signature per the Safe contract’s requirements.
+	•	Use fetch or an HTTP client to POST to relay.gelato.digital with JSON containing fields like chainId, target, data, paymentType = "1balance", etc., along with your API key in the header.
+	•	This is essentially what the SDK does for you. Gelato’s documentation provides the exact REST format.
+	•	Respect Rate Limits: If automating many transactions, implement a check or delay to not exceed 5 per hour for sponsorship. If you need more, Gelato will require you to pay via 1Balance (predeposit funds) or use SyncFee (pay from Safe’s own balance in another token). In scripts, you can toggle isSponsored false to do a normal execution (requiring the Safe to pay fees via SyncFee if no ETH).
+	•	Consider Safe Service Dependencies: The Safe Transaction Service (which indexes pending multisig txs) might not be strictly required for execution if you assemble the tx and signatures yourself. But if using the Safe web interface or tracking through it, your Safe transaction needs to be registered there. Safe’s APIs allow posting a transaction to the service for indexing (though execution via Gelato might already handle it).
+
+6. Rate Limits & Conditions
+
+Rate Limit Implementation: The 5 tx/hour is likely enforced by Safe’s backend or the Safe Transaction Service. If you attempt a 6th sponsored tx within the hour through the web, it either:
+	•	Disables the “sponsored” option, forcing you to use regular gas (with your own key).
+	•	Or returns an error explaining the rate limit.
+
+Under the hood, Safe’s Client Gateway might have a counter per Safe address. For example, in their change logs, there’s mention of “Handle multiSend relay limiting”, indicating they ensure even batched transactions (which could hide multiple actions) count appropriately.
+
+Eligibility Conditions: Initially only on Gnosis Chain (xDai) and for a limited time, it expanded to multiple networks and became a standard feature. As of the latest docs:
+	•	Supported chains: Gnosis Chain, several L2s (Arbitrum, Optimism, Base, Polygon zkEVM), and other EVMs (Avalanche, BNB, Celo, zkSync, Scroll). Ethereum mainnet is notably absent (likely due to high gas costs).
+	•	Safe Requirements: No special Safe setup is required beyond using a supported network and Safe version ≥1.1.1 with interface ≥1.9.0 (for off-chain signatures).
+	•	Wallet Requirements: If using a smart contract wallet as an owner (like Argent), gasless signatures may not work. A regular EOA owner is recommended for signing off-chain.
+
+7. Related Documentation and References
+
+To delve deeper or for integration guidance:
+	•	Safe Help Center – Gas Sponsorship: Outlines how Safe uses Gelato for gasless tx and confirms the 5 per hour limit.
+	•	Gnosis Chain Blog: Announcement of free Safe transactions, sponsored by Gnosis Chain using Gelato.
+	•	Gelato Blog: Explains the Safe Wallet & Gelato integration and benefits of 1Balance.
+	•	Safe Developer Docs (Relay Kit): How to integrate Gelato’s Relay in your own app or script, with code examples.
+	•	GitHub – Safe Client Gateway: The Safe backend service that now includes Gelato Relay logic. It replaced the older safe-gelato-relay-service.
+	•	Gelato Relay Documentation: For the Relay API, 1Balance usage, and obtaining API keys.
+
+By understanding these components, one can appreciate how Safe achieves a seamless “gasless” UX: using off-chain signature aggregation, a relay service with a sponsored gas mechanism, and careful enforcement of fair use limits. This approach can indeed be automated with the right use of SDKs or API calls, keeping in mind the rate limits and required credentials.
+
+Sources:
+	•	Safe Help Center – Gas Fee Sponsorship on Safe Transactions
+	•	Gnosis Chain Blog – Free Transactions on Gnosis Chain with Safe Wallet
+	•	Gelato Network Blog – Gas-Free Transactions with Safe Wallet & Gelato
+	•	Safe Developer Docs – Integration with Gelato (Relay Kit Guide)
+	•	RealT FAQ – User perspective on “Sponsored by Gnosis Chain” and free tx
