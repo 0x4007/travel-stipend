@@ -30,6 +30,7 @@
     "ubiquity"
   ],
   "dependencies": {
+    "axios": "^1.8.1",
     "csv-parse": "^5.6.0",
     "dotenv": "^16.4.4",
     "ethers": "^6.13.5",
@@ -79,6 +80,7 @@
     "watch": [
       "src/**/*.ts"
     ],
-    "exec": "bun run src/safe-client.ts"
+    "ext": "ts",
+    "exec": "clear && bun run src/safe.ts"
   }
 }
