@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: "20.10.0"
+          bun-version: latest
       - name: Get GitHub App token
         if: ${{ env.APP_ID && env.APP_PRIVATE_KEY }}
         uses: tibdex/github-app-token@v1.7.0
@@ -28,7 +28,7 @@ jobs:
           bun add simple-git
       - name: Check for Empty Strings
         run: |
-          bun .github/empty-string-checker.ts
+          bun run .github/empty-string-checker.ts
         env:
           GITHUB_TOKEN: ${{ steps.get_installation_token.outputs.token || secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
