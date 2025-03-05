@@ -11,17 +11,15 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
+      - name: Set up bun
+        uses: oven-sh/setup-bun@v2
+
       - uses: actions/checkout@master
         with:
           fetch-depth: 0
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
       - name: Jest With Coverage
-        run: bun install && bun test --coverage
+        run: bun install --frozen-lockfile && bun run test
 
       - name: Add Jest Report to Summary
         if: always()
