@@ -44,25 +44,18 @@ const safeContract = new ethers.Contract(SAFE_ADDRESS, SAFE_ABI, signer);
     console.log(`   - Current nonce: ${currentNonce}`);
     console.log(`   - Required confirmations (threshold): ${threshold}`);
 
-    // Create the transaction payload
-    // Selling exactly 10k USDC.e for minimum 9950 XDAI (0.5% max slippage)
-    const orderUid = ethers.solidityPacked(
-      ["uint256", "address", "bytes32"],
-      [
-        "0x2710", // Selling 10000 USDC.e
-        RECEIVER_ADDRESS,
-        ethers.id("0x26e6") // Minimum receive 9950 XDAI
-      ]
-    );
+    // Create the setPreSignature transaction with hardcoded orderUid
+    // This matches the format from the reference transaction
+    const orderUid = "0xf0624d35ea2e28f7eaeed71e097c2bdb6cd7285f6f71e6292cbb123491ad0b65f95d1352467773676d5435a9ada94a3701efdb6c67c859d6271026e6";
 
-    // Encode the setPreSignature function call
-    const setPreSignatureData = ethers.concat([
-      "0xec6cb13f", // setPreSignature function selector
-      ethers.AbiCoder.defaultAbiCoder().encode(
-        ["bytes", "bool"],
-        [orderUid, true]
-      )
-    ]);
+    // Manually construct the transaction data to match the exact format
+    const setPreSignatureData = "0xec6cb13f" + // Function selector for setPreSignature
+      "0000000000000000000000000000000000000000000000000000000000000040" + // Offset for bytes parameter (64)
+      "0000000000000000000000000000000000000000000000000000000000000001" + // bool signed = true
+      "0000000000000000000000000000000000000000000000000000000000000038" + // Length of bytes (56)
+      orderUid.slice(2); // orderUid without 0x prefix
+
+    console.log("Encoded data:", setPreSignatureData);
 
     // Transaction details
     const txDetails = {
