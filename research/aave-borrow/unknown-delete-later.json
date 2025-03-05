@@ -1,0 +1,144 @@
+{
+    "safeAddress": "0xF95d1352467773676d5435A9ADa94a3701EfDB6c",
+    "txId": "multisig_0xF95d1352467773676d5435A9ADa94a3701EfDB6c_0x5a7e418edb2ab91bfe52b4e2ccaf0775cc3ad54bd6f876b97ba6d7f12125c3c4",
+    "executedAt": null,
+    "txStatus": "AWAITING_EXECUTION",
+    "txInfo": {
+        "type": "Custom",
+        "humanDescription": null,
+        "to": {
+            "value": "0xb50201558B00496A145fE76f7424749556E326D8",
+            "name": "InitializableImmutableAdminUpgradeabilityProxy",
+            "logoUri": null
+        },
+        "dataSize": "164",
+        "value": "0",
+        "methodName": "fallback",
+        "actionCount": null,
+        "isCancellation": false
+    },
+    "txData": {
+        "hexData": "0xa415bcad0000000000000000000000002a22f9c3b484c3629090feed35f17ff8f88f76f000000000000000000000000000000000000000000000000000000002540be40000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f95d1352467773676d5435a9ada94a3701efdb6c",
+        "dataDecoded": {
+            "method": "fallback",
+            "parameters": []
+        },
+        "to": {
+            "value": "0xb50201558B00496A145fE76f7424749556E326D8",
+            "name": "InitializableImmutableAdminUpgradeabilityProxy",
+            "logoUri": null
+        },
+        "value": "0",
+        "operation": 0,
+        "trustedDelegateCallTarget": null,
+        "addressInfoIndex": null
+    },
+    "txHash": null,
+    "detailedExecutionInfo": {
+        "type": "MULTISIG",
+        "submittedAt": 1741179128983,
+        "nonce": 61,
+        "safeTxGas": "0",
+        "baseGas": "0",
+        "gasPrice": "0",
+        "gasToken": "0x0000000000000000000000000000000000000000",
+        "refundReceiver": {
+            "value": "0x0000000000000000000000000000000000000000",
+            "name": null,
+            "logoUri": null
+        },
+        "safeTxHash": "0x5a7e418edb2ab91bfe52b4e2ccaf0775cc3ad54bd6f876b97ba6d7f12125c3c4",
+        "executor": null,
+        "signers": [
+            {
+                "value": "0xbF18900135Dba8A5e680132535aCb7b64ed94C80",
+                "name": null,
+                "logoUri": null
+            },
+            {
+                "value": "0x02D179341F2CB935C510b63eaFe53A24c88BB2ee",
+                "name": null,
+                "logoUri": null
+            },
+            {
+                "value": "0x5B10b5E308a83E41Ea4fd2e52BE0F647D9Da520D",
+                "name": null,
+                "logoUri": null
+            },
+            {
+                "value": "0xefC0e701A824943b469a694aC564Aa1efF7Ab7dd",
+                "name": null,
+                "logoUri": null
+            },
+            {
+                "value": "0x4007CE2083c7F3E18097aeB3A39bb8eC149a341d",
+                "name": null,
+                "logoUri": null
+            },
+            {
+                "value": "0x12b0af5387f338a4aD0866aA0Fe11A1Db2391822",
+                "name": null,
+                "logoUri": null
+            },
+            {
+                "value": "0x96928a36B8033E9Ea6a73d7e9D6B34d18668B93D",
+                "name": null,
+                "logoUri": null
+            }
+        ],
+        "confirmationsRequired": 4,
+        "confirmations": [
+            {
+                "signer": {
+                    "value": "0xefC0e701A824943b469a694aC564Aa1efF7Ab7dd",
+                    "name": null,
+                    "logoUri": null
+                },
+                "signature": "0xb2bb8ce6fef27adea862fc2c99cb8d73755fb8e1d8e2224875f2c7327759e34b15217b8596858a161b54b2f92939d680242d8037fee544ae38a6aaf54f5ca8b41c",
+                "submittedAt": 1741179129037
+            },
+            {
+                "signer": {
+                    "value": "0xbF18900135Dba8A5e680132535aCb7b64ed94C80",
+                    "name": null,
+                    "logoUri": null
+                },
+                "signature": "0xcef7774903f482dc38143fc8cb9a4b1a792515b01ca7b2d3b8e8fa3b9fcebaa274caf11cede1c2780a32a8260b05c9b3ffa9f3f780d5eec7bad628a56f95b9e41b",
+                "submittedAt": 1741179299741
+            },
+            {
+                "signer": {
+                    "value": "0x02D179341F2CB935C510b63eaFe53A24c88BB2ee",
+                    "name": null,
+                    "logoUri": null
+                },
+                "signature": "0x7f9d6ee446d9ed2a45cd954ddc49be541a727aa98fff66ce0b8210f2fa1265ca5ba73b5433a6a07e1247647d48031d8a2c383af535c595b2c8aa9d081e3db9fa1c",
+                "submittedAt": 1741179873811
+            },
+            {
+                "signer": {
+                    "value": "0x4007CE2083c7F3E18097aeB3A39bb8eC149a341d",
+                    "name": null,
+                    "logoUri": null
+                },
+                "signature": "0xf5da36f1569742e71d64f09cf626b1a09d6f1fbea4702a9d063696710da9b25c317643a97b278616ad5ea4ee9d6f4c991f588dc339b2d391971e5cc3027a83fe1b",
+                "submittedAt": 1741179915508
+            }
+        ],
+        "rejectors": [],
+        "gasTokenInfo": null,
+        "trusted": true,
+        "proposer": {
+            "value": "0xefC0e701A824943b469a694aC564Aa1efF7Ab7dd",
+            "name": null,
+            "logoUri": null
+        },
+        "proposedByDelegate": null
+    },
+    "safeAppInfo": {
+        "name": "Aave v3",
+        "url": "https://app.aave.com",
+        "logoUri": "https://safe-transaction-assets.safe.global/safe_apps/8d6c75d7-3255-48d1-882c-edecb2aea73e/icon.png"
+    },
+    "note": null
+}

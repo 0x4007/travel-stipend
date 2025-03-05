@@ -1,0 +1,29 @@
+{
+  "to": "0xb50201558B00496A145fE76f7424749556E326D8",
+  "value": "0",
+  "data": "0xa415bcad0000000000000000000000002a22f9c3b484c3629090feed35f17ff8f88f76f000000000000000000000000000000000000000000000000000000002540be40000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f95d1352467773676d5435a9ada94a3701efdb6c",
+  "operation": 0,
+  "nonce": 61,
+  "safeTxGas": "0",
+  "baseGas": "0",
+  "gasPrice": "0",
+  "gasToken": "0x0000000000000000000000000000000000000000",
+  "refundReceiver": "0x0000000000000000000000000000000000000000",
+  "safeTxHash": "0x5a7e418edb2ab91bfe52b4e2ccaf0775cc3ad54bd6f876b97ba6d7f12125c3c4",
+  "safeAddress": "0xF95d1352467773676d5435A9ADa94a3701EfDB6c",
+  "chainId": 100,
+  "timestamp": "2025-03-05T12:54:58.868Z"
+}
+
+
+/*
+This is a transaction to the Aave protocol (contract at 0xb50201558B00496A145fE76f7424749556E326D8) calling the borrow function with the following parameters:
+
+    1. asset: 0x2a22f9c3b484c3629090feed35f17ff8f88f76f0 (the token being borrowed, appears to be USDC.e)
+    2. amount: 10,000,000,000 (10,000 USDC.e considering 6 decimals)
+    3. interestRateMode: 2 (Variable rate)
+    4. referralCode: 0 (No referral)
+    5. onBehalfOf: 0xf95d1352467773676d5435a9ada94a3701efdb6c (the address that will receive the borrowed tokens)
+
+The transaction is being executed through a Gnosis Safe wallet (safeAddress: 0xF95d1352467773676d5435A9ADa94a3701EfDB6c) on chain ID 100 (Gnosis Chain/xDai). This is a borrow operation for 10,000 USDC.e with a variable interest rate.
+*/
