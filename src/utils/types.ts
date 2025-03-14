@@ -1,9 +1,7 @@
 // Common interfaces used across the application
 
 export interface FlightResults {
-  best_flights: {
-    price?: number;
-  }[];
+  best_flights: FlightOption[];
   search_metadata?: {
     id: string;
     status: string;
