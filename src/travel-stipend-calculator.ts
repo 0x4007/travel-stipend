@@ -1,5 +1,6 @@
 import { parse } from "csv-parse/sync";
 import fs from "fs";
+import path from "path";
 import { createHashKey, PersistentCache } from "./utils/cache";
 import { BASE_LODGING_PER_NIGHT, BASE_MEALS_PER_DAY, COST_PER_KM, DEFAULT_TICKET_PRICE, ORIGIN } from "./utils/constants";
 import { loadCoordinatesData } from "./utils/coordinates";
@@ -92,10 +93,10 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   const totalStipend = flightCost + lodgingCost + mealsCost + ticketPrice;
 
   // Format date to match conference date format (DD Month)
-  const formatDateToConferenceStyle = (dateStr: string) => {
+  function formatDateToConferenceStyle(dateStr: string) {
     const date = new Date(dateStr);
     return date.getDate() + " " + date.toLocaleString("en-US", { month: "long" });
-  };
+  }
 
   const result = {
     conference: record["Conference"],
@@ -218,8 +219,58 @@ async function main() {
   costOfLivingCache.saveToDisk();
   stipendCache.saveToDisk();
 
-  // Output final results as structured JSON
-  console.log("Calculation complete. Results:");
+  // Create outputs directory if it doesn't exist
+  const outputsDir = "outputs";
+  if (!fs.existsSync(outputsDir)) {
+    fs.mkdirSync(outputsDir);
+  }
+
+  // Generate filename with timestamp and sort info
+  const timestamp = Math.floor(Date.now() / 1000);
+  // Generate sort info for filename
+  let sortInfo = "";
+  if (options.sortBy) {
+    const direction = options.reverse ? "_desc" : "_asc";
+    sortInfo = `_sorted_by_${options.sortBy}${direction}`;
+  }
+  const outputFile = path.join(outputsDir, `stipends_${timestamp}${sortInfo}.csv`);
+
+  // Convert results to CSV
+  const header = [
+    "conference",
+    "location",
+    "conference_start",
+    "conference_end",
+    "flight_departure",
+    "flight_return",
+    "flight_cost",
+    "lodging_cost",
+    "meals_cost",
+    "ticket_price",
+    "total_stipend",
+  ].join(",");
+
+  const rows = results.map((r) =>
+    [
+      `"${r.conference}"`,
+      `"${r.location}"`,
+      `"${r.conference_start}"`,
+      `"${r.conference_end || ""}"`,
+      `"${r.flight_departure}"`,
+      `"${r.flight_return}"`,
+      r.flight_cost,
+      r.lodging_cost,
+      r.meals_cost,
+      r.ticket_price,
+      r.total_stipend,
+    ].join(",")
+  );
+
+  // Write to CSV file
+  fs.writeFileSync(outputFile, [header, ...rows].join("\n"));
+
+  // Output results to console
+  console.log("Calculation complete. Results saved to:", outputFile);
   console.table(
     results.map((r) => ({
       conference: r.conference,
