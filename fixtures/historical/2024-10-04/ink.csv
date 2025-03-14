@@ -1,0 +1,4 @@
+Transaction Date,Post Date,Description,Category,Type,Amount,Memo
+10/04/2024,10/08/2024,Finance Charge Reversal,Fees & Adjustments,Refund,0.08,
+10/04/2024,10/08/2024,Late Fee Reversal,Fees & Adjustments,Refund,40.00,
+10/04/2024,10/04/2024,LATE FEE,Fees & Adjustments,Fee,-40.00,

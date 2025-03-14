@@ -8,11 +8,11 @@ export const COST_PER_KM = 0.2; // round trip
 
 // Base rates for accommodation and daily expenses at baseline cost-of-living
 export const BASE_LODGING_PER_NIGHT = 200; // USD (adjusted based on global average)
-export const BASE_MEALS_PER_DAY = 45; // USD (adjusted for average costs)
-export const BASE_LOCAL_TRANSPORT_PER_DAY = 20; // USD (adjusted for typical transport costs)
+export const BASE_MEALS_PER_DAY = 60; // USD (adjusted for average costs)
+export const BASE_LOCAL_TRANSPORT_PER_DAY = 30; // USD (adjusted based on ride-sharing costs in major cities)
 
 // Business-specific allowances
-export const BUSINESS_ENTERTAINMENT_PER_DAY = 160; // USD (adjusted based on Bangkok business-day spending data)
+export const BUSINESS_ENTERTAINMENT_PER_DAY = 80; // USD (for business dinners and networking events)
 // Removed BUSINESS_DISTRICT_MULTIPLIER as base rate now includes business district premium
 
 // Travel duration adjustments
