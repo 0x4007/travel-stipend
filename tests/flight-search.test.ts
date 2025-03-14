@@ -1,52 +1,22 @@
-import { getJson } from "serpapi";
-import { DEFAULT_DEPARTURE_AIRPORT } from "../src/utils/constants";
-import { generateFlightDates } from "../src/utils/dates";
-import { extractAirportCode, findUpcomingConferences } from "../src/utils/flights";
-import { FlightResults } from "../src/utils/types";
+import { findUpcomingConferences } from "../src/utils/flights";
+import { searchFlights } from "./utils/flight-search";
 
 describe("Flight Search Test", () => {
   jest.setTimeout(30000); // Increase timeout for API call
 
-  it("should find flights for next conference", async () => {
-    expect.assertions(1); // Ensure the test makes assertions even if it returns early
-
+  it("should find flights for next conference with valid prices", async () => {
     const conference = findUpcomingConferences(1)[0];
-    console.log("Next conference:", conference);
+    console.log("Searching flights for conference:", conference.Conference);
 
-    const dates = generateFlightDates(conference);
-    console.log("Flight dates:", dates);
+    const result = await searchFlights(conference);
 
-    const departureAirport = extractAirportCode(conference.Location);
-    if (departureAirport === "Unknown") {
-      console.warn(`Could not find airport code for location: ${conference.Location}`);
-      expect(true).toBe(true); // Dummy assertion if we return early
-      return;
-    }
+    // Validate flight search results
+    expect(result).toBeDefined();
+    expect(result.best_flights).toBeDefined();
+    expect(result.best_flights.length).toBeGreaterThan(0);
 
-    try {
-      const searchParams = {
-        api_key: process.env.SERPAPI_API_KEY,
-        engine: "google_flights",
-        hl: "en",
-        gl: "us",
-        departure_id: DEFAULT_DEPARTURE_AIRPORT,
-        arrival_id: departureAirport,
-        outbound_date: dates.outbound,
-        return_date: dates.return,
-        currency: "USD",
-        type: "1",
-        travel_class: "1",
-        deep_search: "true",
-        adults: "1",
-        sort_by: "1",
-        stops: "0",
-      };
-
-      const result = (await getJson(searchParams)) as FlightResults;
-      expect(result).toBeDefined();
-    } catch (error) {
-      console.error("Error searching flights:", error);
-      throw error;
-    }
+    // Check that we got valid prices
+    const hasValidPrices = result.best_flights.some((flight) => typeof flight.price === "number" && flight.price > 0);
+    expect(hasValidPrices).toBe(true);
   });
 });
