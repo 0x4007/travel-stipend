@@ -35,6 +35,7 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     BASE_LODGING_PER_NIGHT,
     BASE_MEALS_PER_DAY,
     record["Ticket Price"] ?? DEFAULT_TICKET_PRICE,
+    "v2", // Add version to force recalculation while keeping flight costs
   ]);
 
   if (stipendCache.has(cacheKey)) {
