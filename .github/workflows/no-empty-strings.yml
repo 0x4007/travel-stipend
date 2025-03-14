@@ -25,10 +25,10 @@ jobs:
           APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
       - name: Install Dependencies
         run: |
-          yarn add tsx simple-git
+          bun add simple-git
       - name: Check for Empty Strings
         run: |
-          yarn tsx .github/empty-string-checker.ts
+          bun .github/empty-string-checker.ts
         env:
           GITHUB_TOKEN: ${{ steps.get_installation_token.outputs.token || secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}

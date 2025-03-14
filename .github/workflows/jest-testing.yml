@@ -11,16 +11,17 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20.10.0"
-
       - uses: actions/checkout@master
         with:
           fetch-depth: 0
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
       - name: Jest With Coverage
-        run: yarn install --immutable --immutable-cache --check-cache && yarn test
+        run: bun install && bun test --coverage
 
       - name: Add Jest Report to Summary
         if: always()

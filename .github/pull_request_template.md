@@ -1,51 +1,19 @@
-<!--- 
-Insert the issue number of the task you are completing if within this repository, or paste the url of the task.
+## Related Issue
 
-// EXAMPLE
-Resolves https://github.com/ubiquity/ts-template/issues/75
--->
+<!-- Link to the issue or task (e.g., "Resolves #123" or "Resolves https://github.com/ubiquity/ts-template/issues/1") -->
 
-Resolves #
+## Summary
 
-<!---
-We advise that you give a brief description of your changes, either that it meets
-the specification exactly as described or what you had to do outwith the spec to resolve it. 
-This is not required but again, it is advised.
+<!-- Briefly summarize the changes in this PR -->
 
-// EXAMPLE
-Changes:
-- Refactored the authentication mechanism because the auth token wasn't being properly stored.
-- Removed unnecessary calls to render the login button.
--->
+## Proof of Fix
 
-Changes:
+<!-- Attach a test URL, screenshot or video demonstrating the fix -->
 
-- ...
+## Testing Steps
 
-<!---
-NOTICE: This is required for all pull requests and will be requested by reviewers if not present.
+<!-- Steps to test this pull request locally (include any setup or environment changes) -->
 
-- Include a screenshot/video or some other visual confirmation that your changes solve the task
-- If this is not applicable, build a unit test to prove it works as intended
+## Post-merge Steps
 
-// EXAMPLE
-QA:
-- <url to your plugin fork or test issue in your own org showcasing the end result>
-- <screenshot of some kind of UI fix>
-- <E2E video of using the software>
--->
-
-QA:
-
-- ...
-
-<!---
-Please provide:
-1. Detailed instructions how to QA locally the PR
-2. Setup instructions required after the PR is merged
-
-Example: https://github.com/ubiquity/pay.ubq.fi/pull/226#issue-2290493538
--->
-
-How to QA and setup:
-- ...
+<!-- Any steps required after merging (e.g., run migrations, clear cache) -->
