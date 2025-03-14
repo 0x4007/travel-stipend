@@ -19,6 +19,80 @@ import crypto from "crypto";
 import { parse } from "csv-parse/sync";
 import fs from "fs";
 import path from "path";
+import { getJson } from "serpapi";
+
+interface FlightResults {
+  best_flights: {
+    price?: number;
+  }[];
+}
+
+async function lookupFlightPrice(destination: string, dates: { outbound: string; return: string }): Promise<number | null> {
+  try {
+    const searchParams = {
+      api_key: process.env.SERPAPI_API_KEY,
+      engine: "google_flights",
+      hl: "en",
+      gl: "us",
+      departure_id: "ICN", // Assuming searching from Seoul
+      arrival_id: destination,
+      outbound_date: dates.outbound,
+      return_date: dates.return,
+      currency: "USD",
+      type: "1",
+      travel_class: "1",
+      deep_search: "true",
+      adults: "1",
+      sort_by: "1",
+      stops: "0",
+    };
+
+    const result = (await getJson(searchParams)) as FlightResults;
+
+    // Get the lowest price from best_flights
+    const lowestPrice = result.best_flights.reduce(
+      (min, flight) => {
+        if (flight.price && (min === null || flight.price < min)) {
+          return flight.price;
+        }
+        return min;
+      },
+      null as number | null
+    );
+
+    return lowestPrice;
+  } catch (error) {
+    console.error("Error looking up flight price:", error);
+    return null;
+  }
+}
+
+function generateFlightDates(startDate: string, endDate: string): { outbound: string; return: string } {
+  const start = parseDate(startDate);
+  const end = endDate ? parseDate(endDate) : start;
+
+  if (!start || !end) {
+    throw new Error("Invalid conference dates");
+  }
+
+  // Set arrival date to one day before conference
+  const outboundDate = new Date(start);
+  outboundDate.setDate(start.getDate() - 1);
+
+  // Set return date to one day after conference
+  const returnDate = new Date(end);
+  returnDate.setDate(end.getDate() + 1);
+
+  // Format dates as YYYY-MM-DD
+  function formatDate(date: Date) {
+    return date.toISOString().split("T")[0];
+  }
+
+  return {
+    outbound: formatDate(outboundDate),
+    return: formatDate(returnDate),
+  };
+}
 
 // --- Cache Implementation ---
 interface Cache<T> {
@@ -509,7 +583,7 @@ interface StipendBreakdown {
 const stipendCache = new PersistentCache<StipendBreakdown>("fixtures/cache/stipend-cache.json");
 
 // Function to calculate stipend with caching
-function calculateStipend(record: RealConferenceRecord): StipendBreakdown {
+async function calculateStipend(record: RealConferenceRecord): Promise<StipendBreakdown> {
   const cacheKey = createHashKey([
     record.Conference,
     record.Location,
@@ -539,8 +613,13 @@ function calculateStipend(record: RealConferenceRecord): StipendBreakdown {
   const distanceKm = getDistanceKmFromCities(ORIGIN, destination);
   console.log(`Distance from ${ORIGIN} to ${destination}: ${distanceKm.toFixed(1)} km`);
 
-  // Estimate flight cost.
-  const flightCost = distanceKm * COST_PER_KM;
+  // Try to get flight cost from API first
+  const flightDates = generateFlightDates(record["Start"], record["End"]);
+  const apiFlightPrice = await lookupFlightPrice(destination, flightDates);
+
+  // If API lookup fails, fallback to distance-based calculation
+  const flightCost = apiFlightPrice ?? distanceKm * COST_PER_KM;
+  console.log(`Flight cost for ${destination}: ${flightCost} (${apiFlightPrice ? "from API" : "calculated from distance"})`);
 
   // Get cost-of-living multiplier for the destination.
   const colFactor = getCostOfLivingFactor(destination);
@@ -632,11 +711,20 @@ async function main() {
   });
   console.log(`Loaded ${records.length} conference records`);
 
+  // Filter out past conferences
+  const currentDate = new Date();
+  const futureRecords = records.filter((record) => {
+    const endDate = record.End ? parseDate(record.End) : parseDate(record.Start);
+    if (!endDate) return false;
+    return endDate >= currentDate;
+  });
+  console.log(`Filtered to ${futureRecords.length} upcoming conferences`);
+
   const results: StipendBreakdown[] = [];
 
-  for (const record of records) {
+  for (const record of futureRecords) {
     try {
-      const result = calculateStipend(record);
+      const result = await calculateStipend(record);
       results.push(result);
     } catch (error) {
       console.error(`Error processing conference "${record["Conference"]}":`, error);
