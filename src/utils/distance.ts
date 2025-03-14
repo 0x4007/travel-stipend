@@ -54,6 +54,5 @@ export function findCityCoordinates(cityName: string, coordinates: CoordinatesMa
 export function getDistanceKmFromCities(originCity: string, destinationCity: string, coordinates: CoordinatesMapping): number {
   const originCoords = findCityCoordinates(originCity, coordinates);
   const destinationCoords = findCityCoordinates(destinationCity, coordinates);
-
   return haversineDistance(originCoords, destinationCoords);
 }

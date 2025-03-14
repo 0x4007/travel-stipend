@@ -2,7 +2,18 @@ import { parse } from "csv-parse/sync";
 import fs from "fs";
 import path from "path";
 import { createHashKey, PersistentCache } from "./utils/cache";
-import { BASE_LODGING_PER_NIGHT, BASE_MEALS_PER_DAY, COST_PER_KM, DEFAULT_TICKET_PRICE, ORIGIN } from "./utils/constants";
+import {
+  BASE_LOCAL_TRANSPORT_PER_DAY,
+  BASE_LODGING_PER_NIGHT,
+  BASE_MEALS_PER_DAY,
+  BUSINESS_ENTERTAINMENT_PER_DAY,
+  COST_PER_KM,
+  DEFAULT_TICKET_PRICE,
+  ORIGIN,
+  POST_CONFERENCE_DAYS,
+  PRE_CONFERENCE_DAYS,
+  WEEKEND_RATE_MULTIPLIER
+} from "./utils/constants";
 import { loadCoordinatesData } from "./utils/coordinates";
 import { getCostOfLivingFactor, loadCostOfLivingData } from "./utils/cost-of-living";
 import { calculateDateDiff, generateFlightDates } from "./utils/dates";
@@ -72,25 +83,45 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   // Get cost-of-living multiplier for the destination
   const colFactor = getCostOfLivingFactor(destination, costOfLivingMapping);
 
-  // Adjust lodging and meal base rates
-  const adjustedLodgingRate = BASE_LODGING_PER_NIGHT * colFactor;
-  const adjustedMealsRate = BASE_MEALS_PER_DAY * colFactor;
+  // Calculate conference and travel days
+  const conferenceDays = calculateDateDiff(record["Start"], record["End"]) + 1; // +1 because end date is inclusive
+  const totalDays = conferenceDays + PRE_CONFERENCE_DAYS + POST_CONFERENCE_DAYS;
+  const numberOfNights = totalDays - 1; // One less night than days
 
-  // Calculate number of nights and meal days
-  const numberOfNights = calculateDateDiff(record["Start"], record["End"]);
-  const numberOfMealDays = numberOfNights + 1; // meals provided each day
+  console.log(`Conference duration: ${conferenceDays} days, Total stay: ${totalDays} days (${numberOfNights} nights)`);
 
-  console.log(`Conference duration: ${numberOfNights} nights, ${numberOfMealDays} meal days`);
+  // Calculate weekend vs weekday nights for lodging
+  const startDate = new Date(record["Start"]);
+  let weekendNights = 0;
+  for (let i = 0; i < numberOfNights; i++) {
+    const currentDate = new Date(startDate);
+    currentDate.setDate(startDate.getDate() - PRE_CONFERENCE_DAYS + i);
+    const dayOfWeek = currentDate.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) { // Sunday = 0, Saturday = 6
+      weekendNights++;
+    }
+  }
+  const weekdayNights = numberOfNights - weekendNights;
 
-  // If the origin city is the same as the destination, no lodging is needed
-  const lodgingCost = ORIGIN === destination ? 0 : adjustedLodgingRate * numberOfNights;
-  const mealsCost = adjustedMealsRate * numberOfMealDays;
+  // Adjust lodging rates with cost of living factor and weekend discounts
+  const baseWeekdayRate = BASE_LODGING_PER_NIGHT * colFactor;
+  const baseWeekendRate = baseWeekdayRate * WEEKEND_RATE_MULTIPLIER;
+
+  // Calculate costs (no lodging cost if conference is in origin city)
+  const lodgingCost = ORIGIN === destination ? 0 :
+    (weekdayNights * baseWeekdayRate) + (weekendNights * baseWeekendRate);
+
+  const basicMealsCost = BASE_MEALS_PER_DAY * colFactor * totalDays;
+  const businessEntertainmentCost = BUSINESS_ENTERTAINMENT_PER_DAY * conferenceDays;
+  const mealsCost = basicMealsCost + businessEntertainmentCost;
+
+  const localTransportCost = BASE_LOCAL_TRANSPORT_PER_DAY * colFactor * totalDays;
 
   // Use ticket price from CSV if available, otherwise use default
   const ticketPrice = record["Ticket Price"] ? parseFloat(record["Ticket Price"].replace("$", "")) : DEFAULT_TICKET_PRICE;
 
   // Total stipend is the sum of all expenses
-  const totalStipend = flightCost + lodgingCost + mealsCost + ticketPrice;
+  const totalStipend = flightCost + lodgingCost + mealsCost + localTransportCost + ticketPrice;
 
   // Format date to match conference date format (DD Month)
   function formatDateToConferenceStyle(dateStr: string) {
@@ -107,7 +138,9 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     flight_return: formatDateToConferenceStyle(flightDates.return),
     flight_cost: parseFloat(flightCost.toFixed(2)),
     lodging_cost: parseFloat(lodgingCost.toFixed(2)),
-    meals_cost: parseFloat(mealsCost.toFixed(2)),
+    basic_meals_cost: parseFloat(basicMealsCost.toFixed(2)),
+    business_entertainment_cost: parseFloat(businessEntertainmentCost.toFixed(2)),
+    local_transport_cost: parseFloat(localTransportCost.toFixed(2)),
     ticket_price: ticketPrice,
     total_stipend: parseFloat(totalStipend.toFixed(2)),
   };
@@ -132,7 +165,9 @@ function parseArgs(): { sortBy?: keyof StipendBreakdown; reverse: boolean } {
     "flight_return",
     "flight_cost",
     "lodging_cost",
-    "meals_cost",
+    "basic_meals_cost",
+    "business_entertainment_cost",
+    "local_transport_cost",
     "ticket_price",
     "total_stipend",
   ];
@@ -245,7 +280,9 @@ async function main() {
     "flight_return",
     "flight_cost",
     "lodging_cost",
-    "meals_cost",
+    "basic_meals_cost",
+    "business_entertainment_cost",
+    "local_transport_cost",
     "ticket_price",
     "total_stipend",
   ].join(",");
@@ -260,7 +297,9 @@ async function main() {
       `"${r.flight_return}"`,
       r.flight_cost,
       r.lodging_cost,
-      r.meals_cost,
+      r.basic_meals_cost,
+      r.business_entertainment_cost,
+      r.local_transport_cost,
       r.ticket_price,
       r.total_stipend,
     ].join(",")
@@ -281,7 +320,9 @@ async function main() {
       flight_return: r.flight_return,
       flight_cost: r.flight_cost,
       lodging_cost: r.lodging_cost,
-      meals_cost: r.meals_cost,
+      basic_meals_cost: r.basic_meals_cost,
+      business_entertainment_cost: r.business_entertainment_cost,
+      local_transport_cost: r.local_transport_cost,
       ticket_price: r.ticket_price,
       total_stipend: r.total_stipend,
     }))

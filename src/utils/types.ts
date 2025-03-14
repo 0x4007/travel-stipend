@@ -68,7 +68,9 @@ export interface StipendBreakdown {
   flight_return: string;
   flight_cost: number;
   lodging_cost: number;
-  meals_cost: number;
+  basic_meals_cost: number;
+  business_entertainment_cost: number;
+  local_transport_cost: number;
   ticket_price: number;
   total_stipend: number;
 }

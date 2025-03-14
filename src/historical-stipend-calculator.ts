@@ -13,7 +13,7 @@ import { Coordinates, StipendBreakdown } from "./utils/types";
 // Historical conference format
 interface HistoricalConference {
   "Event Name": string;
-  "Dates": string;
+  Dates: string;
   "Ticket Price (USD)": string;
 }
 
@@ -42,12 +42,12 @@ function extractLocation(eventName: string): string {
 
   // Then try to extract known city names from anywhere in the event name
   const knownCities = {
-    "Singapore": "Singapore",
-    "Bangkok": "Bangkok",
-    "Seoul": "Seoul",
-    "Taipei": "Taipei",
+    Singapore: "Singapore",
+    Bangkok: "Bangkok",
+    Seoul: "Seoul",
+    Taipei: "Taipei",
     "Hong Kong": "Hong Kong",
-    "San Francisco": "San Francisco"
+    "San Francisco": "San Francisco",
   };
 
   for (const [cityName, normalizedName] of Object.entries(knownCities)) {
@@ -81,7 +81,7 @@ function parseDates(dateString: string): { start: string; end: string } {
 
   return {
     start: `${startDay} ${startMonth}`,
-    end: `${endDay} ${endMonth}`
+    end: `${endDay} ${endMonth}`,
   };
 }
 
@@ -124,7 +124,7 @@ async function calculateStipend(record: HistoricalConference): Promise<StipendBr
     Category: "Historical",
     Start: dates.start,
     End: dates.end,
-    "Ticket Price": record["Ticket Price (USD)"]
+    "Ticket Price": record["Ticket Price (USD)"],
   });
   const apiFlightPrice = await lookupFlightPrice(destination, flightDates);
 
@@ -147,8 +147,7 @@ async function calculateStipend(record: HistoricalConference): Promise<StipendBr
 
   // If the origin city is the same as the destination, no lodging is needed
   // Handle both exact match and partial match for Seoul
-  const isOriginCity = ORIGIN === destination ||
-                      (destination === "Seoul" && ORIGIN.toLowerCase().includes("seoul"));
+  const isOriginCity = ORIGIN === destination || (destination === "Seoul" && ORIGIN.toLowerCase().includes("seoul"));
   const lodgingCost = isOriginCity ? 0 : adjustedLodgingRate * numberOfNights;
   const mealsCost = adjustedMealsRate * numberOfMealDays;
 
@@ -158,7 +157,7 @@ async function calculateStipend(record: HistoricalConference): Promise<StipendBr
   // Total stipend is the sum of all expenses
   const totalStipend = flightCost + lodgingCost + mealsCost + ticketPrice;
 
-  const result = {
+  const result: StipendBreakdown = {
     conference: record["Event Name"],
     location: destination,
     conference_start: dates.start,
@@ -167,7 +166,9 @@ async function calculateStipend(record: HistoricalConference): Promise<StipendBr
     flight_return: flightDates.return,
     flight_cost: parseFloat(flightCost.toFixed(2)),
     lodging_cost: parseFloat(lodgingCost.toFixed(2)),
-    meals_cost: parseFloat(mealsCost.toFixed(2)),
+    basic_meals_cost: parseFloat(mealsCost.toFixed(2)),
+    business_entertainment_cost: 0, // Not applicable for historical conferences
+    local_transport_cost: 0, // Not applicable for historical conferences
     ticket_price: ticketPrice,
     total_stipend: parseFloat(totalStipend.toFixed(2)),
   };
@@ -237,7 +238,9 @@ async function main() {
     "flight_return",
     "flight_cost",
     "lodging_cost",
-    "meals_cost",
+    "basic_meals_cost",
+    "business_entertainment_cost",
+    "local_transport_cost",
     "ticket_price",
     "total_stipend",
   ].join(",");
@@ -252,7 +255,9 @@ async function main() {
       `"${r.flight_return}"`,
       r.flight_cost,
       r.lodging_cost,
-      r.meals_cost,
+      r.basic_meals_cost,
+      r.business_entertainment_cost,
+      r.local_transport_cost,
       r.ticket_price,
       r.total_stipend,
     ].join(",")
@@ -276,7 +281,9 @@ async function main() {
       flight_return: r.flight_return,
       flight_cost: r.flight_cost,
       lodging_cost: r.lodging_cost,
-      meals_cost: r.meals_cost,
+      basic_meals_cost: r.basic_meals_cost,
+      business_entertainment_cost: r.business_entertainment_cost,
+      local_transport_cost: r.local_transport_cost,
       ticket_price: r.ticket_price,
       total_stipend: r.total_stipend,
     }))
