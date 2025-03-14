@@ -24,7 +24,7 @@ console.log("Loading cost-of-living data...");
 const costOfLivingMapping = loadCostOfLivingData("fixtures/cost_of_living.csv");
 
 // Function to calculate stipend with caching
-async function calculateStipend(record: Conference): Promise<StipendBreakdown> {
+export async function calculateStipend(record: Conference): Promise<StipendBreakdown> {
   const cacheKey = createHashKey([
     record.Conference,
     record.Location,
