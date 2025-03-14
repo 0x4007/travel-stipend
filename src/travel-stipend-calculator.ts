@@ -19,6 +19,7 @@ import { getCostOfLivingFactor, loadCostOfLivingData } from "./utils/cost-of-liv
 import { calculateDateDiff, generateFlightDates } from "./utils/dates";
 import { getDistanceKmFromCities } from "./utils/distance";
 import { lookupFlightPrice } from "./utils/flights";
+import { calculateLocalTransportCost } from "./utils/taxi-fares";
 import { Conference, Coordinates, StipendBreakdown } from "./utils/types";
 
 // Initialize caches
@@ -47,7 +48,7 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     BASE_LODGING_PER_NIGHT,
     BASE_MEALS_PER_DAY,
     record["Ticket Price"] ?? DEFAULT_TICKET_PRICE,
-    "v2", // Add version to force recalculation while keeping flight costs
+    "v3", // Increment version to force recalculation with new taxi-based transport costs
   ]);
 
   if (stipendCache.has(cacheKey)) {
@@ -115,7 +116,13 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   const businessEntertainmentCost = BUSINESS_ENTERTAINMENT_PER_DAY * conferenceDays;
   const mealsCost = basicMealsCost + businessEntertainmentCost;
 
-  const localTransportCost = BASE_LOCAL_TRANSPORT_PER_DAY * colFactor * totalDays;
+  // Calculate local transport cost using taxi data
+  const localTransportCost = calculateLocalTransportCost(
+    destination,
+    totalDays,
+    colFactor,
+    BASE_LOCAL_TRANSPORT_PER_DAY
+  );
 
   // Use ticket price from CSV if available, otherwise use default
   const ticketPrice = record["Ticket Price"] ? parseFloat(record["Ticket Price"].replace("$", "")) : DEFAULT_TICKET_PRICE;
