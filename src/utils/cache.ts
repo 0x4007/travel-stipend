@@ -5,8 +5,9 @@ import path from "path";
 // Cache interface definition
 export interface Cache<T> {
   get(key: string): T | undefined;
-  set(key: string, value: T): void;
+  set(key: string, value: T, timestamp?: string): void;
   has(key: string): boolean;
+  getTimestamp?(key: string): string | undefined;
 }
 
 // In-memory cache implementation
@@ -17,8 +18,17 @@ export class MemoryCache<T> implements Cache<T> {
     return this._cache.get(key);
   }
 
-  set(key: string, value: T): void {
+  private _timestamps: Map<string, string> = new Map();
+
+  set(key: string, value: T, timestamp?: string): void {
     this._cache.set(key, value);
+    if (timestamp) {
+      this._timestamps.set(key, timestamp);
+    }
+  }
+
+  getTimestamp(key: string): string | undefined {
+    return this._timestamps.get(key);
   }
 
   has(key: string): boolean {
@@ -78,8 +88,17 @@ export class PersistentCache<T> implements Cache<T> {
     return this._memoryCache.get(key);
   }
 
-  set(key: string, value: T): void {
+  private _timestamps: Map<string, string> = new Map();
+
+  set(key: string, value: T, timestamp?: string): void {
     this._memoryCache.set(key, value);
+    if (timestamp) {
+      this._timestamps.set(key, timestamp);
+    }
+  }
+
+  getTimestamp(key: string): string | undefined {
+    return this._timestamps.get(key);
   }
 
   has(key: string): boolean {

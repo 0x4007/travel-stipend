@@ -62,6 +62,11 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   const flightCost = apiFlightPrice ?? distanceKm * COST_PER_KM;
   console.log(`Flight cost for ${destination}: ${flightCost} (${apiFlightPrice ? "from API" : "calculated from distance"})`);
 
+  // Log the lookup time if we got a flight price from the API
+  if (apiFlightPrice !== null) {
+    console.log(`Last flight lookup time: ${new Date().toLocaleString()}`);
+  }
+
   // Get cost-of-living multiplier for the destination
   const colFactor = getCostOfLivingFactor(destination, costOfLivingMapping);
 
@@ -85,10 +90,19 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   // Total stipend is the sum of all expenses
   const totalStipend = flightCost + lodgingCost + mealsCost + ticketPrice;
 
+  // Format date to match conference date format (DD Month)
+  const formatDateToConferenceStyle = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.getDate() + " " + date.toLocaleString("en-US", { month: "long" });
+  };
+
   const result = {
     conference: record["Conference"],
     location: destination,
-    distance_km: parseFloat(distanceKm.toFixed(1)),
+    conference_start: record["Start"],
+    conference_end: record["End"],
+    flight_departure: formatDateToConferenceStyle(flightDates.outbound),
+    flight_return: formatDateToConferenceStyle(flightDates.return),
     flight_cost: parseFloat(flightCost.toFixed(2)),
     lodging_cost: parseFloat(lodgingCost.toFixed(2)),
     meals_cost: parseFloat(mealsCost.toFixed(2)),
@@ -110,7 +124,10 @@ function parseArgs(): { sortBy?: keyof StipendBreakdown; reverse: boolean } {
   const validColumns: (keyof StipendBreakdown)[] = [
     "conference",
     "location",
-    "distance_km",
+    "conference_start",
+    "conference_end",
+    "flight_departure",
+    "flight_return",
     "flight_cost",
     "lodging_cost",
     "meals_cost",
@@ -201,13 +218,27 @@ async function main() {
   stipendCache.saveToDisk();
 
   // Output final results as structured JSON
-  const output = JSON.stringify({ results }, null, 2);
   console.log("Calculation complete. Results:");
-  const parsedOutput = JSON.parse(output);
-  console.table(parsedOutput.results);
+  console.table(
+    results.map((r) => ({
+      conference: r.conference,
+      location: r.location,
+      conference_start: r.conference_start,
+      conference_end: r.conference_end,
+      flight_departure: r.flight_departure,
+      flight_return: r.flight_return,
+      flight_cost: r.flight_cost,
+      lodging_cost: r.lodging_cost,
+      meals_cost: r.meals_cost,
+      ticket_price: r.ticket_price,
+      total_stipend: r.total_stipend,
+    }))
+  );
 }
 
-// Run main
-main().catch((err) => {
-  console.error("Execution error:", err);
-});
+// Only run main if this file is being executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error("Execution error:", err);
+  });
+}

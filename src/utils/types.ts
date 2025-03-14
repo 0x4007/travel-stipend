@@ -51,6 +51,7 @@ export interface AirportCode {
   name: string;
   municipality: string;
   iata_code: string;
+  coordinates: string; // Format: "lat,lng" as string from CSV
 }
 
 export interface Coordinates {
@@ -61,7 +62,10 @@ export interface Coordinates {
 export interface StipendBreakdown {
   conference: string;
   location: string;
-  distance_km: number;
+  conference_start: string;
+  conference_end: string;
+  flight_departure: string;
+  flight_return: string;
   flight_cost: number;
   lodging_cost: number;
   meals_cost: number;
