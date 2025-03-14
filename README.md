@@ -45,6 +45,7 @@ Tech,2025-03-15,2025-03-18,"DevCon 2025","San Francisco, USA","Annual Developer 
 ```
 
 Fields:
+
 - **Category**: Type of conference (e.g., Tech, Blockchain)
 - **Start**: Conference start date (YYYY-MM-DD)
 - **End**: Conference end date (YYYY-MM-DD)
@@ -64,6 +65,7 @@ Location,Index
 ```
 
 Fields:
+
 - **Location**: City and country
 - **Index**: Cost-of-living index (1.0 is baseline)
 
