@@ -12,7 +12,7 @@ import {
   ORIGIN,
   POST_CONFERENCE_DAYS,
   PRE_CONFERENCE_DAYS,
-  WEEKEND_RATE_MULTIPLIER
+  WEEKEND_RATE_MULTIPLIER,
 } from "./utils/constants";
 import { loadCoordinatesData } from "./utils/coordinates";
 import { getCostOfLivingFactor, loadCostOfLivingData } from "./utils/cost-of-living";
@@ -98,7 +98,8 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     const currentDate = new Date(startDate);
     currentDate.setDate(startDate.getDate() - PRE_CONFERENCE_DAYS + i);
     const dayOfWeek = currentDate.getDay();
-    if (dayOfWeek === 0 || dayOfWeek === 6) { // Sunday = 0, Saturday = 6
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      // Sunday = 0, Saturday = 6
       weekendNights++;
     }
   }
@@ -109,20 +110,14 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   const baseWeekendRate = baseWeekdayRate * WEEKEND_RATE_MULTIPLIER;
 
   // Calculate costs (no lodging cost if conference is in origin city)
-  const lodgingCost = ORIGIN === destination ? 0 :
-    (weekdayNights * baseWeekdayRate) + (weekendNights * baseWeekendRate);
+  const lodgingCost = ORIGIN === destination ? 0 : weekdayNights * baseWeekdayRate + weekendNights * baseWeekendRate;
 
   const basicMealsCost = BASE_MEALS_PER_DAY * colFactor * totalDays;
   const businessEntertainmentCost = BUSINESS_ENTERTAINMENT_PER_DAY * conferenceDays;
   const mealsCost = basicMealsCost + businessEntertainmentCost;
 
   // Calculate local transport cost using taxi data
-  const localTransportCost = calculateLocalTransportCost(
-    destination,
-    totalDays,
-    colFactor,
-    BASE_LOCAL_TRANSPORT_PER_DAY
-  );
+  const localTransportCost = calculateLocalTransportCost(destination, totalDays, colFactor, BASE_LOCAL_TRANSPORT_PER_DAY);
 
   // Use ticket price from CSV if available, otherwise use default
   const ticketPrice = record["Ticket Price"] ? parseFloat(record["Ticket Price"].replace("$", "")) : DEFAULT_TICKET_PRICE;

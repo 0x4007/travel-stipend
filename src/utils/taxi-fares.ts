@@ -6,8 +6,8 @@ import { SIMILARITY_THRESHOLD } from "./constants";
 // Interface for taxi fare data
 export interface TaxiFare {
   country: string;
-  startPrice: number;  // USD
-  pricePerKm: number;  // USD per km
+  startPrice: number; // USD
+  pricePerKm: number; // USD per km
 }
 
 // Cache for taxi data
@@ -21,8 +21,9 @@ function calculateSimilarity(str1: string, str2: string): number {
   const s1 = str1.toLowerCase();
   const s2 = str2.toLowerCase();
 
-  const arr = Array(s2.length + 1).fill(null).map(() =>
-    Array(s1.length + 1).fill(null));
+  const arr = Array(s2.length + 1)
+    .fill(null)
+    .map(() => Array(s1.length + 1).fill(null));
 
   for (let i = 0; i <= s1.length; i++) {
     arr[0][i] = i;
@@ -35,11 +36,7 @@ function calculateSimilarity(str1: string, str2: string): number {
   for (let j = 1; j <= s2.length; j++) {
     for (let i = 1; i <= s1.length; i++) {
       const indicator = s1[i - 1] === s2[j - 1] ? 0 : 1;
-      arr[j][i] = Math.min(
-        arr[j][i - 1] + 1,
-        arr[j - 1][i] + 1,
-        arr[j - 1][i - 1] + indicator,
-      );
+      arr[j][i] = Math.min(arr[j][i - 1] + 1, arr[j - 1][i] + 1, arr[j - 1][i - 1] + indicator);
     }
   }
 
@@ -100,7 +97,7 @@ export function findMatchingCountry(location: string, taxiData: TaxiFare[]): Tax
   if (countryMatchCache.has(cacheKey)) {
     const matchedCountry = countryMatchCache.get(cacheKey);
     if (matchedCountry) {
-      return taxiData.find(data => data.country === matchedCountry) || null;
+      return taxiData.find((data) => data.country === matchedCountry) || null;
     }
   }
 
@@ -126,12 +123,7 @@ export function findMatchingCountry(location: string, taxiData: TaxiFare[]): Tax
 }
 
 // Calculate local transport cost using taxi fares
-export function calculateLocalTransportCost(
-  location: string,
-  days: number,
-  colFactor: number,
-  baseTransportCost: number
-): number {
+export function calculateLocalTransportCost(location: string, days: number, colFactor: number, baseTransportCost: number): number {
   const RIDES_PER_DAY = 4;
   const AVERAGE_RIDE_DISTANCE = 5; // km
 
@@ -143,10 +135,7 @@ export function calculateLocalTransportCost(
     return baseTransportCost * colFactor * days;
   }
 
-  const costPerDay = RIDES_PER_DAY * (
-    matchingCountry.startPrice +
-    (matchingCountry.pricePerKm * AVERAGE_RIDE_DISTANCE)
-  );
+  const costPerDay = RIDES_PER_DAY * (matchingCountry.startPrice + matchingCountry.pricePerKm * AVERAGE_RIDE_DISTANCE);
 
   return costPerDay * days;
 }

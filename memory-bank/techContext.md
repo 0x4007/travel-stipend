@@ -75,6 +75,7 @@ The project uses esbuild for fast compilation and bundling:
 ### Input Data
 
 1. **conferences.csv**: Contains conference information with fields:
+
    - Category: Type of conference
    - Start: Conference start date
    - End: Conference end date
@@ -84,15 +85,18 @@ The project uses esbuild for fast compilation and bundling:
    - Description: Brief description
 
 2. **cost_of_living.csv**: Contains cost-of-living indices:
+
    - Location: City and country
    - Index: Cost-of-living index (1.0 is baseline)
 
 3. **coordinates.csv**: Contains city coordinates:
+
    - City: City name
    - Latitude: Geographic latitude
    - Longitude: Geographic longitude
 
 4. **taxis.csv**: Contains taxi fare information:
+
    - City: City name
    - Base Fare: Starting fare
    - Per KM: Cost per kilometer
@@ -122,14 +126,17 @@ The application can use the SerpAPI service to look up flight prices:
 ## Technical Constraints
 
 1. **Performance Considerations**:
+
    - Caching is essential for performance with large datasets.
    - API rate limits may affect flight price lookups.
 
 2. **Data Accuracy**:
+
    - Cost-of-living data requires regular updates.
    - Flight prices are volatile and may change frequently.
 
 3. **Error Handling**:
+
    - Must gracefully handle missing or malformed data.
    - Should provide fallbacks when external services fail.
 
