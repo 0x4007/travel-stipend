@@ -1,0 +1,9 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-12-06,Amex Blue Sky,FOREIGN TRANSACTION FEE,-4.1,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,YEONGCHEONYEONGHOASIKYUKSIKDAN | $152.20 | FOREIGN TRANSACTION FEE,,'820243420256164234',
+2024-12-06,Amex Blue Sky,FOREIGN TRANSACTION FEE,-4.14,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,JOOSIKHOISA LEUCHAEMBEO | $153.61 | FOREIGN TRANSACTION FEE,,'820243420256162352',
+2024-12-06,Amex Blue Sky,Interest Charge on Promotional Balances,-19.42,Fees & Adjustments-Fees & Adjustments,Interest Charge on Promotional Balances,Interest Charge on Promotional Balances,,'141207040000109635',
+2024-12-06,Amex Blue Sky,Interest Charge on Purchases,-468.13,Fees & Adjustments-Fees & Adjustments,Interest Charge on Purchases,Interest Charge on Purchases,,'141207040000109634',
+2024-12-06,Amex Blue Sky,JOOSIKHOISA LEUCHAEMSEOUL,-153.61,Restaurant-Restaurant,JOOSIKHOISA LEUCHAEMSEOUL,RESTAURANT | JOOSIKHOISA LEUCHAEMBEO | SEOUL | RESTAURANT,218000.00 KOREAN (SOUTH) WON,'320243420256162352',"KOREA, REPUBLIC OF"
+2024-12-06,Amex Blue Sky,YEONGCHEONYEONGHOASISEOUL,-152.2,Restaurant-Restaurant,YEONGCHEONYEONGHOASISEOUL,RESTAURANT | YEONGCHEONYEONGHOASIKYUKSIKDAN | SEOUL | RESTAURANT,216000.00 KOREAN (SOUTH) WON,'320243420256164234',"KOREA, REPUBLIC OF"
+2024-12-06,Amex Platinum,Interest Charge on Pay Over Time Purchases,-184.53,Fees & Adjustments-Fees & Adjustments,Interest Charge on Pay Over Time Purchases,Interest Charge on Pay Over Time Purchases,,'141207040000217387',
+2024-12-06,Chase Ink,PURCHASE INTEREST CHARGE,-362.55,Fees & Adjustments,,,,,

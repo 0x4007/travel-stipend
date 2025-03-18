@@ -1,0 +1,5 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-06-24,Chase Ink,Payment Thank You-Mobile,4000,,,,,,
+2024-06-24,Checking,Payment to Chase card ending in 4484 06/24,-4000,LOAN_PMT,,,,,
+2024-06-24,Checking,Zelle payment to Chris Cedron JPM99aj861qh,-2080,CHASE_TO_PARTNERFI,,,,,
+2024-06-24,Checking,Coinbase.com     QRSLSSGV                   PPD ID: 1455293997,6101.73,ACH_CREDIT,,,,,

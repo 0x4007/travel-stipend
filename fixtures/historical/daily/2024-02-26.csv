@@ -1,0 +1,11 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-02-26,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.18,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,UBER TRIP | $6.92 | FOREIGN TRANSACTION FEE,,'820240570870366978',
+2024-02-26,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.18,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,UBER TRIP | $6.69 | FOREIGN TRANSACTION FEE,,'820240580900868489',
+2024-02-26,Amex Blue Sky,UBER TRIP           HTTPS://HELP.UBER.CO,-6.69,Transportation-Taxis & Coach,UBER TRIP           HTTPS://HELP.UBER.CO,9M76PFJ5 OLNG67GX | UBER TRIP | HTTPS://HELP.UBER.COM | OLNG67GX,8900.00 KOREAN (SOUTH) WON,'320240580900868489',NETHERLANDS
+2024-02-26,Amex Blue Sky,UBER TRIP           HTTPS://HELP.UBER.CO,-6.92,Transportation-Taxis & Coach,UBER TRIP           HTTPS://HELP.UBER.CO,8VQP9SEZ FC2GN2C6 | UBER TRIP | HTTPS://HELP.UBER.COM | FC2GN2C6,9200.00 KOREAN (SOUTH) WON,'320240570870366978',NETHERLANDS
+2024-02-26,Chase Ink,StarbucksKorea,-9.88,Food & Drink,,,,,
+2024-02-26,Chase Ink,HyundaiDepartmentStore,-18.1,Merchandise & Inventory,,,,,
+2024-02-26,Checking,PwP  WWW.PERPLEX Privacycom TN: 7154485     WEB ID:  626060084,-10,MISC_DEBIT,,,,,
+2024-02-26,Checking,PwP  CHATGPT SUB Privacycom TN: 4987441     WEB ID:  626060084,-20,MISC_DEBIT,,,,,
+2024-02-26,Checking,Coinbase.com     94ZRYRSU                   PPD ID: 1455293997,6578.55,ACH_CREDIT,,,,,
+2024-02-26,Checking,Coinbase.com     HE9RGR37                   PPD ID: 1455293997,14941.4,ACH_CREDIT,,,,,

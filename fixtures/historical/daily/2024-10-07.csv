@@ -1,0 +1,6 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-10-07,Amex Blue Sky,Interest Charge on Purchases,-277.4,Fees & Adjustments-Fees & Adjustments,Interest Charge on Purchases,Interest Charge on Purchases,,'141008080000107678',
+2024-10-07,Amex Platinum,Interest Charge on Pay Over Time Purchases,-62.3,Fees & Adjustments-Fees & Adjustments,Interest Charge on Pay Over Time Purchases,Interest Charge on Pay Over Time Purchases,,'141008080000216650',
+2024-10-07,Chase Ink,PURCHASE INTEREST CHARGE,-364.03,Fees & Adjustments,,,,,
+2024-10-07,Checking,PwP  OPENAI      Privacycom TN: 1488477     WEB ID:  626060084,-10.9,MISC_DEBIT,,,,,
+2024-10-07,Checking,PwP  ANTHROPIC   Privacycom TN: 5447468     WEB ID:  626060084,-19.62,MISC_DEBIT,,,,,

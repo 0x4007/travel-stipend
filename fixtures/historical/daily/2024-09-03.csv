@@ -1,0 +1,12 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-09-03,Amex Blue Sky,AGODA.COM           LONDON              GB,-583.43,Travel-Travel Agencies,AGODA.COM           LONDON              GB,######JSrR6 TRAVEL AGENCY | AGODA.COM | LONDON | GB | TRAVEL AGENCY,,'320242470746127144',THAILAND
+2024-09-03,Amex Blue Sky,BOOKCHANG           SEOUL,-72.94,Restaurant-Restaurant,BOOKCHANG           SEOUL,RESTAURANT | BOOKCHANG | SEOUL | RESTAURANT,100000.00 KOREAN (SOUTH) WON,'320242480754535737',"KOREA, REPUBLIC OF"
+2024-09-03,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.05,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,kakaomobility | $2.19 | FOREIGN TRANSACTION FEE,,'820242480770157340',
+2024-09-03,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.09,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,kakaomobility | $3.65 | FOREIGN TRANSACTION FEE,,'820242480769213866',
+2024-09-03,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.13,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,kakaomobility | $5.11 | FOREIGN TRANSACTION FEE,,'820242480770762060',
+2024-09-03,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.25,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,kakaomobility | $9.34 | FOREIGN TRANSACTION FEE,,'820242480770157484',
+2024-09-03,Amex Blue Sky,FOREIGN TRANSACTION FEE,-1.96,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,BOOKCHANG | $72.94 | FOREIGN TRANSACTION FEE,,'820242480754535737',
+2024-09-03,Amex Blue Sky,kakaomobility       SEOUL,-2.19,Merchandise & Supplies-General Retail,kakaomobility       SEOUL,MISC/SPECIALTY RETAIL | kakaomobility | SEOUL | MISC/SPECIALTY RETAIL,3000.00 KOREAN (SOUTH) WON,'320242480770157340',"KOREA, REPUBLIC OF"
+2024-09-03,Amex Blue Sky,kakaomobility       SEOUL,-3.65,Merchandise & Supplies-General Retail,kakaomobility       SEOUL,MISC/SPECIALTY RETAIL | kakaomobility | SEOUL | MISC/SPECIALTY RETAIL,5000.00 KOREAN (SOUTH) WON,'320242480769213866',"KOREA, REPUBLIC OF"
+2024-09-03,Amex Blue Sky,kakaomobility       SEOUL,-5.11,Merchandise & Supplies-General Retail,kakaomobility       SEOUL,MISC/SPECIALTY RETAIL | kakaomobility | SEOUL | MISC/SPECIALTY RETAIL,7000.00 KOREAN (SOUTH) WON,'320242480770762060',"KOREA, REPUBLIC OF"
+2024-09-03,Amex Blue Sky,kakaomobility       SEOUL,-9.34,Merchandise & Supplies-General Retail,kakaomobility       SEOUL,MISC/SPECIALTY RETAIL | kakaomobility | SEOUL | MISC/SPECIALTY RETAIL,12800.00 KOREAN (SOUTH) WON,'320242480770157484',"KOREA, REPUBLIC OF"

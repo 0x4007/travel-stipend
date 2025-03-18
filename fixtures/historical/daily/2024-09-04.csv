@@ -1,0 +1,4 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-09-04,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.45,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,kakaomobility | $16.99 | FOREIGN TRANSACTION FEE,,'820242490796804109',
+2024-09-04,Amex Blue Sky,kakaomobility       SEOUL,-16.99,Merchandise & Supplies-General Retail,kakaomobility       SEOUL,MISC/SPECIALTY RETAIL | kakaomobility | SEOUL | MISC/SPECIALTY RETAIL,23300.00 KOREAN (SOUTH) WON,'320242490796804109',"KOREA, REPUBLIC OF"
+2024-09-04,Checking,DEPT EDUCATION   STUDENT LN                 PPD ID: 9102001001,-256.66,ACH_DEBIT,,,,,

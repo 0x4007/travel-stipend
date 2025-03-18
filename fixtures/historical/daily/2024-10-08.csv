@@ -1,0 +1,4 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-10-08,Amex Platinum,MOYO                SEOUL,-55.57,Restaurant-Restaurant,MOYO                SEOUL,RESTAURANT | MOYO | SEOUL | RESTAURANT,75000.00 KOREAN (SOUTH) WON,'320242830668219690',"KOREA, REPUBLIC OF"
+2024-10-08,Chase Ink,Payment Thank You Special,1213,,,,,,
+2024-10-08,Checking,Payment to Chase card ending in 1132 10/08,-1213,LOAN_PMT,,,,,

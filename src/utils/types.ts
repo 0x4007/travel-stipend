@@ -73,6 +73,8 @@ export interface StipendBreakdown {
   business_entertainment_cost: number;
   local_transport_cost: number;
   ticket_price: number;
+  internet_data_allowance: number; // New field for internet/data plans
+  incidentals_allowance: number; // New field for miscellaneous expenses
   total_stipend: number;
   meals_cost?: number; // Added for test compatibility
 }

@@ -1,0 +1,8 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-06-18,Amex Blue Sky,ONLINE PAYMENT - THANK YOU,1589.46,,ONLINE PAYMENT - THANK YOU,ONLINE PAYMENT - THANK YOU,,'320241700728894379',
+2024-06-18,Amex Platinum,ONLINE PAYMENT - THANK YOU,677.54,,ONLINE PAYMENT - THANK YOU,ONLINE PAYMENT - THANK YOU,,'320241700728894372',
+2024-06-18,Chase Ink,MINAMI,-140.13,Food & Drink,,,,,
+2024-06-18,Chase Ink,Payment Thank You - Web,2000,,,,,,
+2024-06-18,Checking,AMERICAN EXPRESS ACH PMT    W7042           WEB ID: 2005032111,-677.54,ACH_DEBIT,,,,,
+2024-06-18,Checking,AMERICAN EXPRESS ACH PMT    W7270           WEB ID: 2005032111,-1589.46,ACH_DEBIT,,,,,
+2024-06-18,Checking,Payment to Chase card ending in 4484 06/18,-2000,LOAN_PMT,,,,,

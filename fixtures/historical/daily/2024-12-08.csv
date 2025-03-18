@@ -1,0 +1,3 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-12-08,Amex Blue Sky,(JOO)IDIPIESEU      SEOUL,-65.53,Restaurant-Restaurant,(JOO)IDIPIESEU      SEOUL,RESTAURANT | (JOO)IDIPIESEU | SEOUL | RESTAURANT,93000.00 KOREAN (SOUTH) WON,'320243440310797910',"KOREA, REPUBLIC OF"
+2024-12-08,Amex Blue Sky,FOREIGN TRANSACTION FEE,-1.76,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,(JOO)IDIPIESEU | $65.53 | FOREIGN TRANSACTION FEE,,'820243440310797910',

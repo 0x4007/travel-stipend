@@ -1,0 +1,6 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-03-18,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.1,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,UBER TRIP | $4.05 | FOREIGN TRANSACTION FEE,,'820240790424752313',
+2024-03-18,Amex Blue Sky,UBER TRIP           HTTPS://HELP.UBER.CO,-4.05,Transportation-Taxis & Coach,UBER TRIP           HTTPS://HELP.UBER.CO,K3XW26FT 56VO2TKF | UBER TRIP | HTTPS://HELP.UBER.COM | 56VO2TKF,5400.00 KOREAN (SOUTH) WON,'320240790424752313',NETHERLANDS
+2024-03-18,Checking,PwP  COUPANG CO. Privacycom TN: 7460773     WEB ID:  626060084,-39.32,MISC_DEBIT,,,,,
+2024-03-18,Checking,AMERICAN EXPRESS ACH PMT    M3308           WEB ID: 2005032111,-435.49,ACH_DEBIT,,,,,
+2024-03-18,Checking,Payment to Chase card ending in 4484 03/18,-142.34,LOAN_PMT,,,,,

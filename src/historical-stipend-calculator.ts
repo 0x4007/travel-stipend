@@ -2,12 +2,20 @@ import { parse } from "csv-parse/sync";
 import fs from "fs";
 import path from "path";
 import { createHashKey, PersistentCache } from "./utils/cache";
-import { BASE_LODGING_PER_NIGHT, BASE_MEALS_PER_DAY, COST_PER_KM, ORIGIN } from "./utils/constants";
+import {
+  BASE_LOCAL_TRANSPORT_PER_DAY,
+  BASE_LODGING_PER_NIGHT,
+  BASE_MEALS_PER_DAY,
+  BUSINESS_ENTERTAINMENT_PER_DAY,
+  COST_PER_KM,
+  ORIGIN,
+} from "./utils/constants";
 import { loadCoordinatesData } from "./utils/coordinates";
 import { getCostOfLivingFactor, loadCostOfLivingData } from "./utils/cost-of-living";
 import { calculateDateDiff, generateFlightDates } from "./utils/dates";
 import { getDistanceKmFromCities } from "./utils/distance";
 import { lookupFlightPrice } from "./utils/flights";
+import { calculateLocalTransportCost } from "./utils/taxi-fares";
 import { Coordinates, StipendBreakdown } from "./utils/types";
 
 // Historical conference format
@@ -99,8 +107,10 @@ async function calculateStipend(record: HistoricalConference): Promise<StipendBr
     COST_PER_KM,
     BASE_LODGING_PER_NIGHT,
     BASE_MEALS_PER_DAY,
+    BASE_LOCAL_TRANSPORT_PER_DAY,
+    BUSINESS_ENTERTAINMENT_PER_DAY,
     record["Ticket Price (USD)"],
-    "historical_v2", // Increment version to invalidate cache
+    "historical_v3", // Increment version to invalidate cache
   ]);
 
   if (stipendCache.has(cacheKey)) {
@@ -151,11 +161,27 @@ async function calculateStipend(record: HistoricalConference): Promise<StipendBr
   const lodgingCost = isOriginCity ? 0 : adjustedLodgingRate * numberOfNights;
   const mealsCost = adjustedMealsRate * numberOfMealDays;
 
+  // Calculate business entertainment and local transport costs
+  const businessEntertainmentCost = BUSINESS_ENTERTAINMENT_PER_DAY * numberOfMealDays;
+  const localTransportCost = calculateLocalTransportCost(destination, numberOfMealDays, colFactor, BASE_LOCAL_TRANSPORT_PER_DAY);
+
   // Parse ticket price, defaulting to 0 if not provided
   const ticketPrice = record["Ticket Price (USD)"] ? parseFloat(record["Ticket Price (USD)"]) : 0;
 
   // Total stipend is the sum of all expenses
-  const totalStipend = flightCost + lodgingCost + mealsCost + ticketPrice;
+  const totalStipend = flightCost + lodgingCost + mealsCost + businessEntertainmentCost + localTransportCost + ticketPrice;
+
+  // Determine if international travel
+  const isInternational = ORIGIN.toLowerCase().includes("korea") && !destination.toLowerCase().includes("korea");
+
+  // Add internet/data allowance
+  const internetDataAllowance = isInternational ? 25 : 0;
+
+  // Add incidentals allowance
+  const incidentalsAllowance = numberOfMealDays * 20;
+
+  // Add to total stipend
+  const updatedTotalStipend = totalStipend + internetDataAllowance + incidentalsAllowance;
 
   const result: StipendBreakdown = {
     conference: record["Event Name"],
@@ -168,10 +194,12 @@ async function calculateStipend(record: HistoricalConference): Promise<StipendBr
     flight_cost: parseFloat(flightCost.toFixed(2)),
     lodging_cost: parseFloat(lodgingCost.toFixed(2)),
     basic_meals_cost: parseFloat(mealsCost.toFixed(2)),
-    business_entertainment_cost: 0, // Not applicable for historical conferences
-    local_transport_cost: 0, // Not applicable for historical conferences
+    business_entertainment_cost: parseFloat(businessEntertainmentCost.toFixed(2)),
+    local_transport_cost: parseFloat(localTransportCost.toFixed(2)),
     ticket_price: ticketPrice,
-    total_stipend: parseFloat(totalStipend.toFixed(2)),
+    internet_data_allowance: internetDataAllowance,
+    incidentals_allowance: incidentalsAllowance,
+    total_stipend: parseFloat(updatedTotalStipend.toFixed(2)),
     meals_cost: parseFloat(mealsCost.toFixed(2)),
   };
 
@@ -244,6 +272,8 @@ async function main() {
     "business_entertainment_cost",
     "local_transport_cost",
     "ticket_price",
+    "internet_data_allowance",
+    "incidentals_allowance",
     "total_stipend",
   ].join(",");
 
@@ -261,6 +291,8 @@ async function main() {
       r.business_entertainment_cost,
       r.local_transport_cost,
       r.ticket_price,
+      r.internet_data_allowance,
+      r.incidentals_allowance,
       r.total_stipend,
     ].join(",")
   );
@@ -287,6 +319,8 @@ async function main() {
       business_entertainment_cost: r.business_entertainment_cost,
       local_transport_cost: r.local_transport_cost,
       ticket_price: r.ticket_price,
+      internet_data_allowance: r.internet_data_allowance,
+      incidentals_allowance: r.incidentals_allowance,
       total_stipend: r.total_stipend,
     }))
   );

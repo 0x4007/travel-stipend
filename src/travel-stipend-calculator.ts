@@ -48,7 +48,7 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     BASE_LODGING_PER_NIGHT,
     BASE_MEALS_PER_DAY,
     record["Ticket Price"] ?? DEFAULT_TICKET_PRICE,
-    "v3", // Increment version to force recalculation with new taxi-based transport costs
+    "v4", // Increment version to force recalculation with new algorithm
   ]);
 
   if (stipendCache.has(cacheKey)) {
@@ -112,7 +112,14 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   // Calculate costs (no lodging cost if conference is in origin city)
   const lodgingCost = ORIGIN === destination ? 0 : weekdayNights * baseWeekdayRate + weekendNights * baseWeekendRate;
 
-  const basicMealsCost = BASE_MEALS_PER_DAY * colFactor * totalDays;
+  // Calculate meals with duration-based scaling
+  let basicMealsCost = 0;
+  for (let i = 0; i < totalDays; i++) {
+    // Apply duration-based scaling (100% for days 1-3, 85% for days 4+)
+    const dailyMealCost = i < 3 ? BASE_MEALS_PER_DAY * colFactor : BASE_MEALS_PER_DAY * colFactor * 0.85;
+    basicMealsCost += dailyMealCost;
+  }
+
   const businessEntertainmentCost = BUSINESS_ENTERTAINMENT_PER_DAY * conferenceDays;
   const mealsCost = basicMealsCost + businessEntertainmentCost;
 
@@ -122,8 +129,17 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   // Use ticket price from CSV if available, otherwise use default
   const ticketPrice = record["Ticket Price"] ? parseFloat(record["Ticket Price"].replace("$", "")) : DEFAULT_TICKET_PRICE;
 
+  // Determine if international travel
+  const isInternational = ORIGIN.toLowerCase().includes("korea") && !destination.toLowerCase().includes("korea");
+
+  // Add internet/data allowance
+  const internetDataAllowance = isInternational ? 25 : 0;
+
+  // Add incidentals allowance
+  const incidentalsAllowance = totalDays * 20;
+
   // Total stipend is the sum of all expenses
-  const totalStipend = flightCost + lodgingCost + mealsCost + localTransportCost + ticketPrice;
+  const totalStipend = flightCost + lodgingCost + mealsCost + localTransportCost + ticketPrice + internetDataAllowance + incidentalsAllowance;
 
   // Format date to match conference date format (DD Month)
   function formatDateToConferenceStyle(dateStr: string) {
@@ -145,6 +161,8 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     business_entertainment_cost: parseFloat(businessEntertainmentCost.toFixed(2)),
     local_transport_cost: parseFloat(localTransportCost.toFixed(2)),
     ticket_price: ticketPrice,
+    internet_data_allowance: internetDataAllowance,
+    incidentals_allowance: incidentalsAllowance,
     total_stipend: parseFloat(totalStipend.toFixed(2)),
     meals_cost: parseFloat(mealsCost.toFixed(2)),
   };
@@ -173,6 +191,8 @@ function parseArgs(): { sortBy?: keyof StipendBreakdown; reverse: boolean } {
     "business_entertainment_cost",
     "local_transport_cost",
     "ticket_price",
+    "internet_data_allowance",
+    "incidentals_allowance",
     "total_stipend",
   ];
 
@@ -288,6 +308,8 @@ async function main() {
     "business_entertainment_cost",
     "local_transport_cost",
     "ticket_price",
+    "internet_data_allowance",
+    "incidentals_allowance",
     "total_stipend",
   ].join(",");
 
@@ -305,6 +327,8 @@ async function main() {
       r.business_entertainment_cost,
       r.local_transport_cost,
       r.ticket_price,
+      r.internet_data_allowance,
+      r.incidentals_allowance,
       r.total_stipend,
     ].join(",")
   );
@@ -328,6 +352,8 @@ async function main() {
       business_entertainment_cost: r.business_entertainment_cost,
       local_transport_cost: r.local_transport_cost,
       ticket_price: r.ticket_price,
+      internet_data_allowance: r.internet_data_allowance,
+      incidentals_allowance: r.incidentals_allowance,
       total_stipend: r.total_stipend,
     }))
   );

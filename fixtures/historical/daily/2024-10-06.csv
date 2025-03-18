@@ -1,0 +1,6 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-10-06,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.04,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,kakaomobility | $1.50 | FOREIGN TRANSACTION FEE,,'820242810634903440',
+2024-10-06,Amex Blue Sky,kakaomobility       SEOUL,-1.5,Merchandise & Supplies-General Retail,kakaomobility       SEOUL,MISC/SPECIALTY RETAIL | kakaomobility | SEOUL | MISC/SPECIALTY RETAIL,2000.00 KOREAN (SOUTH) WON,'320242810634903440',"KOREA, REPUBLIC OF"
+2024-10-06,Amex Platinum,(JOO)TIMEONI        SEOUL,-11.17,Transportation-Taxis & Coach,(JOO)TIMEONI        SEOUL,TAXICAB & LIMOUSINE | (JOO)TIMEONI | SEOUL | TAXICAB & LIMOUSINE,14900.00 KOREAN (SOUTH) WON,'320242810615252343',"KOREA, REPUBLIC OF"
+2024-10-06,Amex Platinum,AplPay SCK COMPANY  SEOUL,-7.95,Restaurant-Restaurant,AplPay SCK COMPANY  SEOUL,RESTAURANT | AplPay SCK COMPANY | SEOUL | RESTAURANT,10600.00 KOREAN (SOUTH) WON,'320242810615667429',"KOREA, REPUBLIC OF"
+2024-10-06,Privacy,OPENAI,-10.9,Privacy Card,Card ending in 9143,,,fbb9bf19-c5d4-44e1-811b-009bc4bd0820,
