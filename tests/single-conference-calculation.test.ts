@@ -37,6 +37,18 @@ describe("Single Conference Complete Calculation Test", () => {
     expect(result.lodging_cost).toBeGreaterThan(0);
     expect(result.meals_cost).toBeGreaterThan(0);
     expect(result.ticket_price).toBeGreaterThan(0);
-    expect(result.total_stipend).toBe(result.flight_cost + result.lodging_cost + result.meals_cost + result.ticket_price);
+    // Total stipend includes flight, lodging, meals, local transport, and ticket price
+    expect(result.total_stipend).toBe(
+      parseFloat(
+        (
+          result.flight_cost +
+          result.lodging_cost +
+          result.basic_meals_cost +
+          result.business_entertainment_cost +
+          result.local_transport_cost +
+          result.ticket_price
+        ).toFixed(2)
+      )
+    );
   });
 });

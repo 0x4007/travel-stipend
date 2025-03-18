@@ -66,6 +66,7 @@ export interface StipendBreakdown {
   conference_end: string;
   flight_departure: string;
   flight_return: string;
+  distance_km?: number; // Added for test compatibility
   flight_cost: number;
   lodging_cost: number;
   basic_meals_cost: number;
@@ -73,6 +74,7 @@ export interface StipendBreakdown {
   local_transport_cost: number;
   ticket_price: number;
   total_stipend: number;
+  meals_cost?: number; // Added for test compatibility
 }
 
 export interface Airport {

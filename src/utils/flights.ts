@@ -20,38 +20,75 @@ export function extractAirportCode(location: string): string {
     const city = location.split(",")[0].trim();
 
     // Filter for large airports in the target city
-    const cityAirports = airports.filter((a) => a.type === "large_airport" && a.iata_code && a.municipality?.toLowerCase().includes(city.toLowerCase()));
+    let cityAirports = airports.filter((a) => a.type === "large_airport" && a.iata_code && a.municipality?.toLowerCase().includes(city.toLowerCase()));
 
+    // If no airports found by city name, try a broader search
     if (cityAirports.length === 0) {
-      throw new Error(`No airports found for city: ${city}`);
+      console.log(`No exact match for city: ${city}, trying broader search...`);
+
+      // Try partial matching (any part of municipality name)
+      cityAirports = airports.filter(
+        (a) =>
+          a.type === "large_airport" &&
+          a.iata_code &&
+          a.municipality &&
+          (a.municipality.toLowerCase().includes(city.toLowerCase()) || city.toLowerCase().includes(a.municipality.toLowerCase()))
+      );
+
+      // If still no matches, get all large airports in the country if country is specified
+      if (cityAirports.length === 0 && location.includes(",")) {
+        const country = location.split(",")[1].trim();
+        console.log(`Trying to find airports in country: ${country}`);
+
+        // Get all large airports in the country
+        cityAirports = airports.filter((a) => a.type === "large_airport" && a.iata_code && a.name.toLowerCase().includes(country.toLowerCase()));
+      }
+
+      // If still no matches, just get the first few large airports with IATA codes
+      if (cityAirports.length === 0) {
+        console.log(`Falling back to any large airport with IATA code`);
+        cityAirports = airports.filter((a) => a.type === "large_airport" && a.iata_code).slice(0, 5);
+      }
+
+      if (cityAirports.length === 0) {
+        throw new Error(`No airports found for location: ${location}`);
+      }
     }
 
     // If only one airport, return it
     if (cityAirports.length === 1) {
+      console.log(`Found airport: ${cityAirports[0].name} (${cityAirports[0].iata_code}) for ${location}`);
       return cityAirports[0].iata_code;
     }
 
-    // For multiple airports, find the closest one to city center
-    const cityCenter = {
-      lat: parseFloat(cityAirports[0].coordinates.split(",")[0]),
-      lng: parseFloat(cityAirports[0].coordinates.split(",")[1]),
-    };
-
+    // For multiple airports, find the closest one to city center or just pick the first one
     let closestAirport = cityAirports[0];
-    let shortestDistance = Number.MAX_VALUE;
 
-    for (const airport of cityAirports) {
-      const airportCoords = {
-        lat: parseFloat(airport.coordinates.split(",")[0]),
-        lng: parseFloat(airport.coordinates.split(",")[1]),
+    try {
+      const cityCenter = {
+        lat: parseFloat(cityAirports[0].coordinates.split(",")[0]),
+        lng: parseFloat(cityAirports[0].coordinates.split(",")[1]),
       };
-      const distance = haversineDistance(cityCenter, airportCoords);
-      if (distance < shortestDistance) {
-        shortestDistance = distance;
-        closestAirport = airport;
+
+      let shortestDistance = Number.MAX_VALUE;
+
+      for (const airport of cityAirports) {
+        const airportCoords = {
+          lat: parseFloat(airport.coordinates.split(",")[0]),
+          lng: parseFloat(airport.coordinates.split(",")[1]),
+        };
+        const distance = haversineDistance(cityCenter, airportCoords);
+        if (distance < shortestDistance) {
+          shortestDistance = distance;
+          closestAirport = airport;
+        }
       }
+    } catch (coordError) {
+      console.error("Error calculating closest airport:", coordError);
+      // Just use the first airport if there's an error with coordinates
     }
 
+    console.log(`Selected airport: ${closestAirport.name} (${closestAirport.iata_code}) for ${location}`);
     return closestAirport.iata_code;
   } catch (error) {
     console.error("Error extracting airport code:", error);

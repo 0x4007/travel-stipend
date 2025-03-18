@@ -164,6 +164,7 @@ async function calculateStipend(record: HistoricalConference): Promise<StipendBr
     conference_end: dates.end,
     flight_departure: flightDates.outbound,
     flight_return: flightDates.return,
+    distance_km: distanceKm,
     flight_cost: parseFloat(flightCost.toFixed(2)),
     lodging_cost: parseFloat(lodgingCost.toFixed(2)),
     basic_meals_cost: parseFloat(mealsCost.toFixed(2)),
@@ -171,6 +172,7 @@ async function calculateStipend(record: HistoricalConference): Promise<StipendBr
     local_transport_cost: 0, // Not applicable for historical conferences
     ticket_price: ticketPrice,
     total_stipend: parseFloat(totalStipend.toFixed(2)),
+    meals_cost: parseFloat(mealsCost.toFixed(2)),
   };
 
   stipendCache.set(cacheKey, result);

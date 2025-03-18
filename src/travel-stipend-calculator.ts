@@ -138,6 +138,7 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     conference_end: record["End"],
     flight_departure: formatDateToConferenceStyle(flightDates.outbound),
     flight_return: formatDateToConferenceStyle(flightDates.return),
+    distance_km: distanceKm,
     flight_cost: parseFloat(flightCost.toFixed(2)),
     lodging_cost: parseFloat(lodgingCost.toFixed(2)),
     basic_meals_cost: parseFloat(basicMealsCost.toFixed(2)),
@@ -145,6 +146,7 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     local_transport_cost: parseFloat(localTransportCost.toFixed(2)),
     ticket_price: ticketPrice,
     total_stipend: parseFloat(totalStipend.toFixed(2)),
+    meals_cost: parseFloat(mealsCost.toFixed(2)),
   };
 
   stipendCache.set(cacheKey, result);
