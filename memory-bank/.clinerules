@@ -1,0 +1,93 @@
+# Cline Rules: Travel Stipend Calculator
+
+## Project Patterns
+
+### TypeScript Conventions
+
+- Use TypeScript for all new code
+- Maintain strict type safety with explicit interfaces
+- Prefer functional programming patterns where appropriate
+- Use async/await for asynchronous operations
+
+### Runtime Environment
+
+- Always use Bun to run TypeScript files directly without compilation
+- Use Bun for package installation and management
+- Default origin location is "Seoul, Korea" unless specified otherwise
+
+### Data Processing
+
+- CSV files are the primary input format
+- Use the csv-parse library for parsing
+- Always handle CSV headers properly
+- Implement caching for expensive operations
+- Use persistent JSON caches for data that doesn't change frequently
+
+### Calculation Logic
+
+- Implement fallback mechanisms for all external data sources
+- Use the Haversine formula for distance calculations
+- Apply cost-of-living adjustments to lodging and meal costs
+- Account for weekend vs. weekday rates for lodging
+- Include pre and post-conference days in travel duration
+
+### Output Formatting
+
+- Generate timestamped CSV files for all outputs
+- Use console.table for terminal display
+- Include detailed breakdowns of all cost components
+- Support sorting by any column in the output
+
+## User Preferences
+
+- Prefer command-line interface over interactive mode
+- Focus on accuracy of calculations over speed
+- Maintain backward compatibility with existing CSV formats
+- Prioritize clear error messages for troubleshooting
+
+## Implementation Paths
+
+### Adding New Cost Factors
+
+1. Define the new factor in src/utils/constants.ts
+2. Implement the calculation logic in a dedicated utility function
+3. Integrate the new factor into the calculateStipend function
+4. Update the StipendBreakdown interface in types.ts
+5. Add the new field to CSV output and console display
+
+### Extending City Data
+
+1. Add new entries to fixtures/coordinates.csv
+2. Update fixtures/cost_of_living.csv with corresponding entries
+3. Add taxi fare data to fixtures/taxis.csv if available
+4. Clear caches to force recalculation with new data
+
+### Implementing New Command-Line Options
+
+1. Update the parseArgs function in travel-stipend-calculator.ts
+2. Add validation for the new options
+3. Implement the logic to handle the new options
+4. Update the help text and documentation
+
+## Known Challenges
+
+- City name matching is sensitive to formatting and spelling
+- Flight price API has rate limits and can be unreliable
+- Cost-of-living data may be outdated for some locations
+- Weekend detection logic has edge cases around date boundaries
+
+## Tool Usage Patterns
+
+- Use ESLint and Prettier for code formatting
+- Run tests with Bun test
+- Use husky pre-commit hooks to enforce code quality
+- Leverage cspell for spell checking in code and documentation
+
+## Project Evolution
+
+- Originally focused on distance-based flight cost calculation
+- Added API-based flight price lookup as an enhancement
+- Expanded to include local transportation costs
+- Added business entertainment allowance
+- Implemented weekend rate adjustments for lodging
+- Added command-line sorting options
