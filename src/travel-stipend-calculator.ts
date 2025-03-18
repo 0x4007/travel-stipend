@@ -18,7 +18,7 @@ import { loadCoordinatesData } from "./utils/coordinates";
 import { getCostOfLivingFactor, loadCostOfLivingData } from "./utils/cost-of-living";
 import { calculateDateDiff, generateFlightDates } from "./utils/dates";
 import { getDistanceKmFromCities } from "./utils/distance";
-import { lookupFlightPrice } from "./utils/flights";
+import { calculateFlightCost, lookupFlightPrice } from "./utils/flights";
 import { calculateLocalTransportCost } from "./utils/taxi-fares";
 import { Conference, Coordinates, StipendBreakdown } from "./utils/types";
 
@@ -48,16 +48,11 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     BASE_LODGING_PER_NIGHT,
     BASE_MEALS_PER_DAY,
     record["Ticket Price"] ?? DEFAULT_TICKET_PRICE,
-    "v4", // Increment version to force recalculation with new algorithm
+    "v7", // Increment version to force recalculation with enhanced flight cost model
   ]);
 
-  if (stipendCache.has(cacheKey)) {
-    const cachedResult = stipendCache.get(cacheKey);
-    if (cachedResult) {
-      console.log(`Using cached result for conference: ${record.Conference}`);
-      return cachedResult;
-    }
-  }
+  // Force recalculation for all conferences to use the new flight cost algorithm
+  // Skip cache completely
 
   const destination = record["Location"];
   const isPriority = record["❗️"] === "TRUE";
@@ -72,13 +67,22 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   const flightDates = generateFlightDates(record);
   const apiFlightPrice = await lookupFlightPrice(destination, flightDates);
 
-  // If API lookup fails, fallback to distance-based calculation
-  const flightCost = apiFlightPrice ?? distanceKm * COST_PER_KM;
-  console.log(`Flight cost for ${destination}: ${flightCost} (${apiFlightPrice ? "from API" : "calculated from distance"})`);
+  // Calculate flight cost based on distance with improved non-linear formula
+  let flightCost: number;
 
-  // Log the lookup time if we got a flight price from the API
-  if (apiFlightPrice !== null) {
+  // If destination is the same as origin, no flight cost
+  if (ORIGIN === destination) {
+    flightCost = 0;
+    console.log(`No flight cost for ${destination} (same as origin)`);
+  } else if (apiFlightPrice) {
+    // If we have API flight price, use it
+    flightCost = apiFlightPrice;
+    console.log(`Flight cost for ${destination}: ${flightCost} (from API)`);
     console.log(`Last flight lookup time: ${new Date().toLocaleString()}`);
+  } else {
+    // Use the enhanced flight cost calculation model
+    flightCost = calculateFlightCost(distanceKm, destination, ORIGIN);
+    console.log(`Flight cost for ${destination}: ${flightCost} (calculated with enhanced model)`);
   }
 
   // Get cost-of-living multiplier for the destination
@@ -129,10 +133,10 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   // Use ticket price from CSV if available, otherwise use default
   const ticketPrice = record["Ticket Price"] ? parseFloat(record["Ticket Price"].replace("$", "")) : DEFAULT_TICKET_PRICE;
 
-  // Determine if international travel
-  const isInternational = ORIGIN.toLowerCase().includes("korea") && !destination.toLowerCase().includes("korea");
+  // Determine if international travel (and not in origin city)
+  const isInternational = ORIGIN !== destination && ORIGIN.toLowerCase().includes("korea") && !destination.toLowerCase().includes("korea");
 
-  // Add internet/data allowance
+  // Add internet/data allowance (only for international travel)
   const internetDataAllowance = isInternational ? 25 : 0;
 
   // Add incidentals allowance

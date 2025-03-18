@@ -14,7 +14,7 @@ import { loadCoordinatesData } from "./utils/coordinates";
 import { getCostOfLivingFactor, loadCostOfLivingData } from "./utils/cost-of-living";
 import { calculateDateDiff, generateFlightDates } from "./utils/dates";
 import { getDistanceKmFromCities } from "./utils/distance";
-import { lookupFlightPrice } from "./utils/flights";
+import { calculateFlightCost, lookupFlightPrice } from "./utils/flights";
 import { calculateLocalTransportCost } from "./utils/taxi-fares";
 import { Coordinates, StipendBreakdown } from "./utils/types";
 
@@ -110,16 +110,11 @@ async function calculateStipend(record: HistoricalConference): Promise<StipendBr
     BASE_LOCAL_TRANSPORT_PER_DAY,
     BUSINESS_ENTERTAINMENT_PER_DAY,
     record["Ticket Price (USD)"],
-    "historical_v3", // Increment version to invalidate cache
+    "historical_v5", // Increment version to invalidate cache
   ]);
 
-  if (stipendCache.has(cacheKey)) {
-    const cachedResult = stipendCache.get(cacheKey);
-    if (cachedResult) {
-      console.log(`Using cached result for conference: ${record["Event Name"]}`);
-      return cachedResult;
-    }
-  }
+  // Force recalculation for all conferences to use the new flight cost algorithm
+  // Skip cache completely
 
   console.log(`Processing conference: ${record["Event Name"]} in ${destination}`);
 
@@ -138,9 +133,22 @@ async function calculateStipend(record: HistoricalConference): Promise<StipendBr
   });
   const apiFlightPrice = await lookupFlightPrice(destination, flightDates);
 
-  // If API lookup fails, fallback to distance-based calculation
-  const flightCost = apiFlightPrice ?? distanceKm * COST_PER_KM;
-  console.log(`Flight cost for ${destination}: ${flightCost} (${apiFlightPrice ? "from API" : "calculated from distance"})`);
+  // Calculate flight cost based on distance with improved non-linear formula
+  let flightCost: number;
+
+  // If destination is the same as origin, no flight cost
+  if (ORIGIN === destination || (destination === "Seoul" && ORIGIN.toLowerCase().includes("seoul"))) {
+    flightCost = 0;
+    console.log(`No flight cost for ${destination} (same as origin)`);
+  } else if (apiFlightPrice) {
+    // If we have API flight price, use it
+    flightCost = apiFlightPrice;
+    console.log(`Flight cost for ${destination}: ${flightCost} (from API)`);
+  } else {
+    // Use the enhanced flight cost calculation model
+    flightCost = calculateFlightCost(distanceKm, destination, ORIGIN);
+    console.log(`Flight cost for ${destination}: ${flightCost} (calculated with enhanced model)`);
+  }
 
   // Get cost-of-living multiplier for the destination
   const colFactor = getCostOfLivingFactor(destination, costOfLivingMapping);
