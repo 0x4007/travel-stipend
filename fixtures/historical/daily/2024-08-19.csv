@@ -1,0 +1,4 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-08-19,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.15,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,kakaomobility | $5.91 | FOREIGN TRANSACTION FEE,,'820242330379848968',
+2024-08-19,Amex Blue Sky,kakaomobility       SEOUL,-5.91,Merchandise & Supplies-General Retail,kakaomobility       SEOUL,MISC/SPECIALTY RETAIL | kakaomobility | SEOUL | MISC/SPECIALTY RETAIL,8100.00 KOREAN (SOUTH) WON,'320242330379848968',"KOREA, REPUBLIC OF"
+2024-08-19,Checking,Coinbase.com     39SEXPCV                   PPD ID: 1455293997,6698.39,ACH_CREDIT,,,,,

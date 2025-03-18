@@ -1,0 +1,8 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-06-06,Amex Platinum,CREDIT - DISTRIBUTION OF PAYMENT,103.32,,CREDIT - DISTRIBUTION OF PAYMENT,CREDIT - DISTRIBUTION OF PAYMENT,,'140607050000207965',
+2024-06-06,Amex Platinum,DEBIT - DISTRIBUTION OF PAYMENT,-103.32,Fees & Adjustments-Fees & Adjustments,DEBIT - DISTRIBUTION OF PAYMENT,DEBIT - DISTRIBUTION OF PAYMENT,,'140607050000207964',
+2024-06-06,Amex Platinum,Interest Charge on Pay Over Time Purchases,-24.1,Fees & Adjustments-Fees & Adjustments,Interest Charge on Pay Over Time Purchases,Interest Charge on Pay Over Time Purchases,,'140607050000207966',
+2024-06-06,Chase Ink,BISTRO GOAT       0468074,-68.05,Food & Drink,,,,,
+2024-06-06,Chase Ink,CHAM              1620709,-92.93,Food & Drink,,,,,
+2024-06-06,Chase Ink,T-MONEY PRIVATE TAXI (K)1,-37.9,Travel,,,,,
+2024-06-06,Chase Ink,booking1015153263,-260.07,Travel,,,,,

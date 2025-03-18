@@ -1,0 +1,9 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-05-20,Chase Ink,HOTEL MAJESTIC,-27.2,Travel,,,,,
+2024-05-20,Chase Ink,UBR* PENDING.UBER.COM,-16.91,Travel,,,,,
+2024-05-20,Chase Ink,CHRYSTIE        9272598,-65.29,Food & Drink,,,,,
+2024-05-20,Chase Ink,UBER,-56.46,Travel,,,,,
+2024-05-20,Chase Ink,AUX DELICES     4053559,-32.64,Food & Drink,,,,,
+2024-05-20,Chase Ink,CAFFE ROMA,-64.2,Food & Drink,,,,,
+2024-05-20,Checking,FOREIGN EXCHANGE RATE ADJUSTMENT FEE         05/17UBR* PEND,-0.5,FEE_TRANSACTION,,,,,
+2024-05-20,Checking,UBR* PENDING.UBER.COM AMSTERDAM              05/17 Euro       15.52 X 1.088273 (EXCHG RTE),-16.89,DEBIT_CARD,,,,,

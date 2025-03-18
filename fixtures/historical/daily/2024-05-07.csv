@@ -1,0 +1,11 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-05-07,Amex Blue Sky,CR ADJ FOR BILLING INQUIR,40,Fees & Adjustments-Fees & Adjustments,CR ADJ FOR BILLING INQUIR,CR ADJ FOR BILLING INQUIR,,'320241283640925855',
+2024-05-07,Amex Blue Sky,EMIRATES AMERICAN EXUNITED STATES OF AME,-1435.6,Travel-Airline,EMIRATES AMERICAN EXUNITED STATES OF AME,050709 EMIRATES | AGENCY PASSENGER TICKET | EMIRATES AMERICAN EXPRES | UNITED STATES OF AMER | Carrier : EMIRATES | Passenger Name : PAVLOVCIK/ALEXANDER | Ticket Number : 1767069521035 | Departure Day : 05/13 | Additional Info : AGENCY PASSENGER TICKET | From : SEOUL INCHEON INTE | To : DUBAI | Class : X | From : DUBAI | To : NICE | Class : X | From : NICE | To : DUBAI | Class : X | From : DUBAI | To : SEOUL INCHEON INTE | Class : L,,'320241300704762309',UNITED STATES OF AMERICA (THE)
+2024-05-07,Amex Blue Sky,Interest Charge on Purchases,-6.65,Fees & Adjustments-Fees & Adjustments,Interest Charge on Purchases,Interest Charge on Purchases,,'140508050000098556',
+2024-05-07,Amex Blue Sky,ONLINE PAYMENT - THANK YOU,181.63,,ONLINE PAYMENT - THANK YOU,ONLINE PAYMENT - THANK YOU,,'320241280640403433',
+2024-05-07,Amex Platinum,ADJ PURCHASE FIN CHG,2.59,Fees & Adjustments-Fees & Adjustments,ADJ PURCHASE FIN CHG,ADJ PURCHASE FIN CHG,,'320241363849522057',
+2024-05-07,Amex Platinum,ADJ PURCHASE FIN CHG,0.82,Fees & Adjustments-Fees & Adjustments,ADJ PURCHASE FIN CHG,ADJ PURCHASE FIN CHG,,'320241353824033067',
+2024-05-07,Amex Platinum,Interest Charge on Pay Over Time Purchases,-106.23,Fees & Adjustments-Fees & Adjustments,Interest Charge on Pay Over Time Purchases,Interest Charge on Pay Over Time Purchases,,'140508050000205775',
+2024-05-07,Chase Ink,PURCHASE INTEREST CHARGE,-29.72,Fees & Adjustments,,,,,
+2024-05-07,Checking,AMERICAN EXPRESS ACH PMT    W3332           WEB ID: 2005032111,-181.63,ACH_DEBIT,,,,,
+2024-05-07,Checking,Zelle payment from MICHAEL J MCLAUGHLIN 20703990587,2423.78,QUICKPAY_CREDIT,,,,,

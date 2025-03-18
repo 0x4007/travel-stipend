@@ -1,0 +1,6 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-08-22,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.16,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,kakaomobility | $6.27 | FOREIGN TRANSACTION FEE,,'820242360459109593',
+2024-08-22,Amex Blue Sky,FOREIGN TRANSACTION FEE,-3.07,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,galaxiamoneytree | $113.79 | FOREIGN TRANSACTION FEE,,'820242360443825868',
+2024-08-22,Amex Blue Sky,galaxiamoneytree    SEOUL,-113.79,Merchandise & Supplies-Internet Purchase,galaxiamoneytree    SEOUL,DIRECT MKTG MISC | galaxiamoneytree | SEOUL | DIRECT MKTG MISC,156000.00 KOREAN (SOUTH) WON,'320242360443825868',"KOREA, REPUBLIC OF"
+2024-08-22,Amex Blue Sky,kakaomobility       SEOUL,-6.27,Merchandise & Supplies-General Retail,kakaomobility       SEOUL,MISC/SPECIALTY RETAIL | kakaomobility | SEOUL | MISC/SPECIALTY RETAIL,8600.00 KOREAN (SOUTH) WON,'320242360459109593',"KOREA, REPUBLIC OF"
+2024-08-22,Checking,Zelle payment to Stephanie Pavlovcik 21807797268,-882.8,QUICKPAY_DEBIT,,,,,

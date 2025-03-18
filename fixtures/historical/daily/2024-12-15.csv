@@ -1,0 +1,3 @@
+date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
+2024-12-15,Amex Blue Sky,FOREIGN TRANSACTION FEE,-18.84,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,IDIEOD | $697.84 | FOREIGN TRANSACTION FEE,,'820243510513020858',
+2024-12-15,Amex Blue Sky,IDIEOD              SEOUL,-697.84,Restaurant-Restaurant,IDIEOD              SEOUL,"RESTAURANT | 1,000,000.00 KOREAN (SOUTH) WON CONVERTED | IDIEOD | SEOUL | RESTAURANT",1000000.00 KOREAN (SOUTH) WON,'320243510513020858',"KOREA, REPUBLIC OF"
