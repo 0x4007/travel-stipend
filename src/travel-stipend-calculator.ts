@@ -36,6 +36,35 @@ const cityCoordinates = loadCoordinatesData("fixtures/coordinates.csv");
 console.log("Loading cost-of-living data...");
 const costOfLivingMapping = loadCostOfLivingData("fixtures/cost_of_living.csv");
 
+// Helper function to calculate flight cost
+async function calculateFlightCostForConference(
+  destination: string,
+  flightDates: { outbound: string; return: string },
+  distanceKm: number,
+  isOriginCity: boolean
+): Promise<number> {
+  // If destination is the same as origin, no flight cost
+  if (isOriginCity) {
+    console.log(`No flight cost for ${destination} (same as origin)`);
+    return 0;
+  }
+
+  // Try to get flight cost from API first
+  const apiFlightPrice = await lookupFlightPrice(destination, flightDates);
+
+  if (apiFlightPrice) {
+    // If we have API flight price, use it
+    console.log(`Flight cost for ${destination}: ${apiFlightPrice} (from API)`);
+    console.log(`Last flight lookup time: ${new Date().toLocaleString()}`);
+    return apiFlightPrice;
+  } else {
+    // Use the enhanced flight cost calculation model
+    const calculatedCost = calculateFlightCost(distanceKm, destination, ORIGIN);
+    console.log(`Flight cost for ${destination}: ${calculatedCost} (calculated with enhanced model)`);
+    return calculatedCost;
+  }
+}
+
 // Function to calculate stipend with caching
 export async function calculateStipend(record: Conference): Promise<StipendBreakdown> {
   const cacheKey = createHashKey([
@@ -48,7 +77,7 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     BASE_LODGING_PER_NIGHT,
     BASE_MEALS_PER_DAY,
     record["Ticket Price"] ?? DEFAULT_TICKET_PRICE,
-    "v7", // Increment version to force recalculation with enhanced flight cost model
+    "v8", // Increment version to force recalculation with origin city special rules
   ]);
 
   // Force recalculation for all conferences to use the new flight cost algorithm
@@ -59,48 +88,40 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
 
   console.log(`Processing conference: ${record["Conference"]} in ${destination} (Priority: ${isPriority})`);
 
+  // Check if conference is in origin city
+  const isOriginCity = ORIGIN === destination;
+
   // Calculate distance (in km) using the haversine formula with our city coordinates
   const distanceKm = getDistanceKmFromCities(ORIGIN, destination, cityCoordinates);
   console.log(`Distance from ${ORIGIN} to ${destination}: ${distanceKm.toFixed(1)} km`);
 
-  // Try to get flight cost from API first
-  const flightDates = generateFlightDates(record);
-  const apiFlightPrice = await lookupFlightPrice(destination, flightDates);
-
-  // Calculate flight cost based on distance with improved non-linear formula
-  let flightCost: number;
-
-  // If destination is the same as origin, no flight cost
-  if (ORIGIN === destination) {
-    flightCost = 0;
-    console.log(`No flight cost for ${destination} (same as origin)`);
-  } else if (apiFlightPrice) {
-    // If we have API flight price, use it
-    flightCost = apiFlightPrice;
-    console.log(`Flight cost for ${destination}: ${flightCost} (from API)`);
-    console.log(`Last flight lookup time: ${new Date().toLocaleString()}`);
-  } else {
-    // Use the enhanced flight cost calculation model
-    flightCost = calculateFlightCost(distanceKm, destination, ORIGIN);
-    console.log(`Flight cost for ${destination}: ${flightCost} (calculated with enhanced model)`);
-  }
+  // Generate flight dates and calculate flight cost
+  const flightDates = generateFlightDates(record, isOriginCity);
+  const flightCost = await calculateFlightCostForConference(destination, flightDates, distanceKm, isOriginCity);
 
   // Get cost-of-living multiplier for the destination
   const colFactor = getCostOfLivingFactor(destination, costOfLivingMapping);
 
   // Calculate conference and travel days
   const conferenceDays = calculateDateDiff(record["Start"], record["End"]) + 1; // +1 because end date is inclusive
-  const totalDays = conferenceDays + PRE_CONFERENCE_DAYS + POST_CONFERENCE_DAYS;
+
+  // For origin city conferences, don't include buffer days
+  const preConferenceDays = isOriginCity ? 0 : PRE_CONFERENCE_DAYS;
+  const postConferenceDays = isOriginCity ? 0 : POST_CONFERENCE_DAYS;
+  const totalDays = conferenceDays + preConferenceDays + postConferenceDays;
   const numberOfNights = totalDays - 1; // One less night than days
 
   console.log(`Conference duration: ${conferenceDays} days, Total stay: ${totalDays} days (${numberOfNights} nights)`);
+  if (isOriginCity) {
+    console.log(`No buffer days included for origin city conference`);
+  }
 
   // Calculate weekend vs weekday nights for lodging
   const startDate = new Date(record["Start"]);
   let weekendNights = 0;
   for (let i = 0; i < numberOfNights; i++) {
     const currentDate = new Date(startDate);
-    currentDate.setDate(startDate.getDate() - PRE_CONFERENCE_DAYS + i);
+    currentDate.setDate(startDate.getDate() - preConferenceDays + i);
     const dayOfWeek = currentDate.getDay();
     if (dayOfWeek === 0 || dayOfWeek === 6) {
       // Sunday = 0, Saturday = 6
@@ -114,7 +135,7 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   const baseWeekendRate = baseWeekdayRate * WEEKEND_RATE_MULTIPLIER;
 
   // Calculate costs (no lodging cost if conference is in origin city)
-  const lodgingCost = ORIGIN === destination ? 0 : weekdayNights * baseWeekdayRate + weekendNights * baseWeekendRate;
+  const lodgingCost = isOriginCity ? 0 : weekdayNights * baseWeekdayRate + weekendNights * baseWeekendRate;
 
   // Calculate meals with duration-based scaling
   let basicMealsCost = 0;
@@ -134,7 +155,7 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   const ticketPrice = record["Ticket Price"] ? parseFloat(record["Ticket Price"].replace("$", "")) : DEFAULT_TICKET_PRICE;
 
   // Determine if international travel (and not in origin city)
-  const isInternational = ORIGIN !== destination && ORIGIN.toLowerCase().includes("korea") && !destination.toLowerCase().includes("korea");
+  const isInternational = !isOriginCity && ORIGIN.toLowerCase().includes("korea") && !destination.toLowerCase().includes("korea");
 
   // Add internet/data allowance (only for international travel)
   const internetDataAllowance = isInternational ? 25 : 0;

@@ -54,8 +54,8 @@ export function getDailyMealAllowance(dayIndex: number, baseMealCost: number): n
   return baseMealCost * 0.85; // 85% for days 4+
 }
 
-// Generate flight dates for a conference (one day before and after)
-export function generateFlightDates(conference: Conference): { outbound: string; return: string } {
+// Generate flight dates for a conference (one day before and after, or same day for origin city)
+export function generateFlightDates(conference: Conference, isOriginCity = false): { outbound: string; return: string } {
   const startDate = parseDate(conference.Start);
   if (!startDate) {
     throw new Error("Invalid start date");
@@ -66,13 +66,18 @@ export function generateFlightDates(conference: Conference): { outbound: string;
     throw new Error("Invalid conference dates");
   }
 
-  // Set arrival date to one day before conference
+  // For origin city conferences, use the actual conference dates
+  // For non-origin city conferences, add buffer days
   const outboundDate = new Date(startDate);
-  outboundDate.setDate(startDate.getDate() - 1);
+  if (!isOriginCity) {
+    outboundDate.setDate(startDate.getDate() - 1);
+  }
 
-  // Set return date to one day after conference
+  // Set return date to one day after conference (or same day for origin city)
   const returnDate = new Date(endDate);
-  returnDate.setDate(endDate.getDate() + 1);
+  if (!isOriginCity) {
+    returnDate.setDate(endDate.getDate() + 1);
+  }
 
   // Format dates as YYYY-MM-DD in local timezone
   function formatDate(date: Date) {
