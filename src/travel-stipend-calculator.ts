@@ -210,7 +210,7 @@ function parseArgs(): { sortBy?: keyof StipendBreakdown; reverse: boolean } {
     reverse: false,
   };
 
-  const validColumns: (keyof StipendBreakdown)[] = [
+  const validColumns = new Set<keyof StipendBreakdown>([
     "conference",
     "location",
     "conference_start",
@@ -226,7 +226,7 @@ function parseArgs(): { sortBy?: keyof StipendBreakdown; reverse: boolean } {
     "internet_data_allowance",
     "incidentals_allowance",
     "total_stipend",
-  ];
+  ]);
 
   // Check for reverse flag
   options.reverse = args.includes("-r") || args.includes("--reverse");
@@ -234,13 +234,13 @@ function parseArgs(): { sortBy?: keyof StipendBreakdown; reverse: boolean } {
   // Find the sort flag and its value
   const sortFlagIndex = args.findIndex((arg) => arg === "--sort" || arg === "-s");
   if (sortFlagIndex !== -1 && sortFlagIndex < args.length - 1) {
-    const sortColumn = args[sortFlagIndex + 1];
+    const sortColumn = args[sortFlagIndex + 1] as keyof StipendBreakdown;
 
     // Check if the sort column is valid
-    if (validColumns.includes(sortColumn as keyof StipendBreakdown)) {
-      options.sortBy = sortColumn as keyof StipendBreakdown;
+    if (validColumns.has(sortColumn)) {
+      options.sortBy = sortColumn;
     } else {
-      console.warn(`Invalid sort column: ${sortColumn}. Valid columns are: ${validColumns.join(", ")}`);
+      console.warn(`Invalid sort column: ${sortColumn}. Valid columns are: ${Array.from(validColumns).join(", ")}`);
     }
   }
 
