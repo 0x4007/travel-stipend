@@ -1,21 +1,15 @@
-import { CURRENT_LOG_LEVEL, LOG_LEVEL, logFile } from "./google-flights-scraper";
+import { CURRENT_LOG_LEVEL, LOG_LEVEL, logFile } from "./config";
 
-// Logger function
-
-export function log(level: number, message: string, data?: unknown) {
+export function log(level: number, ...args: any[]): void {
   if (level >= CURRENT_LOG_LEVEL) {
     const timestamp = new Date().toISOString();
-    const levelName = Object.keys(LOG_LEVEL).find((key) => LOG_LEVEL[key as keyof typeof LOG_LEVEL] === level) ?? "UNKNOWN";
-    const logMessage = `[${timestamp}] [${levelName}] ${message}`;
+    const levelName = Object.keys(LOG_LEVEL).find(key => LOG_LEVEL[key as keyof typeof LOG_LEVEL] === level) || "UNKNOWN";
 
-    console.log(logMessage);
-    if (data) {
-      console.log(data);
-    }
+    const message = `[${timestamp}] [${levelName}] ${args.map(arg =>
+      typeof arg === "object" ? JSON.stringify(arg) : arg
+    ).join(" ")}`;
 
-    logFile.write(logMessage + "\n");
-    if (data) {
-      logFile.write(JSON.stringify(data, null, 2) + "\n");
-    }
+    console.log(message);
+    logFile.write(message + "\n");
   }
 }

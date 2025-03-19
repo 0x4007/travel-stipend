@@ -1,25 +1,40 @@
 import { Page } from "puppeteer";
+import { LOG_LEVEL } from "./config";
+import { log } from "./log";
 
-/**
- * Helper function to click save button in currency dialog
- * @param page - Puppeteer page object
- * @returns Promise resolving to true if button was clicked, false otherwise
- */
 export async function clickSaveButtonInCurrencyDialog(page: Page): Promise<boolean> {
+  if (!page) {
+    log(LOG_LEVEL.ERROR, "Cannot click save button: page is null");
+    return false;
+  }
+
   try {
-    const isButtonClicked = await page.evaluate((): boolean => {
+    log(LOG_LEVEL.DEBUG, "Attempting to find and click save button in currency dialog");
+
+    // Try multiple approaches to find and click the save button
+    const isSaveButtonClicked = await page.evaluate((): boolean => {
       try {
-        // Look for buttons with text like "Save", "OK", "Done", etc.
-        const buttons = Array.from(document.querySelectorAll("button"));
+        // Find all buttons in the dialog
+        const dialog = document.querySelector('[role="dialog"], .dialog, [aria-modal="true"]');
+        if (!dialog) return false;
 
-        // Find a button that looks like a save/confirm button
-        const saveButton = buttons.find((button) => {
-          const text = button.textContent?.trim().toLowerCase() ?? "";
-          return text === "ok" || text === "save" || text === "done" || text === "apply" || text === "confirm";
-        });
+        // Look for buttons with text like "OK", "Save", "Done", etc.
+        const buttonTexts = ["OK", "Save", "Done", "Apply", "Confirm"];
+        const buttons = Array.from(dialog.querySelectorAll("button"));
 
-        if (saveButton) {
-          (saveButton as HTMLElement).click();
+        // Try to find a button with matching text
+        for (const text of buttonTexts) {
+          for (const button of buttons) {
+            if (button.textContent?.includes(text)) {
+              (button as HTMLElement).click();
+              return true;
+            }
+          }
+        }
+
+        // If no button with specific text was found, try the last button in the dialog
+        if (buttons.length > 0) {
+          (buttons[buttons.length - 1] as HTMLElement).click();
           return true;
         }
 
@@ -30,9 +45,15 @@ export async function clickSaveButtonInCurrencyDialog(page: Page): Promise<boole
       }
     });
 
-    return isButtonClicked === true;
-  } catch (e) {
-    console.error("Error in clickSaveButtonInCurrencyDialog:", e);
+    if (isSaveButtonClicked) {
+      log(LOG_LEVEL.INFO, "Successfully clicked save button in currency dialog");
+    } else {
+      log(LOG_LEVEL.WARN, "Could not find or click save button in currency dialog");
+    }
+
+    return isSaveButtonClicked;
+  } catch (error) {
+    log(LOG_LEVEL.ERROR, "Error clicking save button in currency dialog:", error);
     return false;
   }
 }
