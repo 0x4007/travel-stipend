@@ -124,22 +124,36 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
   await clearInputField(page, originField);
   log(LOG_LEVEL.INFO, "Attempted to clear origin field using multiple methods");
 
-  // Type the origin
-  await page.keyboard.type(from, { delay: 100 });
-  log(LOG_LEVEL.INFO, `Typed origin: ${from}`);
+  // Type the origin with a slower delay to ensure Google Flights can process it
+  log(LOG_LEVEL.INFO, `Typing origin with slower delay: ${from}`);
+  await page.keyboard.type(from, { delay: 200 });
   await takeScreenshot(page, "after-type-origin");
 
-  // Wait for suggestions and select the first one
-  await page
-    .waitForSelector('[role="listbox"], [role="option"], .suggestions-list', { timeout: 5000 })
-    .catch(() => log(LOG_LEVEL.WARN, "No suggestions dropdown found after typing origin"));
+  // Wait longer for suggestions to appear and stabilize
+  log(LOG_LEVEL.INFO, "Waiting for suggestions to appear and stabilize");
+  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
+
+  // Wait for suggestions dropdown
+  try {
+    await page.waitForSelector('[role="listbox"], [role="option"], .suggestions-list', { timeout: 5000 });
+    log(LOG_LEVEL.INFO, "Suggestions dropdown appeared");
+  } catch (error) {
+    log(LOG_LEVEL.WARN, "No suggestions dropdown found after typing origin, continuing anyway");
+  }
 
   // Take a screenshot of the suggestions
   await takeScreenshot(page, "origin-suggestions");
 
+  // Wait a moment before selecting to ensure suggestions are fully loaded
+  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
+
   // Press Enter to select the first suggestion
+  log(LOG_LEVEL.INFO, "Pressing Enter to select first suggestion");
   await page.keyboard.press("Enter");
-  log(LOG_LEVEL.INFO, "Pressed Enter to select origin");
+
+  // Wait after selection to ensure it's processed
+  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
+  log(LOG_LEVEL.INFO, "Selected origin");
   await takeScreenshot(page, "after-select-origin");
 }
 
@@ -208,21 +222,35 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   await clearInputField(page, destinationField);
   log(LOG_LEVEL.INFO, "Attempted to clear destination field using multiple methods");
 
-  // Type the destination
-  await page.keyboard.type(to, { delay: 100 });
-  log(LOG_LEVEL.INFO, `Typed destination: ${to}`);
+  // Type the destination with a slower delay to ensure Google Flights can process it
+  log(LOG_LEVEL.INFO, `Typing destination with slower delay: ${to}`);
+  await page.keyboard.type(to, { delay: 200 });
   await takeScreenshot(page, "after-type-destination");
 
-  // Wait for suggestions and select the first one
-  await page
-    .waitForSelector('[role="listbox"], [role="option"], .suggestions-list', { timeout: 5000 })
-    .catch(() => log(LOG_LEVEL.WARN, "No suggestions dropdown found after typing destination"));
+  // Wait longer for suggestions to appear and stabilize
+  log(LOG_LEVEL.INFO, "Waiting for suggestions to appear and stabilize");
+  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
+
+  // Wait for suggestions dropdown
+  try {
+    await page.waitForSelector('[role="listbox"], [role="option"], .suggestions-list', { timeout: 5000 });
+    log(LOG_LEVEL.INFO, "Suggestions dropdown appeared");
+  } catch (error) {
+    log(LOG_LEVEL.WARN, "No suggestions dropdown found after typing destination, continuing anyway");
+  }
 
   // Take a screenshot of the suggestions
   await takeScreenshot(page, "destination-suggestions");
 
+  // Wait a moment before selecting to ensure suggestions are fully loaded
+  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
+
   // Press Enter to select the first suggestion
+  log(LOG_LEVEL.INFO, "Pressing Enter to select first suggestion");
   await page.keyboard.press("Enter");
-  log(LOG_LEVEL.INFO, "Pressed Enter to select destination");
+
+  // Wait after selection to ensure it's processed
+  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
+  log(LOG_LEVEL.INFO, "Selected destination");
   await takeScreenshot(page, "after-select-destination");
 }

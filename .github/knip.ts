@@ -1,7 +1,16 @@
 import type { KnipConfig } from "knip";
 
 const config: KnipConfig = {
-  entry: ["build/index.ts", ".github/empty-string-checker.ts"],
+  entry: [
+    "build/index.ts",
+    "build/esbuild-server.ts",
+    "build/esbuild-build.ts",
+    "src/travel-stipend-calculator.ts",
+    "src/historical-stipend-calculator.ts",
+    "src/tests/test-google-flights.ts",
+    ".github/empty-string-checker.ts",
+    "rename-to-kebab-case.ts"
+  ],
   project: ["src/**/*.ts"],
   ignore: ["src/types/config.ts", "**/__mocks__/**", "**/__fixtures__/**", "eslint.config.mjs"],
   ignoreExportsUsedInFile: true,
