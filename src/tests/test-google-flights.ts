@@ -1,4 +1,4 @@
-import { GoogleFlightsScraper } from './utils/google-flights-scraper';
+import { GoogleFlightsScraper } from './utils/google-flights-scraper/google-flights-scraper';
 
 async function main() {
   console.log('Starting Google Flights scraper test...');
@@ -14,6 +14,10 @@ async function main() {
     // Navigate to Google Flights
     await scraper.navigateToGoogleFlights();
     console.log('Navigated to Google Flights');
+
+    // Change currency to USD
+    await scraper.changeCurrencyToUSD();
+    console.log('Changed currency to USD');
 
     // Set search parameters
     const from = 'Seoul, South Korea';
@@ -66,18 +70,13 @@ async function main() {
         });
       }
 
-      if (flightData.times.length > 0) {
-        console.log('\nTimes:');
-        flightData.times.forEach((time, index) => {
-          console.log(`  ${index + 1}. ${time}`);
-        });
-      }
+      // Times are no longer included in the flight data
 
-      console.log('\nRaw element counts:');
-      console.log(`  Prices: ${flightData.rawElements.priceCount}`);
-      console.log(`  Airlines: ${flightData.rawElements.airlineCount}`);
-      console.log(`  Durations: ${flightData.rawElements.durationCount}`);
-      console.log(`  Times: ${flightData.rawElements.timeCount}`);
+      // Log price elements count if available
+      if ('priceElements' in flightData) {
+        console.log('\nPrice elements found:');
+        console.log(`  Count: ${flightData.priceElements}`);
+      }
     } else {
       console.log('No flight data found');
     }

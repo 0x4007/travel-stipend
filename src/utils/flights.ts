@@ -131,7 +131,7 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
   ];
 
   // Regional factors (multipliers based on regions)
-  const getRegionalFactor = (origin: string, destination: string): number => {
+  function getRegionalFactor(origin: string, destination: string): number {
     // Extract regions from origin and destination
     const originRegion = getRegion(origin);
     const destRegion = getRegion(destination);
@@ -157,7 +157,7 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
   };
 
   // Popular route discount (major city pairs often have more competition)
-  const getPopularityFactor = (origin: string, destination: string): number => {
+  function getPopularityFactor(origin: string, destination: string): number {
     const popularRoutes = [
       { cities: ["Seoul", "Tokyo"], factor: 0.9 },
       { cities: ["Seoul", "Beijing"], factor: 0.95 },
