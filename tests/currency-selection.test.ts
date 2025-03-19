@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
-import { GoogleFlightsScraper } from "../src/utils/google-flights-scraper/google-flights-scraper";
+import { GoogleFlightsScraper } from "../src/utils/google-flights-scraper";
 
 // Create a mock implementation of the GoogleFlightsScraper
 class MockGoogleFlightsScraper extends GoogleFlightsScraper {
@@ -42,7 +42,6 @@ describe("GoogleFlightsScraper Currency Selection", () => {
   beforeEach(() => {
     // Create a new scraper instance with mocked methods
     scraper = new MockGoogleFlightsScraper();
-    // @ts-expect-error - Accessing private property for testing
     mockPage = scraper._page;
   });
 
