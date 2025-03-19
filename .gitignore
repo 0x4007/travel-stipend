@@ -10,3 +10,4 @@ coverage
 junit.xml
 cypress/screenshots
 outputs
+logs
