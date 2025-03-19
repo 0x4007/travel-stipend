@@ -1,7 +1,6 @@
 import { Page } from "puppeteer";
 import { LOG_LEVEL } from "./config";
 import { log } from "./log";
-import { takeScreenshot } from "./take-screenshot";
 
 // Helper functions to reduce cognitive complexity
 async function canSelectUsingPuppeteerSelectors(page: Page): Promise<boolean> {
@@ -25,7 +24,7 @@ async function canSelectUsingPuppeteerSelectors(page: Page): Promise<boolean> {
         log(LOG_LEVEL.INFO, `Found ${hasElements.length} USD elements with selector: ${selector}`);
         await hasElements[0].click();
         log(LOG_LEVEL.INFO, "Clicked USD element with Puppeteer selector");
-        await takeScreenshot(page, "after-usd-selection-puppeteer");
+
         return true;
       }
     } catch (err) {
@@ -67,7 +66,7 @@ async function canSelectUsingXpath(page: Page): Promise<boolean> {
 
       if (hasFoundElement) {
         log(LOG_LEVEL.INFO, `Found and clicked USD element with XPath: ${xpath}`);
-        await takeScreenshot(page, "after-usd-selection-xpath");
+
         return true;
       }
     } catch (err) {
@@ -89,7 +88,7 @@ export async function selectUsdInCurrencyDialog(page: Page): Promise<boolean> {
     log(LOG_LEVEL.DEBUG, "Attempting to select USD in currency dialog");
 
     // Take a screenshot before selection attempt
-    await takeScreenshot(page, "currency-dialog-before-selection");
+
 
     // Wait a moment for the dialog to fully render
     await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 1000)));
@@ -107,11 +106,11 @@ export async function selectUsdInCurrencyDialog(page: Page): Promise<boolean> {
     const isUsdSelected = await canSelectUsingDomManipulation(page);
 
     // Take a screenshot after the selection attempt
-    await takeScreenshot(page, "after-usd-selection-attempt");
+
 
     if (isUsdSelected) {
       log(LOG_LEVEL.INFO, "Successfully selected USD in currency dialog");
-      await takeScreenshot(page, "after-select-usd");
+
       return true;
     }
 
@@ -120,7 +119,7 @@ export async function selectUsdInCurrencyDialog(page: Page): Promise<boolean> {
     return hasSelectedWithXpath;
   } catch (error) {
     log(LOG_LEVEL.ERROR, "Error selecting USD in currency dialog:", error);
-    await takeScreenshot(page, "error-selecting-usd");
+
     return false;
   }
 }

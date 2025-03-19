@@ -4,10 +4,10 @@ import { getJson } from "serpapi";
 import { createHashKey, PersistentCache } from "./cache";
 import { DEFAULT_DEPARTURE_AIRPORT, ORIGIN } from "./constants";
 import { haversineDistance } from "./distance";
-import { AirportCode, Conference, FlightResults } from "./types";
+import { AirportCode, FlightResults } from "./types";
 
 // Extract airport code from location string
-export function extractAirportCode(location: string): string {
+function extractAirportCode(location: string): string {
   try {
     // Read and parse the airport codes CSV
     const csvContent = readFileSync("fixtures/airport-codes.csv", "utf-8");
@@ -428,32 +428,4 @@ export async function lookupFlightPrice(destination: string, dates: { outbound: 
   }
 }
 
-// Find upcoming conferences from CSV file
-export function findUpcomingConferences(limit?: number): Conference[] {
-  try {
-    const csvContent = readFileSync("fixtures/conferences.csv", "utf-8");
-    const records = parse(csvContent, {
-      columns: true,
-      skip_empty_lines: true,
-    });
-
-    const currentDate = new Date();
-
-    // Find conferences that haven't happened yet
-    const upcomingConferences = records
-      .filter((conf: Conference) => {
-        const startDate = new Date(`${conf.Start} 2025`);
-        return startDate > currentDate;
-      })
-      .slice(0, limit); // Take only the first 'limit' conferences if specified
-
-    if (upcomingConferences.length === 0) {
-      throw new Error("No upcoming conferences found");
-    }
-
-    return upcomingConferences;
-  } catch (error) {
-    console.error("Error finding upcoming conferences:", error);
-    throw error;
-  }
-}
+// Find upcoming conferences from CSV file - removed as unused

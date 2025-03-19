@@ -1,7 +1,6 @@
 import { ElementHandle, Page } from "puppeteer";
 import { LOG_LEVEL } from "./config";
 import { log } from "./log";
-import { takeScreenshot } from "./take-screenshot";
 
 // Helper function to clear an input field using multiple methods
 async function clearInputField(page: Page, field: ElementHandle<Element>): Promise<void> {
@@ -102,7 +101,7 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
     log(LOG_LEVEL.DEBUG, `Found ${inputFields.length} potential input fields`);
 
     // Take a screenshot of all input fields
-    await takeScreenshot(page, "all-input-fields");
+
 
     if (inputFields.length > 0) {
       // Use the first input field as the origin field
@@ -110,7 +109,7 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
       log(LOG_LEVEL.INFO, "Using first input field as origin field");
     } else {
       log(LOG_LEVEL.ERROR, "Could not find any input fields");
-      await takeScreenshot(page, "error-no-input-fields");
+
       throw new Error("Could not find any input fields");
     }
   }
@@ -118,7 +117,7 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
   // Click on the origin field
   await originField.click();
   log(LOG_LEVEL.INFO, "Clicked on origin input field");
-  await takeScreenshot(page, "after-click-origin-field");
+
 
   // Clear the origin field using our robust clearing function
   await clearInputField(page, originField);
@@ -129,7 +128,7 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
   const sanitizedFrom = from.replace(/,/g, "");
   log(LOG_LEVEL.INFO, `Typing origin with slower delay (sanitized): ${sanitizedFrom}`);
   await page.keyboard.type(sanitizedFrom, { delay: 200 });
-  await takeScreenshot(page, "after-type-origin");
+
 
   // Wait longer for suggestions to appear and stabilize
   log(LOG_LEVEL.INFO, "Waiting for suggestions to appear and stabilize");
@@ -144,7 +143,7 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
   }
 
   // Take a screenshot of the suggestions
-  await takeScreenshot(page, "origin-suggestions");
+
 
   // Wait a moment before selecting to ensure suggestions are fully loaded
   await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
@@ -156,7 +155,7 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
   // Wait after selection to ensure it's processed
   await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
   log(LOG_LEVEL.INFO, "Selected origin");
-  await takeScreenshot(page, "after-select-origin");
+
 }
 
 export async function fillDestinationField(page: Page, to: string): Promise<void> {
@@ -175,7 +174,7 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   ];
 
   // Take a screenshot before finding destination field
-  await takeScreenshot(page, "before-finding-destination-field");
+
 
   // Try to find the destination field
   let destinationField = null;
@@ -202,7 +201,7 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
     log(LOG_LEVEL.DEBUG, `Found ${inputFields.length} potential input fields`);
 
     // Take a screenshot of all input fields
-    await takeScreenshot(page, "all-input-fields-for-destination");
+
 
     if (inputFields.length > 1) {
       // Use the second input field as the destination field
@@ -210,7 +209,7 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
       log(LOG_LEVEL.INFO, "Using second input field as destination field");
     } else {
       log(LOG_LEVEL.ERROR, "Could not find enough input fields for destination");
-      await takeScreenshot(page, "error-no-destination-field");
+
       throw new Error("Could not find destination field");
     }
   }
@@ -218,7 +217,7 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   // Click on the destination field
   await destinationField.click();
   log(LOG_LEVEL.INFO, "Clicked on destination input field");
-  await takeScreenshot(page, "after-click-destination-field");
+
 
   // Clear the destination field using our robust clearing function
   await clearInputField(page, destinationField);
@@ -229,7 +228,7 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   const sanitizedTo = to.replace(/,/g, "");
   log(LOG_LEVEL.INFO, `Typing destination with slower delay (sanitized): ${sanitizedTo}`);
   await page.keyboard.type(sanitizedTo, { delay: 200 });
-  await takeScreenshot(page, "after-type-destination");
+
 
   // Wait longer for suggestions to appear and stabilize
   log(LOG_LEVEL.INFO, "Waiting for suggestions to appear and stabilize");
@@ -244,7 +243,7 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   }
 
   // Take a screenshot of the suggestions
-  await takeScreenshot(page, "destination-suggestions");
+
 
   // Wait a moment before selecting to ensure suggestions are fully loaded
   await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
@@ -256,5 +255,5 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   // Wait after selection to ensure it's processed
   await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
   log(LOG_LEVEL.INFO, "Selected destination");
-  await takeScreenshot(page, "after-select-destination");
+
 }

@@ -1,7 +1,6 @@
 import { ElementHandle, Page } from "puppeteer";
 import { LOG_LEVEL } from "./config";
 import { log } from "./log";
-import { takeScreenshot } from "./take-screenshot";
 
 /**
  * Find and click the search button to initiate the flight search
@@ -10,7 +9,7 @@ export async function clickSearchButton(page: Page): Promise<void> {
   if (!page) throw new Error("Page not initialized");
 
   log(LOG_LEVEL.INFO, "STEP 4: Finding and clicking search button");
-  await takeScreenshot(page, "before-search-button-click");
+
 
   // Try multiple selectors for the search button
   const searchButtonSelectors = [
@@ -140,7 +139,7 @@ export async function clickSearchButton(page: Page): Promise<void> {
     log(LOG_LEVEL.INFO, "Found search button, attempting to click it");
 
     // Take a screenshot before clicking
-    await takeScreenshot(page, "found-search-button");
+
 
     // Get button text and attributes for better logging
     const buttonText = await searchButton.evaluate(el => el.textContent?.trim() ?? "");
@@ -154,7 +153,7 @@ export async function clickSearchButton(page: Page): Promise<void> {
       log(LOG_LEVEL.INFO, "Clicked search button with standard click");
 
       // Take a screenshot after clicking
-      await takeScreenshot(page, "after-standard-click");
+
     } catch (error) {
       log(LOG_LEVEL.WARN, `Standard click failed: ${error}`);
 
@@ -207,7 +206,7 @@ export async function clickSearchButton(page: Page): Promise<void> {
         log(LOG_LEVEL.INFO, "Clicked search button with JavaScript");
 
         // Take a screenshot after JavaScript click
-        await takeScreenshot(page, "after-js-click");
+
       } catch (jsError) {
         log(LOG_LEVEL.ERROR, `JavaScript click failed: ${jsError}`);
 
@@ -239,7 +238,7 @@ export async function clickSearchButton(page: Page): Promise<void> {
     await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
 
     // Take a screenshot after initial wait
-    await takeScreenshot(page, "after-initial-wait");
+
 
     // Check if we need to click a submit button again
     const submitButtons = await page.$$('button[type="submit"], input[type="submit"]');
@@ -248,7 +247,7 @@ export async function clickSearchButton(page: Page): Promise<void> {
       try {
         await submitButtons[0].click();
         log(LOG_LEVEL.INFO, "Clicked additional submit button");
-        await takeScreenshot(page, "after-additional-submit-click");
+
       } catch (error) {
         log(LOG_LEVEL.WARN, `Error clicking additional submit button: ${error}`);
       }
@@ -282,11 +281,11 @@ export async function clickSearchButton(page: Page): Promise<void> {
   }
 
   // Take a screenshot of the search results
-  await takeScreenshot(page, "after-search-button-click");
+
 
   // Wait a moment for any animations to complete
   await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 3000)));
-  await takeScreenshot(page, "search-results");
+
 }
 
 /**

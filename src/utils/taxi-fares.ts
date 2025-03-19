@@ -45,7 +45,7 @@ function calculateSimilarity(str1: string, str2: string): number {
 }
 
 // Load taxi data from CSV
-export function loadTaxiData(filePath: string = "fixtures/taxis.csv"): TaxiFare[] {
+function loadTaxiData(filePath: string = "fixtures/taxis.csv"): TaxiFare[] {
   // Check cache first
   const cacheKey = "taxi_data";
   if (taxiDataCache.has(cacheKey)) {
@@ -89,7 +89,7 @@ function extractCountry(location: string): string {
 }
 
 // Find matching country in taxi data
-export function findMatchingCountry(location: string, taxiData: TaxiFare[]): TaxiFare | null {
+function findMatchingCountry(location: string, taxiData: TaxiFare[]): TaxiFare | null {
   const country = extractCountry(location);
 
   // Check country match cache

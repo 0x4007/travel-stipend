@@ -46,13 +46,7 @@ export function calculateDateDiff(startDateStr: string, endDateStr: string): num
   return diffInDays - 1; // Convert days to nights
 }
 
-// Calculate meal allowance based on day index (for duration-based scaling)
-function getDailyMealAllowance(dayIndex: number, baseMealCost: number): number {
-  if (dayIndex < 3) {
-    return baseMealCost; // 100% for days 1-3
-  }
-  return baseMealCost * 0.85; // 85% for days 4+
-}
+// Calculate meal allowance based on day index (for duration-based scaling) - removed as unused
 
 // Generate flight dates for a conference (one day before and after, or same day for origin city)
 export function generateFlightDates(conference: Conference, isOriginCity = false): { outbound: string; return: string } {

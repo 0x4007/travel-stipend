@@ -113,20 +113,4 @@ export function createHashKey(args: unknown[]): string {
   return crypto.createHash("sha256").update(stringifiedArgs).digest("hex");
 }
 
-// Function decorator for caching
-function cached<T, TArgs extends unknown[]>(cache: Cache<T>, fn: (...args: TArgs) => T): (...args: TArgs) => T {
-  return (...args: TArgs): T => {
-    const key = createHashKey(args);
-
-    if (cache.has(key)) {
-      const cachedResult = cache.get(key);
-      if (cachedResult !== undefined) {
-        return cachedResult;
-      }
-    }
-
-    const result = fn(...args);
-    cache.set(key, result);
-    return result;
-  };
-}
+// Function decorator for caching - removed as unused

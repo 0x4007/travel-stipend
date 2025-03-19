@@ -1,5 +1,4 @@
 import { Page } from "puppeteer";
-import { takeScreenshot } from "./take-screenshot";
 
 export async function findAndClickCurrencyButton(page: Page): Promise<boolean> {
   if (!page) {
@@ -7,7 +6,7 @@ export async function findAndClickCurrencyButton(page: Page): Promise<boolean> {
   }
 
   // Take a screenshot before looking for the currency button
-  await takeScreenshot(page, "before-find-currency-button");
+
 
   // Try multiple approaches to find and click the currency button
   // Approach 1: Look for menu items or buttons with currency-related text
@@ -41,7 +40,7 @@ export async function findAndClickCurrencyButton(page: Page): Promise<boolean> {
   });
 
   if (isCurrencyButtonFound) {
-    await takeScreenshot(page, "after-click-currency-button");
+
   } else {
     // Approach 2: Try to find the settings menu first, then look for currency option
 
@@ -75,7 +74,7 @@ export async function findAndClickCurrencyButton(page: Page): Promise<boolean> {
     });
 
     if (isSettingsMenuFound) {
-      await takeScreenshot(page, "after-click-settings-menu");
+
 
       // Wait for the menu to appear
       await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 1000)));
@@ -105,7 +104,7 @@ export async function findAndClickCurrencyButton(page: Page): Promise<boolean> {
       });
 
       if (isCurrencyOptionFound) {
-        await takeScreenshot(page, "after-click-currency-option");
+
         return true;
       }
     }

@@ -3,7 +3,6 @@ import { LOG_LEVEL } from "./config";
 import { log } from "./log";
 import { logAllClickableElements } from "./log-all-clickable-elements";
 import { logAllInputs } from "./log-all-inputs";
-import { takeScreenshot } from "./take-screenshot";
 
 export async function navigateToGoogleFlights(page: Page): Promise<void> {
   if (!page) throw new Error("Page not initialized");
@@ -112,7 +111,7 @@ export async function navigateToGoogleFlights(page: Page): Promise<void> {
     }
   } catch (error) {
     log(LOG_LEVEL.ERROR, "Error navigating to Google Flights:", error);
-    await takeScreenshot(page, "navigation-error");
+
     throw error;
   }
 }

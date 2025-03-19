@@ -32,7 +32,6 @@ export async function selectDates(page: Page, departureDate: string, returnDate?
   }
 
   // Take a screenshot before opening date picker
-  await takeScreenshot(page, "before-opening-date-picker");
 
   // Find and click on the date field to open the calendar
   log(LOG_LEVEL.INFO, "Looking for date input field...");
@@ -84,19 +83,16 @@ export async function selectDates(page: Page, departureDate: string, returnDate?
 
   if (!dateInput) {
     log(LOG_LEVEL.ERROR, "Could not find date input field");
-    await takeScreenshot(page, "error-no-date-field");
     throw new Error("Could not find date input field");
   }
 
   // Click on the date field to open the calendar
   log(LOG_LEVEL.INFO, "Clicking on date input field");
   await dateInput.click();
-  await takeScreenshot(page, "after-click-date-field");
 
   // Wait for the calendar to appear
   log(LOG_LEVEL.INFO, "Waiting for calendar to appear");
   await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
-  await takeScreenshot(page, "calendar-opened");
 
   // Select departure date
   const isDepartureDateSelected = await selectDateInCalendar(page, departureDayOfMonth, departureMonth);
@@ -159,7 +155,6 @@ async function selectDateInCalendar(page: Page, day: number, month: string): Pro
               if (dayText === String(day)) {
                 log(LOG_LEVEL.INFO, `Found day ${day}, clicking it...`);
                 await button.click();
-                await takeScreenshot(page, `after-select-${month}-${day}`);
                 return true;
               }
             } catch (error) {
@@ -302,7 +297,6 @@ async function clickDoneButton(page: Page): Promise<void> {
     log(LOG_LEVEL.INFO, `Clicking Done button with selector: ${usedSelector}`);
 
     try {
-      await takeScreenshot(page, "before-done-button-click");
 
       // Try multiple approaches to click the button
       try {
@@ -329,7 +323,6 @@ async function clickDoneButton(page: Page): Promise<void> {
         }
       }
 
-      await takeScreenshot(page, "after-done-button-click");
 
       // Wait a moment after clicking Done button
       await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
