@@ -3,13 +3,14 @@ import * as path from "path";
 
 // Configure logging
 export const LOG_LEVEL = {
+  NETWORK: -1, // Lower level for network requests
   DEBUG: 0,
   INFO: 1,
   WARN: 2,
   ERROR: 3,
 };
 
-export const CURRENT_LOG_LEVEL = LOG_LEVEL.INFO; // Set to DEBUG for more detailed logging
+export const CURRENT_LOG_LEVEL = LOG_LEVEL.DEBUG; // Set to DEBUG for more detailed logging
 export const SCREENSHOTS_DIR = path.join(process.cwd(), "logs", "screenshots");
 const LOGS_DIR = path.join(process.cwd(), "logs");
 

@@ -44,7 +44,7 @@ export async function selectDates(page: Page, departureDate: string, returnDate?
     'div[jsname="d3NNxc"]',
     'div[jsname="haAclf"]',
     'div[jscontroller="Pgogge"]',
-    'div[role="button"][jsname="gYlYcf"]'
+    'div[role="button"][jsname="gYlYcf"]',
   ];
 
   let dateInput: ElementHandle<Element> | null = null;
@@ -293,49 +293,36 @@ async function clickDoneButton(page: Page): Promise<void> {
     }
   }
 
-  if (doneButton) {
-    log(LOG_LEVEL.INFO, `Clicking Done button with selector: ${usedSelector}`);
+  log(LOG_LEVEL.INFO, `Clicking Done button with selector: ${usedSelector}`);
 
+  try {
     try {
-
-      // Try multiple approaches to click the button
-      try {
-        // Approach 1: Direct click
-        await doneButton.click();
-        log(LOG_LEVEL.INFO, "Clicked Done button with direct click");
-      } catch (error) {
-        log(LOG_LEVEL.WARN, `Direct click failed: ${error}`);
-
-        try {
-          // Approach 2: Click with JavaScript
-          await page.evaluate((el) => {
-            if (el instanceof HTMLElement) {
-              el.click();
-            }
-          }, doneButton);
-          log(LOG_LEVEL.INFO, "Clicked Done button with JavaScript");
-        } catch (jsError) {
-          log(LOG_LEVEL.WARN, `JavaScript click failed: ${jsError}`);
-
-          // Approach 3: Press Enter key
-          log(LOG_LEVEL.INFO, "Trying to press Enter key as alternative");
-          await page.keyboard.press("Enter");
+      // Approach 2: Click with JavaScript
+      await page.evaluate((el) => {
+        if (el instanceof HTMLElement) {
+          el.click();
         }
-      }
+      }, doneButton);
+      log(LOG_LEVEL.INFO, "Clicked Done button with JavaScript");
+    } catch (jsError) {
+      log(LOG_LEVEL.WARN, `JavaScript click failed: ${jsError}`);
 
-
-      // Wait a moment after clicking Done button
-      await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
-    } catch (clickError) {
-      log(LOG_LEVEL.ERROR, `All click attempts failed: ${clickError}`);
-      log(LOG_LEVEL.WARN, "Continuing without clicking Done button...");
+      // Approach 3: Press Enter key
+      log(LOG_LEVEL.INFO, "Trying to press Enter key as alternative");
+      await page.keyboard.press("Enter");
     }
-  } else {
-    log(LOG_LEVEL.WARN, "Could not find Done button, trying alternative approach");
 
-    // Alternative approach: Press Enter key
-    log(LOG_LEVEL.INFO, "Pressing Enter key as alternative to clicking Done");
-    await page.keyboard.press("Enter");
+    // Wait a moment after clicking Done button
     await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
+  } catch (clickError) {
+    log(LOG_LEVEL.ERROR, `All click attempts failed: ${clickError}`);
+    log(LOG_LEVEL.WARN, "Continuing without clicking Done button...");
   }
+
+  log(LOG_LEVEL.WARN, "Could not find Done button, trying alternative approach");
+
+  // Alternative approach: Press Enter key
+  log(LOG_LEVEL.INFO, "Pressing Enter key as alternative to clicking Done");
+  await page.keyboard.press("Enter");
+  await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
 }

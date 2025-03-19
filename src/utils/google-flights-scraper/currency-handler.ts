@@ -124,23 +124,42 @@ export async function finalizeCurrencySelection(page: Page): Promise<boolean> {
   // Wait a moment for the selection to register
   await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
 
-  // Try to select USD if not already selected
+  // Check if we need an additional attempt to select USD
   try {
-    const usdElements = await page.$$("//*[contains(text(), 'US Dollar') or contains(text(), 'USD')]");
-    if (usdElements.length > 0) {
-      await usdElements[0].click();
+    // Use page.evaluate to find and click USD elements
+    const isUsdClicked = await page.evaluate(() => {
+      // Find elements containing "US Dollar" or "USD" text
+      const allElements = Array.from(document.querySelectorAll("*"));
+      for (const el of allElements) {
+        const text = el.textContent?.trim();
+        if (text && (text.includes("US Dollar") || text.includes("USD"))) {
+          // Check if element is visible and clickable
+          const rect = el.getBoundingClientRect();
+          const isVisible = rect.width > 0 && rect.height > 0 && window.getComputedStyle(el).display !== "none";
+
+          if (isVisible) {
+            // Click the element
+            (el as HTMLElement).click();
+            return true;
+          }
+        }
+      }
+      return false;
+    });
+
+    if (isUsdClicked) {
       await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
     }
-  } catch {
-    // Continue even if USD selection fails
-    console.error("Failed to select USD element, continuing with next steps");
+  } catch (error) {
+    // Only log if there's an actual error
+    console.error("Failed to click USD element in additional attempt:", error);
   }
 
   // Try to find and click the OK button
   try {
     const isOkButtonClicked = await page.evaluate(() => {
       // Find button with exact "OK" text
-      const buttons = Array.from(document.querySelectorAll('button'));
+      const buttons = Array.from(document.querySelectorAll("button"));
 
       for (const button of buttons) {
         if (button.textContent?.trim() === "OK") {
@@ -160,7 +179,7 @@ export async function finalizeCurrencySelection(page: Page): Promise<boolean> {
       // Try any button in dialog as last resort
       const dialog = document.querySelector('[role="dialog"]');
       if (dialog) {
-        const dialogButtons = dialog.querySelectorAll('button');
+        const dialogButtons = dialog.querySelectorAll("button");
         if (dialogButtons.length > 0) {
           dialogButtons[0].click();
           return true;
@@ -185,15 +204,15 @@ export async function finalizeCurrencySelection(page: Page): Promise<boolean> {
     await clickSaveButtonInCurrencyDialog(page);
   }
 
-  // Wait for navigation after currency change
+  // Wait for navigation after currency change, but with a shorter timeout
   try {
     await page.waitForNavigation({
-      waitUntil: "networkidle2",
-      timeout: 10000,
+      waitUntil: "domcontentloaded", // Use domcontentloaded instead of networkidle2 for faster response
+      timeout: 5000, // Reduced from 10000 to 5000 ms
     });
   } catch {
     // Continue even if navigation times out
-    console.error("Navigation timeout after currency change, continuing");
+    console.error("Navigation timeout after currency change, continuing anyway");
   }
 
   return await verifyCurrencyChangeToUsd(page);

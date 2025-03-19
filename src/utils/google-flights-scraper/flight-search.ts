@@ -17,7 +17,6 @@ export async function searchFlights(page: Page, from: string, to: string, depart
 
   // Take initial screenshot
 
-
   try {
     // Wait for the page to be fully loaded
     log(LOG_LEVEL.DEBUG, "Waiting for page to be fully loaded");
@@ -44,19 +43,14 @@ export async function searchFlights(page: Page, from: string, to: string, depart
     // Wait for the page to update after date selection
     await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 3000)));
 
-
     // Click the search button to initiate the search
     await clickSearchButton(page);
 
-    // Wait for results page to load
-    log(LOG_LEVEL.INFO, "Waiting for results page to load");
-    await page.waitForNavigation({ waitUntil: "networkidle2", timeout: 30000 }).catch(() => {
-      log(LOG_LEVEL.WARN, "Navigation timeout, continuing anyway");
-    });
+    // Wait for results to load
+    log(LOG_LEVEL.INFO, "Waiting for results to load");
 
     // Wait additional time for results to fully render
     await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 5000)));
-
 
     // Scrape flight prices from the results page
     const prices = await scrapeFlightPrices(page);

@@ -30,13 +30,13 @@ export async function initializeBrowser(options: BrowserInitOptions = { headless
   // Enable request interception for logging
   await page.setRequestInterception(true);
   page.on("request", (request) => {
-    log(LOG_LEVEL.DEBUG, `Request: ${request.method()} ${request.url()}`);
+    log(LOG_LEVEL.NETWORK, `Request: ${request.method()} ${request.url()}`);
     void request.continue();
   });
 
   // Log responses
   page.on("response", (response) => {
-    log(LOG_LEVEL.DEBUG, `Response: ${response.status()} ${response.url()}`);
+    log(LOG_LEVEL.NETWORK, `Response: ${response.status()} ${response.url()}`);
   });
 
   // Log console messages from the page

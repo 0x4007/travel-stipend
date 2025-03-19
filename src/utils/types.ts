@@ -1,4 +1,8 @@
 
+export interface BrowserInitOptions {
+  headless: boolean;
+}
+
 export interface FlightResults {
   best_flights: FlightOption[];
   search_metadata?: {
