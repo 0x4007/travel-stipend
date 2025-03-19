@@ -7,8 +7,7 @@ import { log } from "./log";
  */
 interface FlightData {
   price: number;
-  airline: null | string;
-  airlineDetails: null | string;
+  airlines: string[]; // Changed from airline/airlineDetails to a single array property
   bookingCaution: null | string;
   departureTime: null | string;
   arrivalTime: null | string;
@@ -173,26 +172,20 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
         return airlineNames;
       }
 
-      function extractAirlineInfo(flightElement: Element): { airline: null | string; airlineDetails: null | string; bookingCaution: null | string } {
+      function extractAirlineInfo(flightElement: Element): { airlines: string[]; bookingCaution: null | string } {
         // Extract booking type
         const bookingCaution = extractBookingCaution(flightElement);
 
         // Extract airline names
         const airlineNames = extractAirlineNames(flightElement);
 
-        // Process collected airline names
-        if (airlineNames.length === 0) {
-          return { airline: null, airlineDetails: null, bookingCaution };
-        } else if (airlineNames.length === 1) {
-          // Single airline
-          return { airline: airlineNames[0], airlineDetails: airlineNames[0], bookingCaution };
-        } else {
-          // Multiple airlines - ensure uniqueness
-          // This is redundant with the check in addAirlineName, but we'll keep it for extra safety
-          const uniqueAirlines = [...new Set(airlineNames)];
-          const airlineDetails = uniqueAirlines.join(", ");
-          return { airline: null, airlineDetails, bookingCaution };
-        }
+        // Process collected airline names - ensure uniqueness
+        const uniqueAirlines = [...new Set(airlineNames)];
+
+        return {
+          airlines: uniqueAirlines.length > 0 ? uniqueAirlines : [],
+          bookingCaution
+        };
       }
 
       function extractTimes(flightElement: Element): { departureTime: null | string; arrivalTime: null | string } {
@@ -262,7 +255,7 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
         if (price === 0) return null;
 
         // Extract other details
-        const { airline, airlineDetails, bookingCaution } = extractAirlineInfo(flightElement);
+        const { airlines, bookingCaution } = extractAirlineInfo(flightElement);
         const { departureTime, arrivalTime } = extractTimes(flightElement);
         const duration = extractDuration(flightElement);
         const stops = extractStops(flightElement);
@@ -270,8 +263,7 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
 
         return {
           price,
-          airline,
-          airlineDetails,
+          airlines,
           bookingCaution,
           departureTime,
           arrivalTime,
