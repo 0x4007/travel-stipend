@@ -21,7 +21,7 @@ async function main() {
 
     // Set search parameters
     const from = "Seoul, South Korea";
-    const to = "Tokyo, Japan";
+    const to = "Taipei, Taiwan";
 
     // Get date for next week
     const today = new Date();

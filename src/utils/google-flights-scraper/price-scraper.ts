@@ -8,6 +8,8 @@ import { log } from "./log";
 interface FlightData {
   price: number;
   airline: null | string;
+  airlineDetails: null | string;
+  bookingCaution: null | string;
   departureTime: null | string;
   arrivalTime: null | string;
   duration: null | string;
@@ -55,34 +57,109 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
       }
 
       // Helper functions to extract specific flight details
-      function extractAirline(flightElement: Element): null | string {
-        const airlineElements = flightElement.querySelectorAll("div > div > div > div > div > span:not([aria-label])");
-        for (const el of Array.from(airlineElements)) {
+      function extractBookingCaution(flightElement: Element): string | null {
+        const bookingCautionElements = flightElement.querySelectorAll("span");
+        for (const el of Array.from(bookingCautionElements)) {
           const text = getText(el);
-          if (text &&
-              !text.includes("Nonstop") &&
-              !text.includes("stop") &&
-              !text.includes("hr") &&
-              !text.includes("min") &&
-              !text.includes("Self transfer") &&
-              !text.includes("Separate tickets") &&
-              !text.includes("multiple airlines") &&
-              !text.includes("Missed connections")) {
-            return text;
+          if (!text) continue;
+
+          if (text.includes("Self transfer")) {
+            return "Self transfer";
+          }
+          if (text.includes("Separate tickets")) {
+            return "Separate tickets booked together";
           }
         }
         return null;
       }
 
-      function extractTimes(flightElement: Element): { departureTime: null | string; arrivalTime: null | string } {
-        const timeElements = flightElement.querySelectorAll('span[aria-label^="Departure time"], span[aria-label^="Arrival time"]');
-        let departureTime = null;
-        let arrivalTime = null;
+      function isNonAirlineText(text: string): boolean {
+        return text.includes("Nonstop") ||
+          text.includes("stop") ||
+          text.includes("hr") ||
+          text.includes("min") ||
+          text.includes("Self transfer") ||
+          text.includes("Separate tickets") ||
+          text.includes("multiple airlines") ||
+          text.includes("Missed connections") ||
+          text.includes("Price unavailable") ||
+          text.includes("Departure") ||
+          text.includes("Unknown emissions") ||
+          /^[A-Z]{3}/.test(text) || // Skip airport codes (3 uppercase letters)
+          text.includes("International Airport") ||
+          text.includes("Airport") ||
+          text.includes("Wed,") ||
+          text.includes("Thu,") ||
+          text.includes("Fri,") ||
+          text.includes("Sat,") ||
+          text.includes("Sun,") ||
+          text.includes("Mon,") ||
+          text.includes("Tue,") ||
+          /\d{4}/.test(text) || // Skip years
+          /\d{1,2}:\d{2}/.test(text); // Skip times
+      }
 
-        if (timeElements.length >= 2) {
-          departureTime = getText(timeElements[0]);
-          arrivalTime = getText(timeElements[1]);
+      function addAirlineName(airlineNames: string[], text: string): void {
+        // Skip if already in the list
+        if (!text || airlineNames.includes(text)) return;
+
+        // Handle comma-separated lists
+        if (text.includes(",")) {
+          const parts = text.split(",").map(part => part.trim());
+          for (const part of parts) {
+            if (part && !airlineNames.includes(part)) {
+              airlineNames.push(part);
+            }
+          }
+        } else {
+          airlineNames.push(text);
         }
+      }
+
+      function extractAirlineNames(flightElement: Element): string[] {
+        const airlineNames: string[] = [];
+        const airlineElements = flightElement.querySelectorAll("div > div > div > div > div > span:not([aria-label])");
+
+        for (const el of Array.from(airlineElements)) {
+          const text = getText(el);
+          if (!text || isNonAirlineText(text)) continue;
+
+          // Clean up and add the airline name
+          const cleanedText = text.trim();
+          addAirlineName(airlineNames, cleanedText);
+        }
+
+        return airlineNames;
+      }
+
+      function extractAirlineInfo(flightElement: Element): { airline: null | string; airlineDetails: null | string; bookingCaution: null | string } {
+        // Extract booking type
+        const bookingCaution = extractBookingCaution(flightElement);
+
+        // Extract airline names
+        const airlineNames = extractAirlineNames(flightElement);
+
+        // Process collected airline names
+        if (airlineNames.length === 0) {
+          return { airline: null, airlineDetails: null, bookingCaution };
+        } else if (airlineNames.length === 1) {
+          // Single airline
+          return { airline: airlineNames[0], airlineDetails: airlineNames[0], bookingCaution };
+        } else {
+          // Multiple airlines
+          const airlineDetails = airlineNames.join(", ");
+          return { airline: null, airlineDetails, bookingCaution };
+        }
+      }
+
+      function extractTimes(flightElement: Element): { departureTime: null | string; arrivalTime: null | string } {
+        // Look for departure time
+        const departureTimeElement = flightElement.querySelector('span[aria-label^="Departure time"]');
+        const departureTime = departureTimeElement ? getText(departureTimeElement) : null;
+
+        // Look for arrival time separately
+        const arrivalTimeElement = flightElement.querySelector('span[aria-label^="Arrival time"]');
+        const arrivalTime = arrivalTimeElement ? getText(arrivalTimeElement) : null;
 
         return { departureTime, arrivalTime };
       }
@@ -142,7 +219,7 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
         if (price === 0) return null;
 
         // Extract other details
-        const airline = extractAirline(flightElement);
+        const { airline, airlineDetails, bookingCaution } = extractAirlineInfo(flightElement);
         const { departureTime, arrivalTime } = extractTimes(flightElement);
         const duration = extractDuration(flightElement);
         const stops = extractStops(flightElement);
@@ -151,6 +228,8 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
         return {
           price,
           airline,
+          airlineDetails,
+          bookingCaution,
           departureTime,
           arrivalTime,
           duration,
