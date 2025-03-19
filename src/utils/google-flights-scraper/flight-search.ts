@@ -1,17 +1,11 @@
 import { Page } from "puppeteer";
+import { FlightSearchResult } from "../types";
 import { LOG_LEVEL } from "./config";
 import { fillDestinationField, fillOriginField } from "./form-field-handler";
 import { log } from "./log";
 import { takeScreenshot } from "./take-screenshot";
-import { FlightSearchResult } from "./types";
 
-export async function searchFlights(
-  page: Page,
-  from: string,
-  to: string,
-  departureDate: string,
-  returnDate?: string
-): Promise<FlightSearchResult> {
+export async function searchFlights(page: Page, from: string, to: string, departureDate: string, returnDate?: string): Promise<FlightSearchResult> {
   if (!page) throw new Error("Page not initialized");
 
   log(LOG_LEVEL.INFO, `Searching flights from ${from} to ${to}`);
@@ -39,8 +33,14 @@ export async function searchFlights(
     // Find and fill destination field
     await fillDestinationField(page, to);
 
-    // Return a simple result
-    return { success: true };
+    // Return a result with empty arrays for now
+    // In a real implementation, these would be populated with actual flight data
+    return {
+      success: true,
+      prices: [],
+      airlines: [],
+      durations: [],
+    };
   } catch (error) {
     log(LOG_LEVEL.ERROR, "Error searching flights:", error);
     await takeScreenshot(page, "error-searching-flights");

@@ -1,15 +1,15 @@
 import { Browser, Page } from "puppeteer";
+import { BrowserInitOptions, FlightSearchResult } from "../types";
 import { closeBrowser, initializeBrowser } from "./browser-setup";
 import { LOG_LEVEL } from "./config";
 import { changeCurrencyToUsd } from "./currency-handler";
 import { searchFlights } from "./flight-search";
 import { log } from "./log";
 import { navigateToGoogleFlights } from "./navigation";
-import { BrowserInitOptions, FlightSearchResult } from "./types";
 
 // Re-export types and constants
+export { BrowserInitOptions, FlightSearchResult } from "../types";
 export { CURRENT_LOG_LEVEL, LOG_LEVEL } from "./config";
-export { BrowserInitOptions, FlightSearchResult } from "./types";
 
 // Main scraper class
 export class GoogleFlightsScraper {

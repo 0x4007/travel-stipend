@@ -1,9 +1,9 @@
 import { Browser, Page } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
+import { BrowserInitOptions } from "../types";
 import { LOG_LEVEL } from "./config";
 import { log } from "./log";
-import { BrowserInitOptions } from "./types";
 
 // Add stealth plugin to avoid detection
 puppeteer.use(StealthPlugin());
@@ -13,14 +13,7 @@ export async function initializeBrowser(options: BrowserInitOptions = { headless
   const browser = await puppeteer.launch({
     headless: options.headless, // Set to true for production
     defaultViewport: { width: 1366, height: 768 },
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-accelerated-2d-canvas",
-      "--disable-gpu",
-      "--window-size=1366,768",
-    ],
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-accelerated-2d-canvas", "--disable-gpu", "--window-size=1366,768"],
   });
 
   log(LOG_LEVEL.INFO, "Creating new page");

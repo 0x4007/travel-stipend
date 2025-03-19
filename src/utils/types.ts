@@ -1,5 +1,17 @@
 // Common interfaces used across the application
 
+// Google Flights Scraper Types
+export interface BrowserInitOptions {
+  headless: boolean;
+}
+
+export interface FlightSearchResult {
+  success: boolean;
+  prices: number[];
+  airlines: string[];
+  durations: string[];
+}
+
 export interface FlightResults {
   best_flights: FlightOption[];
   search_metadata?: {
