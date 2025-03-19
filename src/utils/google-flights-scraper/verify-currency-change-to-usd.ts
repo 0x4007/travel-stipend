@@ -12,41 +12,21 @@ export async function verifyCurrencyChangeToUsd(page: Page): Promise<boolean> {
     log(LOG_LEVEL.DEBUG, "Verifying currency change to USD");
 
     // Wait a moment for the page to update after currency change
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 3000)));
+    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 3000)));
 
     // Check if the currency has been changed to USD
     const isUsdVerified = await page.evaluate((): boolean => {
       try {
-        // Look for price elements on the page
-        const priceElements = Array.from(document.querySelectorAll('[aria-label*="price"], [class*="price"]'));
+        const selectors = ['[aria-label*="price"], [class*="price"]', '[aria-label*="currency"], [class*="currency"]', "*"];
 
-        // Check if any price element contains a dollar sign
-        for (const element of priceElements) {
-          const text = element.textContent?.trim();
-          if (text?.includes("$")) {
-            return true;
-          }
-        }
-
-        // If we couldn't find price elements, look for any visible currency indicators
-        const currencyElements = Array.from(document.querySelectorAll('[aria-label*="currency"], [class*="currency"]'));
-        for (const element of currencyElements) {
-          const text = element.textContent?.trim();
-          if (text && (text.includes("USD") || text.includes("$"))) {
-            return true;
-          }
-        }
-
-        // If we still couldn't find any indicators, look for any text containing "$" or "USD"
-        const allElements = Array.from(document.querySelectorAll("*"));
-        for (const element of allElements) {
-          const text = element.textContent?.trim();
-          if (text && (text.includes("USD") || text.includes("$"))) {
-            // Check if element is visible
-            const rect = element.getBoundingClientRect();
-            const isVisible = rect.width > 0 && rect.height > 0 && window.getComputedStyle(element).display !== "none";
-
-            if (isVisible) {
+        for (const selector of selectors) {
+          const elements = Array.from(document.querySelectorAll(selector));
+          for (const element of elements) {
+            const text = element.textContent?.trim();
+            if (text && (text.includes("USD") || text.includes("$"))) {
+              if (selector === "*" && !isElementVisible(element)) {
+                continue;
+              }
               return true;
             }
           }
@@ -58,6 +38,11 @@ export async function verifyCurrencyChangeToUsd(page: Page): Promise<boolean> {
         return false;
       }
     });
+
+    function isElementVisible(element: Element): boolean {
+      const rect = element.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0 && window.getComputedStyle(element).display !== "none";
+    }
 
     if (isUsdVerified) {
       log(LOG_LEVEL.INFO, "Verified currency is now USD");

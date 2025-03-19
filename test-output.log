@@ -1,0 +1,5 @@
+1 | (function (entry, fetcher)
+              ^
+SyntaxError: export 'FlightSearchResult' not found in './types'
+
+Bun v1.2.2 (macOS arm64)
