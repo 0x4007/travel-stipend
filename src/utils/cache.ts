@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 
 // Cache interface definition
-export interface Cache<T> {
+interface Cache<T> {
   get(key: string): T | undefined;
   set(key: string, value: T, timestamp?: string): void;
   has(key: string): boolean;

@@ -1,16 +1,3 @@
-// Common interfaces used across the application
-
-// Google Flights Scraper Types
-export interface BrowserInitOptions {
-  headless: boolean;
-}
-
-export interface FlightSearchResult {
-  success: boolean;
-  prices: number[];
-  airlines: string[];
-  durations: string[];
-}
 
 export interface FlightResults {
   best_flights: FlightOption[];
@@ -91,13 +78,13 @@ export interface StipendBreakdown {
   meals_cost?: number; // Added for test compatibility
 }
 
-export interface Airport {
+interface Airport {
   name: string;
   id: string;
   time: string;
 }
 
-export interface Flight {
+interface Flight {
   departure_airport: Airport;
   arrival_airport: Airport;
   duration: number;
@@ -112,20 +99,20 @@ export interface Flight {
   ticket_also_sold_by?: string[];
 }
 
-export interface Layover {
+interface Layover {
   duration: number;
   name: string;
   id: string;
   overnight?: boolean;
 }
 
-export interface CarbonEmissions {
+interface CarbonEmissions {
   this_flight: number;
   typical_for_this_route: number;
   difference_percent: number;
 }
 
-export interface FlightOption {
+interface FlightOption {
   flights: Flight[];
   layovers: Layover[];
   total_duration: number;
@@ -136,13 +123,13 @@ export interface FlightOption {
   departure_token: string;
 }
 
-export interface PriceInsights {
+interface PriceInsights {
   lowest_price: number;
   price_level: string;
   typical_price_range: number[];
 }
 
-export interface AirportInfo {
+interface AirportInfo {
   airport: {
     id: string;
     name: string;
@@ -154,7 +141,7 @@ export interface AirportInfo {
   thumbnail: string;
 }
 
-export interface AirportPair {
+interface AirportPair {
   departure: AirportInfo[];
   arrival: AirportInfo[];
 }

@@ -4,7 +4,7 @@ import { PersistentCache } from "./cache";
 import { SIMILARITY_THRESHOLD } from "./constants";
 
 // Interface for taxi fare data
-export interface TaxiFare {
+interface TaxiFare {
   country: string;
   startPrice: number; // USD
   pricePerKm: number; // USD per km
