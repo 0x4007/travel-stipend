@@ -1,6 +1,7 @@
 import { Page } from "puppeteer";
 import { FlightSearchResult } from "../types";
 import { LOG_LEVEL } from "./config";
+import { selectDates } from "./date-selection-handler";
 import { fillDestinationField, fillOriginField } from "./form-field-handler";
 import { log } from "./log";
 import { takeScreenshot } from "./take-screenshot";
@@ -32,6 +33,16 @@ export async function searchFlights(page: Page, from: string, to: string, depart
 
     // Find and fill destination field
     await fillDestinationField(page, to);
+
+    // Wait for the page to stabilize after selecting destination
+    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
+
+    // Select dates in the calendar
+    await selectDates(page, departureDate, returnDate);
+
+    // Wait for the page to update after date selection
+    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 3000)));
+    await takeScreenshot(page, "after-date-selection");
 
     // Return a result with empty arrays for now
     // In a real implementation, these would be populated with actual flight data

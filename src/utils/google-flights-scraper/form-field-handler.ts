@@ -1,7 +1,66 @@
-import { Page } from "puppeteer";
+import { ElementHandle, Page } from "puppeteer";
 import { LOG_LEVEL } from "./config";
 import { log } from "./log";
 import { takeScreenshot } from "./take-screenshot";
+
+// Helper function to clear an input field using multiple methods
+async function clearInputField(page: Page, field: ElementHandle<Element>): Promise<void> {
+  log(LOG_LEVEL.DEBUG, "Attempting to clear input field using multiple methods");
+
+  try {
+    // Method 1: Try using Puppeteer's built-in clear method
+    await field.evaluate((el) => {
+      if (el instanceof HTMLInputElement) {
+        el.value = "";
+      } else if (el.hasAttribute("contenteditable")) {
+        el.textContent = "";
+      }
+    });
+    log(LOG_LEVEL.DEBUG, "Attempted to clear field using JavaScript");
+
+    // Method 2: Click three times to select all text (works for many inputs)
+    await field.click({ clickCount: 3 });
+    await page.keyboard.press("Backspace");
+    log(LOG_LEVEL.DEBUG, "Attempted to clear field using triple-click and backspace");
+
+    // Method 3: Use keyboard shortcuts
+    await field.click(); // Ensure field is focused
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 100))); // Small delay to ensure focus
+    await page.keyboard.down("Control");
+    await page.keyboard.press("a");
+    await page.keyboard.up("Control");
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 100))); // Small delay after selection
+    await page.keyboard.press("Backspace");
+    log(LOG_LEVEL.DEBUG, "Attempted to clear field using Ctrl+A and backspace");
+
+    // Method 4: Try to clear by sending multiple backspace keys
+    await field.click();
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 100)));
+    for (let i = 0; i < 20; i++) {
+      await page.keyboard.press("Backspace");
+    }
+    log(LOG_LEVEL.DEBUG, "Attempted to clear field using multiple backspaces");
+
+    // Final verification - check if field is empty
+    const value = await field.evaluate((el) => {
+      if (el instanceof HTMLInputElement) {
+        return el.value;
+      } else if (el.hasAttribute("contenteditable")) {
+        return el.textContent;
+      }
+      return null;
+    });
+
+    if (value && value.length > 0) {
+      log(LOG_LEVEL.WARN, `Field may not be completely cleared, current value length: ${value.length}`);
+    } else {
+      log(LOG_LEVEL.DEBUG, "Field appears to be cleared successfully");
+    }
+  } catch (error) {
+    log(LOG_LEVEL.ERROR, "Error while trying to clear input field:", error);
+    // Continue despite errors - we've tried multiple methods
+  }
+}
 
 export async function fillOriginField(page: Page, from: string): Promise<void> {
   if (!page) throw new Error("Page not initialized");
@@ -61,11 +120,9 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
   log(LOG_LEVEL.INFO, "Clicked on origin input field");
   await takeScreenshot(page, "after-click-origin-field");
 
-  // Clear the origin field
-  await page.keyboard.down("Control");
-  await page.keyboard.press("a");
-  await page.keyboard.up("Control");
-  await page.keyboard.press("Backspace");
+  // Clear the origin field using our robust clearing function
+  await clearInputField(page, originField);
+  log(LOG_LEVEL.INFO, "Attempted to clear origin field using multiple methods");
 
   // Type the origin
   await page.keyboard.type(from, { delay: 100 });
@@ -147,11 +204,9 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   log(LOG_LEVEL.INFO, "Clicked on destination input field");
   await takeScreenshot(page, "after-click-destination-field");
 
-  // Clear the destination field
-  await page.keyboard.down("Control");
-  await page.keyboard.press("a");
-  await page.keyboard.up("Control");
-  await page.keyboard.press("Backspace");
+  // Clear the destination field using our robust clearing function
+  await clearInputField(page, destinationField);
+  log(LOG_LEVEL.INFO, "Attempted to clear destination field using multiple methods");
 
   // Type the destination
   await page.keyboard.type(to, { delay: 100 });
