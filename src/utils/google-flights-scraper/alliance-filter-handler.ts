@@ -4,40 +4,61 @@ import { log } from "./log";
 
 /**
  * Clicks the Airlines filter button and selects all alliance checkboxes
+ * Returns true if alliance filters were applied, false if no alliance options were found
  */
-export async function applyAllianceFilters(page: Page): Promise<void> {
+export async function applyAllianceFilters(page: Page): Promise<boolean> {
   if (!page) throw new Error("Page not initialized");
 
-  log(LOG_LEVEL.INFO, "Applying alliance filters");
+  log(LOG_LEVEL.INFO, "Attempting to apply alliance filters");
 
   try {
     // Step 1: Click the Airlines filter button
-    await clickAirlinesFilterButton(page);
+    const isAirlinesButtonFound = await clickAirlinesFilterButton(page);
+
+    // If we couldn't find the Airlines button, skip alliance filtering
+    if (!isAirlinesButtonFound) {
+      log(LOG_LEVEL.WARN, "Airlines filter button not found, skipping alliance filtering");
+      return false;
+    }
 
     // Wait a moment for the filter panel to appear
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
 
     // Step 2: Wait for alliance options to appear
-    await waitForAllianceOptions(page);
+    const hasAllianceOptions = await waitForAllianceOptions(page);
+
+    // If no alliance options were found, skip the rest of the steps
+    if (!hasAllianceOptions) {
+      log(LOG_LEVEL.WARN, "No alliance options found, skipping alliance filtering");
+      return false;
+    }
 
     // Step 3: Check all alliance checkboxes
-    await checkAllAllianceCheckboxes(page);
+    const checkboxesChecked = await checkAllAllianceCheckboxes(page);
 
-    // Step 4: Wait for results to update
-    await waitForResultsUpdate(page);
+    // If no checkboxes were checked, we might not need to wait for results to update
+    if (checkboxesChecked > 0) {
+      // Step 4: Wait for results to update
+      await waitForResultsUpdate(page);
+      log(LOG_LEVEL.INFO, "Successfully applied alliance filters");
+    } else {
+      log(LOG_LEVEL.INFO, "No alliance checkboxes needed to be checked (they might already be checked)");
+    }
 
-    log(LOG_LEVEL.INFO, "Successfully applied alliance filters");
+    return true;
   } catch (error) {
     log(LOG_LEVEL.ERROR, "Error applying alliance filters:", error);
     // Continue despite error - we don't want to fail the entire search if filters can't be applied
     log(LOG_LEVEL.WARN, "Continuing search despite filter error");
+    return false;
   }
 }
 
 /**
  * Clicks the Airlines filter button
+ * Returns true if the button was found and clicked, false otherwise
  */
-async function clickAirlinesFilterButton(page: Page): Promise<void> {
+async function clickAirlinesFilterButton(page: Page): Promise<boolean> {
   log(LOG_LEVEL.INFO, "Clicking Airlines filter button");
 
   // Try multiple selectors for the Airlines filter button
@@ -63,16 +84,21 @@ async function clickAirlinesFilterButton(page: Page): Promise<void> {
 
       // For :contains selectors, use page.evaluate
       if (selector.includes(":contains")) {
-        const buttonText = selector.match(/:contains\("([^"]+)"\)/)?.[1] || "Airlines";
+        const buttonText = selector.match(/:contains\("([^"]+)"\)/)
+          ? selector.match(/:contains\("([^"]+)"\)/)?.[1] ?? "Airlines"
+          : "Airlines";
 
         airlinesButton = await page.evaluateHandle((text) => {
           const buttons = Array.from(document.querySelectorAll('button, [role="button"]'));
-          return buttons.find(el => el.textContent?.includes(text));
+          return buttons.find((element) => element.textContent?.includes(text)) || null;
         }, buttonText);
 
-        if (airlinesButton && !(await airlinesButton.evaluate(el => el === null))) {
-          log(LOG_LEVEL.INFO, `Found Airlines filter button with text: ${buttonText}`);
-          break;
+        if (airlinesButton) {
+          const isNull = await airlinesButton.evaluate((element) => element === null);
+          if (!isNull) {
+            log(LOG_LEVEL.INFO, `Found Airlines filter button with text: ${buttonText}`);
+            break;
+          }
         }
       } else {
         // For standard selectors, use page.$
@@ -97,8 +123,8 @@ async function clickAirlinesFilterButton(page: Page): Promise<void> {
 
       for (const button of buttons) {
         try {
-          const textContent = await button.evaluate(el => el.textContent?.toLowerCase() ?? "");
-          const ariaLabel = await button.evaluate(el => el.getAttribute("aria-label")?.toLowerCase() ?? "");
+          const textContent = await button.evaluate((element) => element.textContent?.toLowerCase() ?? "");
+          const ariaLabel = await button.evaluate((element) => element.getAttribute("aria-label")?.toLowerCase() ?? "");
 
           if (textContent.includes("airline") || ariaLabel.includes("airline")) {
             airlinesButton = button;
@@ -123,6 +149,15 @@ async function clickAirlinesFilterButton(page: Page): Promise<void> {
       // Try standard click first
       await airlinesButton.click({ delay: 100 });
       log(LOG_LEVEL.INFO, "Clicked Airlines filter button with standard click");
+
+      // Wait a moment for the filter panel to appear
+      try {
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
+      } catch (error) {
+        log(LOG_LEVEL.DEBUG, "Error in waiting:", error);
+      }
+
+      return true;
     } catch (error) {
       log(LOG_LEVEL.WARN, `Standard click failed: ${error}`);
 
@@ -144,33 +179,36 @@ async function clickAirlinesFilterButton(page: Page): Promise<void> {
         }, airlinesButton);
 
         log(LOG_LEVEL.INFO, "Clicked Airlines filter button with JavaScript");
+
+        // Wait a moment for the filter panel to appear
+        try {
+          await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
+        } catch (error) {
+          log(LOG_LEVEL.DEBUG, "Error in waiting:", error);
+        }
+
+        return true;
       } catch (jsError) {
         log(LOG_LEVEL.ERROR, `JavaScript click failed: ${jsError}`);
-        throw new Error("Failed to click Airlines filter button");
+        return false;
       }
     }
   } else {
-    log(LOG_LEVEL.ERROR, "Could not find Airlines filter button");
-    throw new Error("Airlines filter button not found");
-  }
-
-  // Wait a moment for the filter panel to appear
-  try {
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
-  } catch (error) {
-    log(LOG_LEVEL.DEBUG, "Error in waiting:", error);
+    log(LOG_LEVEL.WARN, "Could not find Airlines filter button");
+    return false;
   }
 }
 
 /**
  * Waits for alliance options to appear
+ * Returns true if alliance options were found, false otherwise
  */
-async function waitForAllianceOptions(page: Page): Promise<void> {
+async function waitForAllianceOptions(page: Page): Promise<boolean> {
   log(LOG_LEVEL.INFO, "Waiting for alliance options to appear");
 
   try {
     // First, try to find the "Alliances" section header using JavaScript
-    const foundAlliances = await page.evaluate(() => {
+    const hasFoundAlliances = await page.evaluate(() => {
       // Look for elements containing "Alliances" text
       const elements = Array.from(document.querySelectorAll('div, span, h3, h4, label'));
       const allianceHeader = elements.find(el =>
@@ -185,8 +223,8 @@ async function waitForAllianceOptions(page: Page): Promise<void> {
       // Look for alliance names
       const allianceNames = ["Oneworld", "SkyTeam", "Star Alliance"];
       for (const name of allianceNames) {
-        const found = elements.some(el => el.textContent?.includes(name));
-        if (found) return true;
+        const isAllianceFound = elements.some(el => el.textContent?.includes(name));
+        if (isAllianceFound) return true;
       }
 
       // Look for checkboxes
@@ -194,9 +232,9 @@ async function waitForAllianceOptions(page: Page): Promise<void> {
       return checkboxes.length > 0;
     });
 
-    if (foundAlliances) {
+    if (hasFoundAlliances) {
       log(LOG_LEVEL.INFO, "Found alliance options using JavaScript");
-      return;
+      return true;
     }
 
     // If JavaScript approach didn't find anything, wait a bit longer
@@ -211,20 +249,22 @@ async function waitForAllianceOptions(page: Page): Promise<void> {
     const checkboxes = await page.$$('input[type="checkbox"]');
     if (checkboxes.length > 0) {
       log(LOG_LEVEL.INFO, `Found ${checkboxes.length} checkboxes, assuming alliance options are visible`);
-      return;
+      return true;
     }
 
-    log(LOG_LEVEL.WARN, "Could not confirm alliance options are visible, continuing anyway");
+    log(LOG_LEVEL.WARN, "Could not confirm alliance options are visible");
+    return false;
   } catch (error) {
     log(LOG_LEVEL.ERROR, "Error waiting for alliance options:", error);
-    log(LOG_LEVEL.WARN, "Continuing despite error waiting for alliance options");
+    return false;
   }
 }
 
 /**
  * Checks all alliance checkboxes
+ * Returns the number of checkboxes that were checked
  */
-async function checkAllAllianceCheckboxes(page: Page): Promise<void> {
+async function checkAllAllianceCheckboxes(page: Page): Promise<number> {
   log(LOG_LEVEL.INFO, "Checking all alliance checkboxes");
 
   try {
@@ -281,19 +321,21 @@ async function checkAllAllianceCheckboxes(page: Page): Promise<void> {
 
     if (checkboxCount > 0) {
       log(LOG_LEVEL.INFO, `Checked ${checkboxCount} checkboxes with JavaScript approach`);
+
+      // Wait a moment for the UI to update after checking checkboxes
+      try {
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
+      } catch (error) {
+        log(LOG_LEVEL.DEBUG, "Error in waiting:", error);
+      }
     } else {
-      log(LOG_LEVEL.WARN, "No checkboxes were checked (they might already be checked)");
+      log(LOG_LEVEL.INFO, "No checkboxes were checked (they might already be checked)");
     }
 
-    // Wait a moment for the UI to update after checking checkboxes
-    try {
-      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
-    } catch (error) {
-      log(LOG_LEVEL.DEBUG, "Error in waiting:", error);
-    }
+    return checkboxCount;
   } catch (error) {
     log(LOG_LEVEL.ERROR, "Error checking alliance checkboxes:", error);
-    log(LOG_LEVEL.WARN, "Continuing despite error checking alliance checkboxes");
+    return 0;
   }
 }
 
