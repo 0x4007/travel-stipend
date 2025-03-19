@@ -6,7 +6,9 @@ export async function findButtonByTextContent(page: puppeteer.Page): Promise<pup
     const buttonWithSearchText = await page.$$eval('button, [role="button"]', (buttons) => {
       const searchButton = buttons.find((button) => {
         const text = button.textContent?.toLowerCase() ?? "";
-        const isVisible = !!(button.offsetWidth || button.offsetHeight || button.getClientRects().length);
+        // Use type assertion to access HTMLElement properties
+        const htmlButton = button as HTMLElement;
+        const isVisible = !!(htmlButton.offsetWidth || htmlButton.offsetHeight || button.getClientRects().length);
         return text.includes("search") && isVisible;
       });
 
@@ -19,7 +21,7 @@ export async function findButtonByTextContent(page: puppeteer.Page): Promise<pup
       return { found: false };
     });
 
-    if (buttonWithSearchText.found) {
+    if (buttonWithSearchText.found && typeof buttonWithSearchText.index === "number") {
       console.log(`Found button by text content at index ${buttonWithSearchText.index}`);
       const buttons = await page.$$('button, [role="button"]');
       return buttons[buttonWithSearchText.index];

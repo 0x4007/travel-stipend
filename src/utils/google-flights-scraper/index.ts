@@ -7,10 +7,6 @@ import { searchFlights } from "./flight-search";
 import { log } from "./log";
 import { navigateToGoogleFlights } from "./navigation";
 
-// Re-export types and constants
-export { BrowserInitOptions, FlightSearchResult } from "../types";
-export { CURRENT_LOG_LEVEL, LOG_LEVEL } from "./config";
-
 // Main scraper class
 export class GoogleFlightsScraper {
   private _browser: Browser | null = null;

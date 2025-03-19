@@ -1,4 +1,4 @@
-import { GoogleFlightsScraper } from "../utils/google-flights-scraper/google-flights-scraper";
+import { GoogleFlightsScraper } from "../utils/google-flights-scraper";
 
 // Set up process listeners for better debugging
 process.on("unhandledRejection", (reason, promise) => {

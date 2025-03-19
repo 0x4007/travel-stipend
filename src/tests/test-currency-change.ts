@@ -1,4 +1,4 @@
-import { GoogleFlightsScraper } from "./utils/google-flights-scraper/google-flights-scraper";
+import { GoogleFlightsScraper } from "../utils/google-flights-scraper";
 
 async function main() {
   console.log("Starting Google Flights currency change test...");

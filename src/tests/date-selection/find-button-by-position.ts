@@ -42,7 +42,7 @@ export async function findButtonByPosition(page: puppeteer.Page): Promise<puppet
       return { found: false };
     });
 
-    if (buttonByPosition.found) {
+    if (buttonByPosition.found && typeof buttonByPosition.index === "number") {
       console.log(`Found potential button by position at index ${buttonByPosition.index} (distance: ${buttonByPosition.distance})`);
       const buttons = await page.$$('button, [role="button"]');
       return buttons[buttonByPosition.index];

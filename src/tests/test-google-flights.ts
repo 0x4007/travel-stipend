@@ -1,4 +1,4 @@
-import { GoogleFlightsScraper } from "../utils/google-flights-scraper/index";
+import { GoogleFlightsScraper } from "../utils/google-flights-scraper";
 
 async function main() {
   console.log("Starting Google Flights scraper test...");
