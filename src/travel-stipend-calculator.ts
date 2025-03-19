@@ -9,6 +9,8 @@ import {
   BUSINESS_ENTERTAINMENT_PER_DAY,
   COST_PER_KM,
   DEFAULT_TICKET_PRICE,
+  INCIDENTALS_PER_DAY,
+  INTERNATIONAL_INTERNET_ALLOWANCE,
   ORIGIN,
   POST_CONFERENCE_DAYS,
   PRE_CONFERENCE_DAYS,
@@ -50,7 +52,12 @@ async function calculateFlightCostForConference(
   }
 
   // Try to get flight cost from API first
-  const apiFlightPrice = await lookupFlightPrice(destination, flightDates);
+  let apiFlightPrice: number | null = null;
+  if (process.env.SERPAPI_API_KEY) {
+    apiFlightPrice = await lookupFlightPrice(destination, flightDates);
+  } else {
+    console.warn("SERPAPI_API_KEY is not set. Using the enhanced flight cost calculation model.");
+  }
 
   if (apiFlightPrice) {
     // If we have API flight price, use it
@@ -158,10 +165,10 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   const isInternational = !isOriginCity && ORIGIN.toLowerCase().includes("korea") && !destination.toLowerCase().includes("korea");
 
   // Add internet/data allowance (only for international travel)
-  const internetDataAllowance = isInternational ? 25 : 0;
+  const internetDataAllowance = isInternational ? INTERNATIONAL_INTERNET_ALLOWANCE : 0;
 
   // Add incidentals allowance
-  const incidentalsAllowance = totalDays * 20;
+  const incidentalsAllowance = totalDays * INCIDENTALS_PER_DAY;
 
   // Total stipend is the sum of all expenses
   const totalStipend = flightCost + lodgingCost + mealsCost + localTransportCost + ticketPrice + internetDataAllowance + incidentalsAllowance;

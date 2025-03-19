@@ -8,6 +8,8 @@ import {
   BASE_MEALS_PER_DAY,
   BUSINESS_ENTERTAINMENT_PER_DAY,
   COST_PER_KM,
+  INCIDENTALS_PER_DAY,
+  INTERNATIONAL_INTERNET_ALLOWANCE,
   ORIGIN,
 } from "./utils/constants";
 import { loadCoordinatesData } from "./utils/coordinates";
@@ -131,7 +133,13 @@ async function calculateStipend(record: HistoricalConference): Promise<StipendBr
     End: dates.end,
     "Ticket Price": record["Ticket Price (USD)"],
   });
-  const apiFlightPrice = await lookupFlightPrice(destination, flightDates);
+
+  let apiFlightPrice: number | null = null;
+  if (process.env.SERPAPI_API_KEY) {
+    apiFlightPrice = await lookupFlightPrice(destination, flightDates);
+  } else {
+    console.warn("SERPAPI_API_KEY is not set. Using the enhanced flight cost calculation model.");
+  }
 
   // Calculate flight cost based on distance with improved non-linear formula
   let flightCost: number;
@@ -183,10 +191,10 @@ async function calculateStipend(record: HistoricalConference): Promise<StipendBr
   const isInternational = ORIGIN.toLowerCase().includes("korea") && !destination.toLowerCase().includes("korea");
 
   // Add internet/data allowance
-  const internetDataAllowance = isInternational ? 25 : 0;
+  const internetDataAllowance = isInternational ? INTERNATIONAL_INTERNET_ALLOWANCE : 0;
 
   // Add incidentals allowance
-  const incidentalsAllowance = numberOfMealDays * 20;
+  const incidentalsAllowance = numberOfMealDays * INCIDENTALS_PER_DAY;
 
   // Add to total stipend
   const updatedTotalStipend = totalStipend + internetDataAllowance + incidentalsAllowance;
