@@ -31,6 +31,15 @@
 - Account for weekend vs. weekday rates for lodging
 - Include pre and post-conference days in travel duration
 
+### Web Scraping Strategies
+
+- Implement multiple approaches for element selection
+- Use a combination of CSS selectors, XPath, and DOM traversal
+- Take screenshots at key points for debugging
+- Implement fallback mechanisms for UI variations
+- Split complex functions into smaller, focused functions
+- Use descriptive function and variable names with appropriate prefixes
+
 ### Output Formatting
 
 - Generate timestamped CSV files for all outputs
@@ -69,12 +78,21 @@
 3. Implement the logic to handle the new options
 4. Update the help text and documentation
 
+### Improving Web Scraping Reliability
+
+1. Analyze the UI structure and identify stable selectors
+2. Implement multiple approaches for element selection
+3. Add detailed logging and screenshots for debugging
+4. Create test scripts to verify functionality
+5. Refactor code to reduce cognitive complexity
+
 ## Known Challenges
 
 - City name matching is sensitive to formatting and spelling
 - Flight price API has rate limits and can be unreliable
 - Cost-of-living data may be outdated for some locations
 - Weekend detection logic has edge cases around date boundaries
+- Web UI elements may change structure or attributes
 
 ## Tool Usage Patterns
 
@@ -82,6 +100,7 @@
 - Run tests with Bun test
 - Use husky pre-commit hooks to enforce code quality
 - Leverage cspell for spell checking in code and documentation
+- Use Puppeteer for web scraping and automation
 
 ## Project Evolution
 
@@ -91,3 +110,4 @@
 - Added business entertainment allowance
 - Implemented weekend rate adjustments for lodging
 - Added command-line sorting options
+- Improved web scraping reliability with multi-approach strategies

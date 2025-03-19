@@ -1,4 +1,4 @@
-import { GoogleFlightsScraper } from "./utils/google-flights-scraper/google-flights-scraper";
+import { GoogleFlightsScraper } from "../utils/google-flights-scraper/index";
 
 async function main() {
   console.log("Starting Google Flights scraper test...");
@@ -16,7 +16,7 @@ async function main() {
     console.log("Navigated to Google Flights");
 
     // Change currency to USD
-    await scraper.changeCurrencyToUSD();
+    await scraper.changeCurrencyToUsd();
     console.log("Changed currency to USD");
 
     // Set search parameters
@@ -48,6 +48,8 @@ async function main() {
 
     if (flightData) {
       console.log(`Found ${flightData.prices.length} flight prices`);
+
+      console.trace("Flight data:", flightData);
 
       if (flightData.prices.length > 0) {
         console.log("\nPrices:");

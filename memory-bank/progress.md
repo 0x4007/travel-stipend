@@ -32,6 +32,7 @@
 - SerpAPI integration for flight prices
 - Fallback to distance-based calculation
 - Flight date generation based on conference dates
+- Google Flights scraper with robust currency selection
 
 ✅ **City Matching**
 
@@ -73,6 +74,13 @@
 - Help text
 - Error handling
 
+✅ **Web Scraping**
+
+- Multi-approach element selection strategy
+- Fallback mechanisms for UI variations
+- Detailed logging and screenshots
+- Error handling and recovery
+
 ## In Progress
 
 🔄 **Flight Price API Integration**
@@ -80,6 +88,7 @@
 - Improving reliability of API lookups
 - Handling rate limits
 - Caching API responses
+- Enhancing scraper robustness
 
 🔄 **Data Expansion**
 
@@ -92,6 +101,7 @@
 - Profiling for bottlenecks
 - Improving cache hit rates
 - Reducing redundant calculations
+- Optimizing web scraping operations
 
 ## What's Left to Build
 
@@ -143,6 +153,7 @@
 - Integration tests for end-to-end flow
 - Mocking for external APIs
 - Edge case testing
+- Comprehensive scraper testing
 
 ⬜ **Documentation**
 
@@ -150,6 +161,7 @@
 - Configuration guide
 - Contribution guidelines
 - Example usage scenarios
+- Web scraping strategy documentation
 
 ⬜ **Refactoring**
 
@@ -198,6 +210,15 @@
 - Large datasets can consume significant memory
 - Consider streaming for very large datasets
 
+## Recent Achievements
+
+✅ **Fixed Google Flights Currency Selection**
+
+- Implemented a robust multi-approach strategy for selecting USD currency
+- Added detailed logging and screenshots for debugging
+- Improved code organization and reduced cognitive complexity
+- Successfully tested with direct test script
+
 ## Next Milestone Goals
 
 1. **Complete Flight API Integration**
@@ -205,6 +226,7 @@
    - Reliable flight price lookups
    - Proper error handling and fallbacks
    - Caching to reduce API calls
+   - Further improvements to web scraping reliability
 
 2. **Expand Data Coverage**
 
@@ -222,3 +244,4 @@
    - Achieve 80%+ test coverage
    - Add integration tests for main workflows
    - Implement automated testing in CI
+   - Add comprehensive tests for web scraping components

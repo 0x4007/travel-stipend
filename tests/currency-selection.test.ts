@@ -60,7 +60,7 @@ describe("GoogleFlightsScraper Currency Selection", () => {
     mockPage.evaluate.mockImplementation(async () => "USD");
 
     // Call the method
-    await scraper.changeCurrencyToUSD();
+    await scraper.changeCurrencyToUsd();
 
     // Verify that no further actions were taken
     expect(mockPage.evaluate.mock.calls.length).toBe(1);
@@ -96,7 +96,7 @@ describe("GoogleFlightsScraper Currency Selection", () => {
     });
 
     // Call the method
-    await scraper.changeCurrencyToUSD();
+    await scraper.changeCurrencyToUsd();
 
     // Verify the correct sequence of actions
     expect(mockPage.evaluate.mock.calls.length).toBe(9);
@@ -120,7 +120,7 @@ describe("GoogleFlightsScraper Currency Selection", () => {
     });
 
     // Expect the method to throw an error with specific message
-    expect(scraper.changeCurrencyToUSD()).rejects.toThrow("Could not find Currency option in menu");
+    expect(scraper.changeCurrencyToUsd()).rejects.toThrow("Could not find Currency option in menu");
 
     // Verify the correct sequence of actions
     expect(mockPage.evaluate.mock.calls.length).toBe(2);
@@ -154,7 +154,7 @@ describe("GoogleFlightsScraper Currency Selection", () => {
     mockPage.$$.mockImplementation(async () => []);
 
     // Expect the method to throw an error with specific message
-    expect(scraper.changeCurrencyToUSD()).rejects.toThrow("Could not find or select USD in currency dialog");
+    expect(scraper.changeCurrencyToUsd()).rejects.toThrow("Could not find or select USD in currency dialog");
 
     // Verify the correct sequence of actions
     expect(mockPage.evaluate.mock.calls.length).toBe(6);

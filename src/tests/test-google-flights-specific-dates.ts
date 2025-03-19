@@ -16,7 +16,7 @@ async function main() {
     console.log("Navigated to Google Flights");
 
     // Change currency to USD
-    await scraper.changeCurrencyToUSD();
+    await scraper.changeCurrencyToUsd();
     console.log("Changed currency to USD");
 
     // Set search parameters

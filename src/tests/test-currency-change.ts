@@ -17,7 +17,7 @@ async function main() {
 
     // Test changing currency to USD
     console.log("Attempting to change currency to USD...");
-    await scraper.changeCurrencyToUSD();
+    await scraper.changeCurrencyToUsd();
     console.log("Currency change operation completed");
 
     // Pause to allow manual verification

@@ -33,6 +33,12 @@ The most recent development has focused on:
    - Distance-based flight cost calculation when API lookup fails
    - Fuzzy matching for city names when exact matches aren't found
 
+5. **Improving the Google Flights scraper**:
+   - Fixed USD currency selection in the currency dialog
+   - Implemented multiple approaches to find and select USD currency
+   - Added better error handling and logging
+   - Improved code organization and reduced cognitive complexity
+
 ## Current Focus
 
 The current development focus is on:
@@ -42,6 +48,7 @@ The current development focus is on:
    - Improving API integration with SerpAPI
    - Handling edge cases for less common destinations
    - Optimizing API usage to stay within rate limits
+   - Enhancing the Google Flights scraper reliability
 
 2. **Enhancing the cost-of-living adjustments** for better accuracy:
 
@@ -73,6 +80,11 @@ Several key decisions are currently being considered:
    - Considering trend analysis for budget forecasting
    - Potential for machine learning to improve estimates
 
+4. **Web Scraping Strategy**:
+   - Evaluating the multi-approach strategy for web element selection
+   - Considering more robust selectors for different UI patterns
+   - Balancing between specific and generic selectors
+
 ## Known Issues
 
 Current known issues that need attention:
@@ -100,12 +112,14 @@ The immediate next steps for development are:
    - Add more unit tests for utility functions
    - Create integration tests for end-to-end calculation
    - Test edge cases and error handling
+   - Add more comprehensive tests for the Google Flights scraper
 
 2. **Improve Documentation**:
 
    - Add more detailed comments to complex functions
    - Create comprehensive README with examples
    - Document configuration options
+   - Document the web scraping strategies
 
 3. **Enhance Data Validation**:
 
