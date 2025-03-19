@@ -8,7 +8,7 @@ async function main() {
 
   try {
     // Initialize the browser
-    await scraper.initialize();
+    await scraper.initialize({ headless: true });
     console.log("Browser initialized");
 
     // Navigate to Google Flights

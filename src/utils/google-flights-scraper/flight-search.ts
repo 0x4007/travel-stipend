@@ -1,5 +1,6 @@
 import { Page } from "puppeteer";
 import { FlightSearchResult } from "../types";
+import { applyAllianceFilters } from "./alliance-filter-handler";
 import { LOG_LEVEL } from "./config";
 import { selectDates } from "./date-selection-handler";
 import { fillDestinationField, fillOriginField } from "./form-field-handler";
@@ -31,6 +32,14 @@ export async function searchFlights(page: Page, from: string, to: string, depart
 
     // Click the search button to initiate the search
     await clickSearchButton(page);
+
+    // Try to apply alliance filters to show only legitimate airlines
+    const isAllianceFiltersApplied = await applyAllianceFilters(page);
+    if (isAllianceFiltersApplied) {
+      log(LOG_LEVEL.INFO, "Alliance filters applied successfully");
+    } else {
+      log(LOG_LEVEL.INFO, "Alliance filters were not applied (might not be available for this route)");
+    }
 
     // Wait for results to load
     log(LOG_LEVEL.INFO, "Waiting for results to load");

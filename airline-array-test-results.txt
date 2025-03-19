@@ -1,0 +1,49 @@
+Airline Array Test Results
+=========================
+
+Original: "China Airlines, Korean Air, China AirlinesKorean Air"
+Split results: ["China Airlines","Korean Air","China Airlines","Korean Air"]
+Processed array: ["China Airlines","Korean Air"]
+
+Original: "Asiana Airlines, Asiana AirlinesEVA Air"
+Split results: ["Asiana Airlines","Asiana Airlines","EVA Air"]
+Processed array: ["Asiana Airlines","EVA Air"]
+
+Original: "Korean Air, China Airlines, Korean AirChina Airlines"
+Split results: ["Korean Air","China Airlines","Korean Air","China Airlines"]
+Processed array: ["Korean Air","China Airlines"]
+
+Original: "Jin Air, Korean Air, Jin AirKorean Air"
+Split results: ["Jin Air","Korean Air","Jin Air","Korean Air"]
+Processed array: ["Jin Air","Korean Air"]
+
+Sample Flights with New Structure:
+================================
+
+Flight 1:
+Price: $262
+Airlines: ["Asiana Airlines"]
+Departure: 11:40 AM
+Arrival: 1:30 PM
+Duration: 2 hr 50 min.
+Stops: 0
+Route: ICN -> TPE
+
+Flight 2:
+Price: $262
+Airlines: ["China Airlines","Korean Air"]
+Departure: 12:25 PM
+Arrival: 2:15 PM
+Duration: 2 hr 50 min.
+Stops: 0
+Route: ICN -> TPE
+
+Flight 3:
+Price: $310
+Airlines: ["Asiana Airlines","EVA Air"]
+Departure: 2:00 PM
+Arrival: 3:45 PM
+Duration: 2 hr 45 min.
+Stops: 0
+Route: ICN -> TPE
+

@@ -15,7 +15,7 @@ export class GoogleFlightsScraper {
     log(LOG_LEVEL.INFO, "Initializing Google Flights Scraper");
   }
 
-  async initialize(options?: { headless: false }): Promise<void> {
+  async initialize(options?: { headless: boolean }): Promise<void> {
     const { browser, page } = await initializeBrowser(options);
     this._browser = browser;
     this._page = page;
