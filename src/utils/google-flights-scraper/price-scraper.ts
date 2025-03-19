@@ -99,20 +99,61 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
           /\d{1,2}:\d{2}/.test(text); // Skip times
       }
 
-      function addAirlineName(airlineNames: string[], text: string): void {
-        // Skip if already in the list
-        if (!text || airlineNames.includes(text)) return;
+      /**
+       * Splits concatenated airline names based on capitalization patterns
+       * For example: "China AirlinesKorean Air" -> ["China Airlines", "Korean Air"]
+       */
+      function splitConcatenatedNames(text: string): string[] {
+        if (!text) return [];
 
-        // Handle comma-separated lists
+        // First handle comma-separated parts
         if (text.includes(",")) {
-          const parts = text.split(",").map(part => part.trim());
-          for (const part of parts) {
-            if (part && !airlineNames.includes(part)) {
-              airlineNames.push(part);
-            }
+          return text.split(",")
+            .map(part => part.trim())
+            .flatMap(part => splitConcatenatedNames(part))
+            .filter(Boolean);
+        }
+
+        // Look for camelCase patterns (lowercase followed by uppercase)
+        const splitPoints: number[] = [];
+        for (let i = 0; i < text.length - 1; i++) {
+          // Check if current char is lowercase and next char is uppercase
+          if (/[a-z]/.test(text[i]) && /[A-Z]/.test(text[i+1])) {
+            splitPoints.push(i + 1);
           }
-        } else {
-          airlineNames.push(text);
+        }
+
+        // If no split points found, return the original text
+        if (splitPoints.length === 0) {
+          return [text];
+        }
+
+        // Split the text at the identified points
+        const result: string[] = [];
+        let startIndex = 0;
+
+        for (const splitPoint of splitPoints) {
+          const part = text.substring(startIndex, splitPoint).trim();
+          if (part) result.push(part);
+          startIndex = splitPoint;
+        }
+
+        // Add the last part
+        const lastPart = text.substring(startIndex).trim();
+        if (lastPart) result.push(lastPart);
+
+        return result;
+      }
+
+      function addAirlineName(airlineNames: string[], text: string): void {
+        if (!text) return;
+
+        // Split any concatenated names and add each one if not already in the list
+        const names = splitConcatenatedNames(text);
+        for (const name of names) {
+          if (name && !airlineNames.includes(name)) {
+            airlineNames.push(name);
+          }
         }
       }
 
@@ -146,8 +187,10 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
           // Single airline
           return { airline: airlineNames[0], airlineDetails: airlineNames[0], bookingCaution };
         } else {
-          // Multiple airlines
-          const airlineDetails = airlineNames.join(", ");
+          // Multiple airlines - ensure uniqueness
+          // This is redundant with the check in addAirlineName, but we'll keep it for extra safety
+          const uniqueAirlines = [...new Set(airlineNames)];
+          const airlineDetails = uniqueAirlines.join(", ");
           return { airline: null, airlineDetails, bookingCaution };
         }
       }
