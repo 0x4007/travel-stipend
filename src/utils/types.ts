@@ -4,10 +4,17 @@ export interface BrowserInitOptions {
 
 export interface FlightSearchResult {
   success: boolean;
-  prices: number[];
-  airlines: string[];
-  durations: number[];
-  error?: string; // Optional error message when success is false
+  prices: {
+    price: number;
+    airline: string;
+    departureTime: string;
+    arrivalTime: string;
+    duration: string;
+    stops: number;
+    origin: string;
+    destination: string;
+    isTopFlight: boolean;
+  }[];
 }
 
 export interface FlightResults {

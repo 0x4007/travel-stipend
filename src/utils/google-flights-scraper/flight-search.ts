@@ -43,8 +43,6 @@ export async function searchFlights(page: Page, from: string, to: string, depart
     return {
       success: true,
       prices: prices,
-      airlines: [], // To be implemented
-      durations: [], // To be implemented
     };
   } catch (error) {
     log(LOG_LEVEL.ERROR, "Error searching flights:", error);

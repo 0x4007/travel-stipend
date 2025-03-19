@@ -51,34 +51,7 @@ async function main() {
 
       console.trace("Flight data:", flightData);
 
-      if (flightData.prices.length > 0) {
-        console.log("\nPrices:");
-        flightData.prices.forEach((price: number, index: number) => {
-          console.log(`  ${index + 1}. ${price}`);
-        });
-      }
-
-      if (flightData.airlines.length > 0) {
-        console.log("\nAirlines:");
-        flightData.airlines.forEach((airline: string, index: number) => {
-          console.log(`  ${index + 1}. ${airline}`);
-        });
-      }
-
-      if (flightData.durations.length > 0) {
-        console.log("\nDurations:");
-        flightData.durations.forEach((duration: string, index: number) => {
-          console.log(`  ${index + 1}. ${duration}`);
-        });
-      }
-
-      // Times are no longer included in the flight data
-
-      // Log price elements count if available
-      if ("priceElements" in flightData) {
-        console.log("\nPrice elements found:");
-        console.log(`  Count: ${flightData.priceElements}`);
-      }
+      return flightData;
     } else {
       console.log("No flight data found");
     }
