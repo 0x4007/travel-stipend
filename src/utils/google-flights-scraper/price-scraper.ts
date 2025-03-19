@@ -59,7 +59,15 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
         const airlineElements = flightElement.querySelectorAll("div > div > div > div > div > span:not([aria-label])");
         for (const el of Array.from(airlineElements)) {
           const text = getText(el);
-          if (text && !text.includes("Nonstop") && !text.includes("stop") && !text.includes("hr") && !text.includes("min")) {
+          if (text &&
+              !text.includes("Nonstop") &&
+              !text.includes("stop") &&
+              !text.includes("hr") &&
+              !text.includes("min") &&
+              !text.includes("Self transfer") &&
+              !text.includes("Separate tickets") &&
+              !text.includes("multiple airlines") &&
+              !text.includes("Missed connections")) {
             return text;
           }
         }
@@ -90,7 +98,7 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
 
         const stopsText = stopsElement.getAttribute("aria-label") ?? null;
         if (!stopsText) return -1;
-        if (stopsText.includes("Nonstop")) return -1;
+        if (stopsText.includes("Nonstop")) return 0;
 
         // Using a simple approach to avoid regex backtracking issues
         const parts = stopsText.split(" ");
