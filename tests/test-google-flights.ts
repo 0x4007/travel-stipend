@@ -23,16 +23,16 @@ async function main() {
     const from = "Seoul, South Korea";
     const to = "Tokyo, Japan";
 
-    // Get dates for next month (to ensure future dates)
+    // Get date for next week
     const today = new Date();
-    const nextMonth = new Date(today);
-    nextMonth.setMonth(today.getMonth() + 1);
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
 
-    // Format departure date (next month, same day)
-    const departureDate = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, "0")}-${String(nextMonth.getDate()).padStart(2, "0")}`;
+    // Format departure date (next week, same day of the week)
+    const departureDate = `${nextWeek.getFullYear()}-${String(nextWeek.getMonth() + 1).padStart(2, "0")}-${String(nextWeek.getDate()).padStart(2, "0")}`;
 
     // Format return date (departure + 7 days)
-    const returnDay = new Date(nextMonth);
+    const returnDay = new Date(nextWeek);
     returnDay.setDate(returnDay.getDate() + 7);
     const returnDate = `${returnDay.getFullYear()}-${String(returnDay.getMonth() + 1).padStart(2, "0")}-${String(returnDay.getDate()).padStart(2, "0")}`;
 

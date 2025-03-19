@@ -15,42 +15,25 @@ export async function searchFlights(page: Page, from: string, to: string, depart
   const returnInfo = returnDate ? `, Return date: ${returnDate}` : "";
   log(LOG_LEVEL.INFO, dateInfo + returnInfo);
 
-  // Take initial screenshot
-
   try {
     // Wait for the page to be fully loaded
     log(LOG_LEVEL.DEBUG, "Waiting for page to be fully loaded");
     await page.waitForSelector("body", { timeout: 10000 });
 
-    // Wait a bit for the page to be fully interactive
-    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
-
     // Find and fill origin field
     await fillOriginField(page, from);
-
-    // Wait for the page to stabilize after selecting origin
-    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
 
     // Find and fill destination field
     await fillDestinationField(page, to);
 
-    // Wait for the page to stabilize after selecting destination
-    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
-
     // Select dates in the calendar
     await selectDates(page, departureDate, returnDate);
-
-    // Wait for the page to update after date selection
-    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 3000)));
 
     // Click the search button to initiate the search
     await clickSearchButton(page);
 
     // Wait for results to load
     log(LOG_LEVEL.INFO, "Waiting for results to load");
-
-    // Wait additional time for results to fully render
-    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 5000)));
 
     // Scrape flight prices from the results page
     const prices = await scrapeFlightPrices(page);

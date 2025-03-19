@@ -24,17 +24,17 @@ async function clearInputField(page: Page, field: ElementHandle<Element>): Promi
 
     // Method 3: Use keyboard shortcuts
     await field.click(); // Ensure field is focused
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 100))); // Small delay to ensure focus
+    // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 100))); // Small delay to ensure focus
     await page.keyboard.down("Control");
     await page.keyboard.press("a");
     await page.keyboard.up("Control");
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 100))); // Small delay after selection
+    // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 100))); // Small delay after selection
     await page.keyboard.press("Backspace");
     log(LOG_LEVEL.DEBUG, "Attempted to clear field using Ctrl+A and backspace");
 
     // Method 4: Try to clear by sending multiple backspace keys
     await field.click();
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 100)));
+    // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 100)));
     for (let i = 0; i < 20; i++) {
       await page.keyboard.press("Backspace");
     }
@@ -131,8 +131,8 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
 
 
   // Wait longer for suggestions to appear and stabilize
-  log(LOG_LEVEL.INFO, "Waiting for suggestions to appear and stabilize");
-  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
+  // log(LOG_LEVEL.INFO, "Waiting for suggestions to appear and stabilize");
+  // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
 
   // Wait for suggestions dropdown
   try {
@@ -146,14 +146,14 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
 
 
   // Wait a moment before selecting to ensure suggestions are fully loaded
-  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
+  // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
 
   // Press Enter to select the first suggestion
   log(LOG_LEVEL.INFO, "Pressing Enter to select first suggestion");
   await page.keyboard.press("Enter");
 
   // Wait after selection to ensure it's processed
-  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
+  // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
   log(LOG_LEVEL.INFO, "Selected origin");
 
 }
@@ -231,8 +231,8 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
 
 
   // Wait longer for suggestions to appear and stabilize
-  log(LOG_LEVEL.INFO, "Waiting for suggestions to appear and stabilize");
-  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
+  // log(LOG_LEVEL.INFO, "Waiting for suggestions to appear and stabilize");
+  // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
 
   // Wait for suggestions dropdown
   try {
@@ -246,14 +246,14 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
 
 
   // Wait a moment before selecting to ensure suggestions are fully loaded
-  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
+  // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
 
   // Press Enter to select the first suggestion
   log(LOG_LEVEL.INFO, "Pressing Enter to select first suggestion");
   await page.keyboard.press("Enter");
 
   // Wait after selection to ensure it's processed
-  await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
+  // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
   log(LOG_LEVEL.INFO, "Selected destination");
 
 }

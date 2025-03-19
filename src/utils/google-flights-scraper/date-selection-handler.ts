@@ -1,7 +1,6 @@
 import { ElementHandle, Page } from "puppeteer";
 import { LOG_LEVEL } from "./config";
 import { log } from "./log";
-import { takeScreenshot } from "./take-screenshot";
 
 /**
  * Opens the date picker and selects the departure and return dates
@@ -295,31 +294,21 @@ async function clickDoneButton(page: Page): Promise<void> {
 
   log(LOG_LEVEL.INFO, `Clicking Done button with selector: ${usedSelector}`);
 
-  try {
-    try {
-      // Approach 2: Click with JavaScript
-      await page.evaluate((el) => {
-        if (el instanceof HTMLElement) {
-          el.click();
-        }
-      }, doneButton);
-      log(LOG_LEVEL.INFO, "Clicked Done button with JavaScript");
-    } catch (jsError) {
-      log(LOG_LEVEL.WARN, `JavaScript click failed: ${jsError}`);
-
-      // Approach 3: Press Enter key
-      log(LOG_LEVEL.INFO, "Trying to press Enter key as alternative");
-      await page.keyboard.press("Enter");
+  // try {
+  // Approach 2: Click with JavaScript
+  await page.evaluate((el) => {
+    if (el instanceof HTMLElement) {
+      el.click();
     }
+  }, doneButton);
+  log(LOG_LEVEL.INFO, "Clicked Done button with JavaScript");
 
-    // Wait a moment after clicking Done button
-    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
-  } catch (clickError) {
-    log(LOG_LEVEL.ERROR, `All click attempts failed: ${clickError}`);
-    log(LOG_LEVEL.WARN, "Continuing without clicking Done button...");
-  }
-
-  log(LOG_LEVEL.WARN, "Could not find Done button, trying alternative approach");
+  // Wait a moment after clicking Done button
+  await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
+  // } catch (clickError) {
+  // log(LOG_LEVEL.ERROR, `All click attempts failed: ${clickError}`);
+  // log(LOG_LEVEL.WARN, "Continuing without clicking Done button...");
+  // }
 
   // Alternative approach: Press Enter key
   log(LOG_LEVEL.INFO, "Pressing Enter key as alternative to clicking Done");

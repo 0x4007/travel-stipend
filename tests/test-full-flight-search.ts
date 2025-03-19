@@ -35,14 +35,20 @@ async function main() {
     // Note: We're removing commas from city names to avoid issues
     const from = "Seoul Korea"; // No comma
     const to = "Tokyo Japan"; // No comma
-    const departureDate = "2025-04-15";
-    const returnDate = "2025-04-20";
+    const today = new Date();
+    const departureDate = new Date(today);
+    departureDate.setDate(today.getDate() + 7); // One week in advance
+    const returnDate = new Date(today);
+    returnDate.setDate(today.getDate() + 14); // Two weeks in advance
+
+    const departureDateString = departureDate.toISOString().split('T')[0];
+    const returnDateString = returnDate.toISOString().split('T')[0];
 
     console.log(`Searching flights from ${from} to ${to}`);
-    console.log(`Departure: ${departureDate}, Return: ${returnDate}`);
+    console.log(`Departure: ${departureDateString}, Return: ${returnDateString}`);
 
     // Perform the flight search
-    const result = await searchFlights(page, from, to, departureDate, returnDate);
+    const result = await searchFlights(page, from, to, departureDateString, returnDateString);
 
     // Display the results
     console.log("\n-----------------------------------------");
