@@ -10,7 +10,7 @@ export const LOG_LEVEL = {
   ERROR: 3,
 };
 
-export const CURRENT_LOG_LEVEL = LOG_LEVEL.DEBUG; // Set to DEBUG for more detailed logging
+export const CURRENT_LOG_LEVEL = LOG_LEVEL.WARN; // Set to DEBUG for more detailed logging
 export const SCREENSHOTS_DIR = path.join(process.cwd(), "logs", "screenshots");
 const LOGS_DIR = path.join(process.cwd(), "logs");
 
