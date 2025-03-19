@@ -7,16 +7,12 @@ import { verifyCurrencyChangeToUsd } from "./verify-currency-change-to-usd";
 export async function changeCurrencyToUsd(page: Page): Promise<void> {
   if (!page) throw new Error("Page not initialized");
 
-  // Take a screenshot before starting
-
   // First, check if we're already using USD by looking for currency indicators
   const currentCurrency = await checkCurrentCurrency(page);
 
   if (currentCurrency === "USD") {
     return;
   }
-
-  // Look directly for the currency button on the page
 
   // Find and click the currency button directly
   const isCurrencyButtonFound = await findAndClickCurrencyButton(page);
@@ -27,7 +23,7 @@ export async function changeCurrencyToUsd(page: Page): Promise<void> {
 
     if (isUsdSelected) {
       // Finalize the currency selection
-      const isSuccess = await finalizeCurrencySelection(page);
+      await finalizeCurrencySelection(page);
     } else {
       throw new Error("Could not find or select USD in currency dialog");
     }
@@ -56,9 +52,11 @@ export async function checkCurrentCurrency(page: Page): Promise<string | null> {
         return "";
       }
     });
-    return result;
-  } catch (error) {
-    return "";
+    return result || null;
+  } catch {
+    // If evaluation fails, return null
+    console.error("Failed to check current currency");
+    return null;
   }
 }
 
@@ -68,28 +66,13 @@ export async function handleCurrencyDialog(page: Page): Promise<boolean> {
   // Wait for currency dialog to appear
   await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
 
-  // Take screenshots of the currency dialog
-
-  // Log the dialog content for debugging
-  const dialogContent = await page.evaluate((): string => {
-    try {
-      const dialog = document.querySelector('[role="dialog"], .dialog, [aria-modal="true"]');
-      return dialog ? (dialog.textContent ?? "") : (document.body.textContent ?? "");
-    } catch (e) {
-      console.error("Error getting dialog content:", e);
-      return "";
-    }
-  });
-
   // Try multiple approaches to select USD
   let isUsdSelected = await selectUsdInCurrencyDialog(page);
 
-  // If approach 1 failed, try approach 2: Use Puppeteer's click method directly
+  // If primary approach failed, try alternative selection method
   if (!isUsdSelected) {
     isUsdSelected = await tryAlternativeUsdSelection(page);
   }
-
-  // Take a screenshot after selection attempt
 
   return isUsdSelected;
 }
@@ -128,7 +111,9 @@ export async function tryAlternativeUsdSelection(page: Page): Promise<boolean> {
     });
 
     return isUsdElementFound;
-  } catch (error) {
+  } catch {
+    // If evaluation fails, return false
+    console.error("Failed to find USD element");
     return false;
   }
 }
@@ -141,49 +126,42 @@ export async function finalizeCurrencySelection(page: Page): Promise<boolean> {
 
   // Try to select USD if not already selected
   try {
-    // Look for elements containing "US Dollar" or "USD"
     const usdElements = await page.$$("//*[contains(text(), 'US Dollar') or contains(text(), 'USD')]");
-
-    if (usdElements && usdElements.length > 0) {
+    if (usdElements.length > 0) {
       await usdElements[0].click();
-      // Wait a moment for the selection to register
       await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
     }
-  } catch (error) {
+  } catch {
     // Continue even if USD selection fails
+    console.error("Failed to select USD element, continuing with next steps");
   }
 
-  // Now focus on finding and clicking the OK button by its text content
+  // Try to find and click the OK button
   try {
-    // Use page.evaluate to find and click the button with text "OK"
-    const okButtonClicked = await page.evaluate(() => {
-      // Find all buttons on the page
+    const isOkButtonClicked = await page.evaluate(() => {
+      // Find button with exact "OK" text
       const buttons = Array.from(document.querySelectorAll('button'));
 
-      // Find the button that contains "OK" text
       for (const button of buttons) {
-        if (button.textContent && button.textContent.trim() === "OK") {
-          console.log("Found OK button by exact text match");
+        if (button.textContent?.trim() === "OK") {
           button.click();
           return true;
         }
       }
 
-      // If no exact match, look for buttons containing "OK"
+      // Try partial match
       for (const button of buttons) {
-        if (button.textContent && button.textContent.includes("OK")) {
-          console.log("Found OK button by partial text match");
+        if (button.textContent?.includes("OK")) {
           button.click();
           return true;
         }
       }
 
-      // If still not found, look for any button in a dialog
+      // Try any button in dialog as last resort
       const dialog = document.querySelector('[role="dialog"]');
       if (dialog) {
         const dialogButtons = dialog.querySelectorAll('button');
         if (dialogButtons.length > 0) {
-          console.log("Clicking first button in dialog");
           dialogButtons[0].click();
           return true;
         }
@@ -192,33 +170,31 @@ export async function finalizeCurrencySelection(page: Page): Promise<boolean> {
       return false;
     });
 
-    if (!okButtonClicked) {
-      // If page.evaluate approach failed, try direct Puppeteer selectors
+    if (!isOkButtonClicked) {
+      // Try Puppeteer selectors if evaluate approach failed
       const okButton = await page.$('button:has-text("OK")');
       if (okButton) {
         await okButton.click();
       } else {
-        // Try clicking the save button as a last resort
         await clickSaveButtonInCurrencyDialog(page);
       }
     }
-  } catch (error) {
-    // Try clicking the save button as a last resort
+  } catch {
+    // If button click fails, try the save button as fallback
+    console.error("Failed to click OK button, trying save button as fallback");
     await clickSaveButtonInCurrencyDialog(page);
   }
 
-  // Wait for the page to reload or update after currency change
+  // Wait for navigation after currency change
   try {
-    // Wait for navigation to complete after clicking OK
     await page.waitForNavigation({
       waitUntil: "networkidle2",
       timeout: 10000,
     });
-  } catch (error) {
+  } catch {
     // Continue even if navigation times out
+    console.error("Navigation timeout after currency change, continuing");
   }
 
-  // Verify the currency was changed to USD
-  const isCurrencyVerified = await verifyCurrencyChangeToUsd(page);
-  return isCurrencyVerified;
+  return await verifyCurrencyChangeToUsd(page);
 }
