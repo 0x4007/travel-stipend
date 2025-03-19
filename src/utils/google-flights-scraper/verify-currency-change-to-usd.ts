@@ -10,12 +10,12 @@ export async function verifyCurrencyChangeToUsd(page: Page): Promise<boolean> {
     const isVerified = await page.evaluate((): boolean => {
       try {
         // Check for USD or $ symbols in price elements
-        const priceElements = Array.from(document.querySelectorAll('*'));
+        const priceElements = Array.from(document.querySelectorAll("*"));
 
         // Filter elements that might contain prices
-        const potentialPriceElements = priceElements.filter(el => {
-          const text = el.textContent?.trim() ?? '';
-          return (text.includes('$') || text.includes('USD')) && /\d/.test(text); // Contains digits
+        const potentialPriceElements = priceElements.filter((el) => {
+          const text = el.textContent?.trim() ?? "";
+          return (text.includes("$") || text.includes("USD")) && /\d/.test(text); // Contains digits
         });
 
         return potentialPriceElements.length > 0;

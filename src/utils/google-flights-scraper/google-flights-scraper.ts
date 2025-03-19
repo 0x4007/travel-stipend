@@ -157,22 +157,22 @@ export class GoogleFlightsScraper {
     if (!this._page) throw new Error("Page not initialized");
 
     // Wait for currency dialog to appear
-    await this._page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
+    await this._page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
 
     // Take screenshots of the currency dialog
     await takeScreenshot(this._page, "currency-dialog");
     await takeScreenshot(this._page, "currency-dialog-before-selection");
 
     // Log the dialog content for debugging
-  const dialogContent = await this._page.evaluate((): string => {
-    try {
-      const dialog = document.querySelector('[role="dialog"], .dialog, [aria-modal="true"]');
-      return dialog ? dialog.textContent ?? "" : document.body.textContent ?? "";
-    } catch (e) {
-      console.error("Error getting dialog content:", e);
-      return "";
-    }
-  });
+    const dialogContent = await this._page.evaluate((): string => {
+      try {
+        const dialog = document.querySelector('[role="dialog"], .dialog, [aria-modal="true"]');
+        return dialog ? (dialog.textContent ?? "") : (document.body.textContent ?? "");
+      } catch (e) {
+        console.error("Error getting dialog content:", e);
+        return "";
+      }
+    });
     log(LOG_LEVEL.INFO, "Currency dialog content:", dialogContent);
 
     // Try multiple approaches to select USD
@@ -195,42 +195,40 @@ export class GoogleFlightsScraper {
     log(LOG_LEVEL.INFO, "First approach failed, trying direct Puppeteer click");
 
     // Try to find elements containing "US Dollar" or "USD" text using evaluate
-  try {
-    const isUsdElementFound = await this._page.evaluate((): boolean => {
-      try {
-        // Find all elements with text
-        const allElements = Array.from(document.querySelectorAll('*'));
+    try {
+      const isUsdElementFound = await this._page.evaluate((): boolean => {
+        try {
+          // Find all elements with text
+          const allElements = Array.from(document.querySelectorAll("*"));
 
-        // Find elements containing "US Dollar" or "USD" text
-        for (const el of allElements) {
-          const text = el.textContent?.trim();
-          if (text && (text.includes('US Dollar') || text.includes('USD'))) {
-            // Check if element is visible and clickable
-            const rect = el.getBoundingClientRect();
-            const isVisible = rect.width > 0 && rect.height > 0 &&
-                             window.getComputedStyle(el).display !== 'none';
+          // Find elements containing "US Dollar" or "USD" text
+          for (const el of allElements) {
+            const text = el.textContent?.trim();
+            if (text && (text.includes("US Dollar") || text.includes("USD"))) {
+              // Check if element is visible and clickable
+              const rect = el.getBoundingClientRect();
+              const isVisible = rect.width > 0 && rect.height > 0 && window.getComputedStyle(el).display !== "none";
 
-            if (isVisible) {
-              // Click the element
-              (el as HTMLElement).click();
-              return true;
+              if (isVisible) {
+                // Click the element
+                (el as HTMLElement).click();
+                return true;
+              }
             }
           }
+
+          return false;
+        } catch (e) {
+          console.error("Error finding USD element:", e);
+          return false;
         }
+      });
 
-        return false;
-      } catch (e) {
-        console.error("Error finding USD element:", e);
-        return false;
-      }
-    });
-
-    return isUsdElementFound;
-  } catch (error) {
-    log(LOG_LEVEL.ERROR, "Error in alternative USD selection:", error);
-    return false;
-  }
-
+      return isUsdElementFound;
+    } catch (error) {
+      log(LOG_LEVEL.ERROR, "Error in alternative USD selection:", error);
+      return false;
+    }
   }
 
   async _finalizeCurrencySelection(): Promise<boolean> {
@@ -240,7 +238,7 @@ export class GoogleFlightsScraper {
     await takeScreenshot(this._page, "after-select-usd");
 
     // Wait a moment for the selection to register
-    await this._page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
+    await this._page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
 
     // Try to find and click the Save/OK/Done button
     const isSaveButtonClicked = await clickSaveButtonInCurrencyDialog(this._page);
@@ -250,18 +248,18 @@ export class GoogleFlightsScraper {
     } else {
       // If we couldn't find a save button, try pressing Enter
       log(LOG_LEVEL.WARN, "Could not find save button, trying to press Enter");
-      await this._page.keyboard.press('Enter');
+      await this._page.keyboard.press("Enter");
       log(LOG_LEVEL.INFO, "Pressed Enter key to confirm selection");
     }
 
     // Wait for the page to reload or update after currency change
     log(LOG_LEVEL.INFO, "Waiting for page to update after currency change");
-    await this._page.evaluate(() => new Promise(resolve => setTimeout(resolve, 5000)));
+    await this._page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 5000)));
     await takeScreenshot(this._page, "after-currency-change");
 
     // Reload the page to ensure the currency change takes effect
     log(LOG_LEVEL.INFO, "Reloading page to ensure currency change takes effect");
-    await this._page.reload({ waitUntil: 'networkidle2' });
+    await this._page.reload({ waitUntil: "networkidle2" });
     await takeScreenshot(this._page, "after-reload");
 
     // Verify the currency was changed to USD
@@ -350,7 +348,7 @@ export class GoogleFlightsScraper {
       await logAllClickableElements(this._page);
 
       // Wait a bit for the page to be fully interactive
-      await this._page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
+      await this._page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 2000)));
 
       // Find and fill origin field
       await this._fillOriginField(from);

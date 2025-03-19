@@ -9,9 +9,9 @@ export async function findAndClickCurrencyButton(page: Page): Promise<boolean> {
       console.log("Total buttons found:", allButtons.length);
 
       // Find buttons that contain "Currency" and "KRW" text
-      const currencyButtons = allButtons.filter(button => {
-        const text = button.textContent?.trim() ?? '';
-        return text.includes('Currency') && text.includes('KRW');
+      const currencyButtons = allButtons.filter((button) => {
+        const text = button.textContent?.trim() ?? "";
+        return text.includes("Currency") && text.includes("KRW");
       });
 
       console.log("Currency buttons found:", currencyButtons.length);
@@ -25,13 +25,11 @@ export async function findAndClickCurrencyButton(page: Page): Promise<boolean> {
 
       // If we couldn't find a button with both "Currency" and "KRW", try a more general approach
       // Look for any element that contains both "Currency" and "KRW"
-      const allElements = Array.from(document.querySelectorAll('*'));
-      const currencyElements = allElements.filter(el => {
-        const text = el.textContent?.trim() ?? '';
-        const isVisible = el.getBoundingClientRect().width > 0 &&
-          el.getBoundingClientRect().height > 0 &&
-          window.getComputedStyle(el).display !== 'none';
-        return text.includes('Currency') && text.includes('KRW') && isVisible;
+      const allElements = Array.from(document.querySelectorAll("*"));
+      const currencyElements = allElements.filter((el) => {
+        const text = el.textContent?.trim() ?? "";
+        const isVisible = el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().height > 0 && window.getComputedStyle(el).display !== "none";
+        return text.includes("Currency") && text.includes("KRW") && isVisible;
       });
 
       console.log("Currency elements found:", currencyElements.length);
@@ -43,13 +41,11 @@ export async function findAndClickCurrencyButton(page: Page): Promise<boolean> {
       }
 
       // If we still couldn't find it, look for elements with SVG and "Currency" text
-      const elementsWithSvg = allElements.filter(el => {
-        const hasSvg = el.querySelector('svg') !== null;
-        const text = el.textContent?.trim() ?? '';
-        const isVisible = el.getBoundingClientRect().width > 0 &&
-          el.getBoundingClientRect().height > 0 &&
-          window.getComputedStyle(el).display !== 'none';
-        return hasSvg && text.includes('Currency') && isVisible;
+      const elementsWithSvg = allElements.filter((el) => {
+        const hasSvg = el.querySelector("svg") !== null;
+        const text = el.textContent?.trim() ?? "";
+        const isVisible = el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().height > 0 && window.getComputedStyle(el).display !== "none";
+        return hasSvg && text.includes("Currency") && isVisible;
       });
 
       console.log("Elements with SVG and Currency text:", elementsWithSvg.length);

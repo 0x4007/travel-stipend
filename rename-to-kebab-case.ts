@@ -1,14 +1,14 @@
 #!/usr/bin/env bun
 
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
 // Command line arguments
 const args = process.argv.slice(2);
-const isDryRun = args.includes('--dry-run');
-const isVerbose = args.includes('--verbose');
-const dirIndex = args.indexOf('--dir');
-const rootDir = dirIndex !== -1 && args.length > dirIndex + 1 ? args[dirIndex + 1] : 'src';
+const isDryRun = args.includes("--dry-run");
+const isVerbose = args.includes("--verbose");
+const dirIndex = args.indexOf("--dir");
+const rootDir = dirIndex !== -1 && args.length > dirIndex + 1 ? args[dirIndex + 1] : "src";
 
 // Logging utility
 const log = {
@@ -44,16 +44,14 @@ function isCamelCase(filename: string): boolean {
 
   // Check if the filename has uppercase letters (camelCase or PascalCase)
   // and doesn't contain hyphens (already kebab-case)
-  return (/^[a-z][a-zA-Z0-9]*[A-Z]/.test(name) || /^[A-Z]/.test(name)) && !name.includes('-');
+  return (/^[a-z][a-zA-Z0-9]*[A-Z]/.test(name) || /^[A-Z]/.test(name)) && !name.includes("-");
 }
 
 /**
  * Convert camelCase to kebab-case
  */
 function toKebabCase(str: string): string {
-  return str
-    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-    .toLowerCase();
+  return str.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
 /**
@@ -70,7 +68,7 @@ function findTypeScriptFiles(dir: string): string[] {
 
     if (stat.isDirectory()) {
       results = results.concat(findTypeScriptFiles(itemPath));
-    } else if (stat.isFile() && item.endsWith('.ts')) {
+    } else if (stat.isFile() && item.endsWith(".ts")) {
       results.push(itemPath);
     }
   }
@@ -110,7 +108,7 @@ function createRenameMapping(files: string[]): RenameMapping[] {
  * Update imports in a file
  */
 function updateImportsInFile(filePath: string, mapping: RenameMapping[]): number {
-  let content = fs.readFileSync(filePath, 'utf8');
+  let content = fs.readFileSync(filePath, "utf8");
   let updatedCount = 0;
 
   for (const { oldBasename, newBasename } of mapping) {
@@ -119,7 +117,7 @@ function updateImportsInFile(filePath: string, mapping: RenameMapping[]): number
     const newName = path.parse(newBasename).name;
 
     // Match imports with the old filename
-    const importRegex = new RegExp(`from\\s+['"](\\./|\\.\\./)*(${oldName})['"]`, 'g');
+    const importRegex = new RegExp(`from\\s+['"](\\./|\\.\\./)*(${oldName})['"]`, "g");
     const updatedContent = content.replace(importRegex, (match, prefix, filename) => {
       updatedCount++;
       return match.replace(filename, newName);
@@ -132,7 +130,7 @@ function updateImportsInFile(filePath: string, mapping: RenameMapping[]): number
   }
 
   if (updatedCount > 0 && !isDryRun) {
-    fs.writeFileSync(filePath, content, 'utf8');
+    fs.writeFileSync(filePath, content, "utf8");
   }
 
   return updatedCount;
@@ -163,7 +161,7 @@ function renameFiles(mapping: RenameMapping[]): void {
  * Main function
  */
 async function main() {
-  log.info(`Starting rename operation in ${rootDir} directory${isDryRun ? ' (DRY RUN)' : ''}`);
+  log.info(`Starting rename operation in ${rootDir} directory${isDryRun ? " (DRY RUN)" : ""}`);
 
   // Find all TypeScript files
   const allFiles = findTypeScriptFiles(rootDir);
@@ -175,7 +173,7 @@ async function main() {
   log.info(`Found ${mapping.length} files to rename`);
 
   if (mapping.length === 0) {
-    log.warning('No camelCase files found to rename');
+    log.warning("No camelCase files found to rename");
     return;
   }
 
@@ -189,7 +187,7 @@ async function main() {
   renameFiles(mapping);
 
   // Print summary
-  log.success('\nOperation completed!');
+  log.success("\nOperation completed!");
   log.info(`Files scanned: ${stats.filesScanned}`);
   log.info(`Files renamed: ${stats.filesRenamed}`);
   log.info(`Import statements updated: ${stats.importsUpdated}`);
@@ -199,13 +197,13 @@ async function main() {
   }
 
   if (isDryRun) {
-    log.warning('This was a dry run. No actual changes were made.');
-    log.info('Run without --dry-run to apply the changes.');
+    log.warning("This was a dry run. No actual changes were made.");
+    log.info("Run without --dry-run to apply the changes.");
   }
 }
 
 // Run the script
-main().catch(error => {
+main().catch((error) => {
   log.error(`Unhandled error: ${error instanceof Error ? error.message : String(error)}`);
   process.exit(1);
 });

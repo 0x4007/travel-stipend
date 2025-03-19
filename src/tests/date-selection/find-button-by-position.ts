@@ -1,4 +1,4 @@
-import * as puppeteer from 'puppeteer';
+import * as puppeteer from "puppeteer";
 
 // Helper function to find button by position
 export async function findButtonByPosition(page: puppeteer.Page): Promise<puppeteer.ElementHandle<Element> | null> {
@@ -13,21 +13,20 @@ export async function findButtonByPosition(page: puppeteer.Page): Promise<puppet
 
       // Sort by distance from bottom right
       const sortedButtons = buttons
-        .filter(btn => {
+        .filter((btn) => {
           const rect = btn.getBoundingClientRect();
           return rect.width > 0 && rect.height > 0; // Only visible buttons
         })
-        .map(btn => {
+        .map((btn) => {
           const rect = btn.getBoundingClientRect();
           // Calculate distance from bottom right
           const distanceFromBottomRight = Math.sqrt(
-            Math.pow(viewportWidth - (rect.left + rect.width / 2), 2) +
-            Math.pow(viewportHeight - (rect.top + rect.height / 2), 2)
+            Math.pow(viewportWidth - (rect.left + rect.width / 2), 2) + Math.pow(viewportHeight - (rect.top + rect.height / 2), 2)
           );
           return {
             element: btn,
             distance: distanceFromBottomRight,
-            index: Array.from(document.querySelectorAll('button, [role="button"]')).indexOf(btn)
+            index: Array.from(document.querySelectorAll('button, [role="button"]')).indexOf(btn),
           };
         })
         .sort((a, b) => a.distance - b.distance);
@@ -37,7 +36,7 @@ export async function findButtonByPosition(page: puppeteer.Page): Promise<puppet
         return {
           found: true,
           index: sortedButtons[0].index,
-          distance: sortedButtons[0].distance
+          distance: sortedButtons[0].distance,
         };
       }
       return { found: false };
@@ -49,7 +48,7 @@ export async function findButtonByPosition(page: puppeteer.Page): Promise<puppet
       return buttons[buttonByPosition.index];
     }
   } catch (positionError) {
-    console.log('Error finding button by position:', positionError instanceof Error ? positionError.message : String(positionError));
+    console.log("Error finding button by position:", positionError instanceof Error ? positionError.message : String(positionError));
   }
 
   return null;

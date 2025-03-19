@@ -10,12 +10,12 @@ export async function selectUsdInCurrencyDialog(page: Page): Promise<boolean> {
     const isSuccess = await page.evaluate((): boolean => {
       try {
         // First try to find USD in the suggested currencies section
-        const allElements = Array.from(document.querySelectorAll('div, span, label, input'));
+        const allElements = Array.from(document.querySelectorAll("div, span, label, input"));
 
         // Find elements containing "US Dollar" or "USD"
-        const usdElements = allElements.filter(el => {
-          const text = el.textContent?.trim() ?? '';
-          return text.includes('US Dollar') || text.includes('USD');
+        const usdElements = allElements.filter((el) => {
+          const text = el.textContent?.trim() ?? "";
+          return text.includes("US Dollar") || text.includes("USD");
         });
 
         if (usdElements.length > 0) {
@@ -28,8 +28,8 @@ export async function selectUsdInCurrencyDialog(page: Page): Promise<boolean> {
         const radioButtons = document.querySelectorAll('input[type="radio"]');
         for (const radio of radioButtons) {
           const label = radio.parentElement;
-          const labelText = label?.textContent ?? '';
-          if (labelText.includes('US Dollar') || labelText.includes('USD')) {
+          const labelText = label?.textContent ?? "";
+          if (labelText.includes("US Dollar") || labelText.includes("USD")) {
             (radio as HTMLElement).click();
             return true;
           }

@@ -10,13 +10,12 @@ export async function clickSaveButtonInCurrencyDialog(page: Page): Promise<boole
     const isButtonClicked = await page.evaluate((): boolean => {
       try {
         // Look for buttons with text like "Save", "OK", "Done", etc.
-        const buttons = Array.from(document.querySelectorAll('button'));
+        const buttons = Array.from(document.querySelectorAll("button"));
 
         // Find a button that looks like a save/confirm button
-        const saveButton = buttons.find(button => {
-          const text = button.textContent?.trim().toLowerCase() ?? '';
-          return text === 'ok' || text === 'save' || text === 'done' ||
-            text === 'apply' || text === 'confirm';
+        const saveButton = buttons.find((button) => {
+          const text = button.textContent?.trim().toLowerCase() ?? "";
+          return text === "ok" || text === "save" || text === "done" || text === "apply" || text === "confirm";
         });
 
         if (saveButton) {

@@ -7,10 +7,13 @@
     "node_modules",
     "**/*.log",
     "**/*.csv",
-    "src/test-date-selection.ts",
-    "src/test-destination-input.ts",
-    "src/test-google-flights.ts",
-    "src/test-specific-destination-input.ts"
+    "test",
+    "tests",
+    "research",
+    "src/tests/**",
+    "src/utils/flights.ts",
+    "src/utils/google-flights-scraper/google-flights-scraper.ts",
+    "src/utils/google-flights-scraper/log-all-clickable-elements.ts"
   ],
   "useGitignore": true,
   "language": "en",
@@ -22,19 +25,20 @@
     "Incheon",
     "outdir",
     "serpapi",
-    "servedir"
+    "servedir",
+    "kuala",
+    "lumpur",
+    "KHTML",
+    "networkidle",
+    "combobox",
+    "contenteditable",
+    "clickables"
   ],
-  "dictionaries": [
-    "typescript",
-    "node",
-    "software-terms"
-  ],
+  "dictionaries": ["typescript", "node", "software-terms"],
   "import": [
     "@cspell/dict-typescript/cspell-ext.json",
     "@cspell/dict-node/cspell-ext.json",
     "@cspell/dict-software-terms"
   ],
-  "ignoreRegExpList": [
-    "[0-9a-fA-F]{6}"
-  ]
+  "ignoreRegExpList": ["[0-9a-fA-F]{6}"]
 }

@@ -1,22 +1,21 @@
-import * as puppeteer from 'puppeteer';
+import * as puppeteer from "puppeteer";
 
 // Helper function to check if an element is visible
 async function isElementVisible(page: puppeteer.Page, element: puppeteer.ElementHandle<Element>): Promise<boolean> {
-  return page.evaluate(el => {
+  return page.evaluate((el) => {
     const rect = el.getBoundingClientRect();
     const style = window.getComputedStyle(el);
-    return rect.width > 0 &&
-      rect.height > 0 &&
-      style.visibility !== 'hidden' &&
-      style.display !== 'none' &&
-      style.opacity !== '0';
+    return rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.display !== "none" && style.opacity !== "0";
   }, element);
 }
 
 // Helper function to find a button by various selectors
-export async function findButtonBySelectors(page: puppeteer.Page, selectors: string[]): Promise<{ button: puppeteer.ElementHandle<Element> | null; selector: string; }> {
+export async function findButtonBySelectors(
+  page: puppeteer.Page,
+  selectors: string[]
+): Promise<{ button: puppeteer.ElementHandle<Element> | null; selector: string }> {
   let button = null;
-  let buttonSelector = '';
+  let buttonSelector = "";
 
   for (const selector of selectors) {
     console.log(`Trying selector: ${selector}`);

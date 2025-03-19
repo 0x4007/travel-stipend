@@ -5,12 +5,14 @@
 The current travel stipend calculator determines appropriate stipend amounts for employees attending conferences. Based on analysis of actual spending vs. stipend amounts for five conferences in 2024, several patterns of discrepancies have been identified that can be addressed through algorithm improvements.
 
 ### Current Algorithm Design
+
 - Calculates expenses for conference dates plus one day before/after
 - Uses Numbeo cost of living index for location-based adjustments
 - Assumes economy flights from Korea to destinations
 - Provides allowances for lodging, meals, business entertainment, local transport, and tickets
 
 ### Key Business Rules
+
 - Only compensate for business days (conference days + 1 day before/after)
 - Economy flights only (employee pays difference for upgrades)
 - No seasonal adjustments
@@ -18,6 +20,7 @@ The current travel stipend calculator determines appropriate stipend amounts for
 ## Data Analysis Summary
 
 ### Conferences Analyzed
+
 ```csv
 conference,location,conference_start,conference_end,flight_departure,flight_return,flight_cost,lodging_cost,basic_meals_cost,business_entertainment_cost,local_transport_cost,ticket_price,total_stipend
 "Asia Blockchain Summit 2024 - Taipei","Taipei","6 August","8 August","2024-08-05","2024-08-09",296.82,440,225,300,75,0,1336.82
@@ -28,6 +31,7 @@ conference,location,conference_start,conference_end,flight_departure,flight_retu
 ```
 
 ### Major Discrepancies Identified
+
 1. **Meal Costs**: Consistently underestimated across all conferences (15-20% too low)
 2. **Local Transport**: Consistently underestimated (20-30% too low)
 3. **Business Entertainment**: Inconsistent - some conferences over, some under
@@ -35,6 +39,7 @@ conference,location,conference_start,conference_end,flight_departure,flight_retu
 5. **Missing Categories**: No allowance for internet/data or incidentals
 
 ### Specific Examples
+
 - Taipei lodging: $2,228.08 actual vs $440 stipend (extended stay beyond business days)
 - Bangkok flight: $3,816 actual vs $744.67 stipend (business class vs economy)
 - San Francisco: $2,636.99 incorrectly categorized as flight cost (actually for conference tickets)
@@ -45,6 +50,7 @@ conference,location,conference_start,conference_end,flight_departure,flight_retu
 ### 1. Add New Expense Categories
 
 #### Internet/Data Plans
+
 ```typescript
 // Add to StipendBreakdown interface
 export interface StipendBreakdown {
@@ -58,6 +64,7 @@ totalStipend += internetDataAllowance;
 ```
 
 #### Incidentals Allowance
+
 ```typescript
 // Add to StipendBreakdown interface
 export interface StipendBreakdown {
@@ -73,6 +80,7 @@ totalStipend += incidentalsAllowance;
 ### 2. Refine Existing Categories
 
 #### Meal Allocation Improvements
+
 ```typescript
 // Update constants
 export const BASE_MEALS_PER_DAY = 75; // Increase from current 60
@@ -93,20 +101,17 @@ for (let i = 0; i < totalDays; i++) {
 ```
 
 #### Local Transport Improvements
+
 ```typescript
 // Update constants
 export const BASE_LOCAL_TRANSPORT_PER_DAY = 35; // Increase from current 25
 
 // In calculation function
-const localTransportCost = calculateLocalTransportCost(
-  destination,
-  totalDays,
-  colFactor,
-  BASE_LOCAL_TRANSPORT_PER_DAY
-);
+const localTransportCost = calculateLocalTransportCost(destination, totalDays, colFactor, BASE_LOCAL_TRANSPORT_PER_DAY);
 ```
 
 #### Conference District Premium
+
 ```typescript
 // Add new constant
 export const CONFERENCE_DISTRICT_PREMIUM = 1.15;
@@ -116,9 +121,7 @@ const isConferenceDistrict = checkIfConferenceDistrict(destination);
 
 // In lodging calculation
 const adjustedLodgingRate = BASE_LODGING_PER_NIGHT * colFactor;
-const districtAdjustedRate = isConferenceDistrict
-  ? adjustedLodgingRate * CONFERENCE_DISTRICT_PREMIUM
-  : adjustedLodgingRate;
+const districtAdjustedRate = isConferenceDistrict ? adjustedLodgingRate * CONFERENCE_DISTRICT_PREMIUM : adjustedLodgingRate;
 ```
 
 ### 3. Improve Business Entertainment Guidelines
@@ -138,12 +141,14 @@ const businessEntertainmentCost = Math.min(
 ### 4. Enhance Documentation and Policies
 
 #### Business Days Policy
+
 ```typescript
 // Enforce strict conference + 1 day model
 const businessDays = conferenceDays + PRE_CONFERENCE_DAYS + POST_CONFERENCE_DAYS;
 ```
 
 #### Economy Flight Policy
+
 ```typescript
 // Implement verification against typical economy fares
 const verifyEconomyFare = async (destination: string, dates: FlightDates): Promise<number> => {
@@ -158,6 +163,7 @@ const verifyEconomyFare = async (destination: string, dates: FlightDates): Promi
 ## Implementation Steps
 
 ### Phase 1: Code Updates (2-3 weeks)
+
 1. Update `StipendBreakdown` interface with new fields
 2. Modify constants in `constants.ts`
 3. Update calculation logic in `travel-stipend-calculator.ts`
@@ -165,16 +171,19 @@ const verifyEconomyFare = async (destination: string, dates: FlightDates): Promi
 5. Update CSV output format to include new categories
 
 ### Phase 2: Testing (1-2 weeks)
+
 1. Create test cases for various conference scenarios
 2. Validate against historical data
 3. Test edge cases (long conferences, high-cost locations)
 
 ### Phase 3: Documentation (1 week)
+
 1. Update employee documentation
 2. Create clear policy document
 3. Document verification procedures
 
 ### Phase 4: Deployment (1 week)
+
 1. Deploy updated algorithm
 2. Announce changes to employees
 3. Train finance team on new procedures
@@ -182,16 +191,19 @@ const verifyEconomyFare = async (destination: string, dates: FlightDates): Promi
 ## Expected Outcomes
 
 ### Accuracy Improvements
+
 - Meal stipends should be within 10% of actual spending
 - Local transport stipends should be within 15% of actual spending
 - Overall stipend accuracy should improve by 20-25%
 
 ### Policy Enforcement
+
 - Clear documentation of business days only policy
 - Verification process for economy flights
 - Guidelines for split transactions
 
 ### User Experience
+
 - More comprehensive coverage of actual business expenses
 - Clearer expectations for what is and isn't covered
 - Reduced out-of-pocket expenses for legitimate business costs
@@ -207,6 +219,7 @@ const verifyEconomyFare = async (destination: string, dates: FlightDates): Promi
 ## Technical Implementation Details
 
 ### File Changes Required
+
 - `src/utils/constants.ts` - Update constants and add new ones
 - `src/utils/types.ts` - Update StipendBreakdown interface
 - `src/travel-stipend-calculator.ts` - Update calculation logic
@@ -214,10 +227,12 @@ const verifyEconomyFare = async (destination: string, dates: FlightDates): Promi
 - Output formatting code - Add new columns
 
 ### Data Requirements
+
 - Conference district designations for major cities
 - Historical average economy fares for common routes
 - Updated cost of living indices
 
 ### Dependencies
+
 - No new external dependencies required
 - Uses existing caching and data loading mechanisms

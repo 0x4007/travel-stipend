@@ -154,7 +154,7 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
     const premiumRoute = premiumRoutes.find((route) => route.from === originRegion && route.to === destRegion);
 
     return premiumRoute ? premiumRoute.factor : 1.1; // Default premium increased slightly
-  };
+  }
 
   // Popular route discount (major city pairs often have more competition)
   function getPopularityFactor(origin: string, destination: string): number {
@@ -181,7 +181,7 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
     const popularRoute = popularRoutes.find((route) => route.cities.includes(originCity) && route.cities.includes(destCity));
 
     return popularRoute ? popularRoute.factor : 1.0;
-  };
+  }
 
   // Calculate the base distance cost using the appropriate tier
   let distanceCost = 0;
