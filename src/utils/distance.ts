@@ -18,7 +18,7 @@ export function haversineDistance(coord1: Coordinates, coord2: Coordinates): num
 }
 
 // Helper function to find city coordinates with fuzzy matching
-export function findCityCoordinates(cityName: string, coordinates: CoordinatesMapping): Coordinates {
+function findCityCoordinates(cityName: string, coordinates: CoordinatesMapping): Coordinates {
   // Try exact match first
   const exactMatch = coordinates.getCoordinates(cityName);
   if (exactMatch) {

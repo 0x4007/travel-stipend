@@ -50,7 +50,7 @@ interface CoordinateRecord {
 }
 
 // Fuzzy matching functions
-export function levenshteinDistance(a: string, b: string): number {
+function levenshteinDistance(a: string, b: string): number {
   const matrix: number[][] = [];
 
   // Initialize the matrix
@@ -76,7 +76,7 @@ export function levenshteinDistance(a: string, b: string): number {
   return matrix[b.length][a.length];
 }
 
-export function calculateSimilarity(a: string, b: string): number {
+function calculateSimilarity(a: string, b: string): number {
   // Normalize strings for comparison
   const normalizedA = a.toLowerCase().trim();
   const normalizedB = b.toLowerCase().trim();

@@ -2,7 +2,7 @@ import { DEFAULT_CONFERENCE_DAYS } from "./constants";
 import { Conference } from "./types";
 
 // Parse date strings like "18 February" to a Date object
-export function parseDate(dateStr: string, year = new Date().getFullYear()): Date | null {
+function parseDate(dateStr: string, year = new Date().getFullYear()): Date | null {
   if (!dateStr || dateStr.trim() === "") {
     return null;
   }
@@ -47,7 +47,7 @@ export function calculateDateDiff(startDateStr: string, endDateStr: string): num
 }
 
 // Calculate meal allowance based on day index (for duration-based scaling)
-export function getDailyMealAllowance(dayIndex: number, baseMealCost: number): number {
+function getDailyMealAllowance(dayIndex: number, baseMealCost: number): number {
   if (dayIndex < 3) {
     return baseMealCost; // 100% for days 1-3
   }

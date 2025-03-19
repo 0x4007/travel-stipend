@@ -125,8 +125,10 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
   log(LOG_LEVEL.INFO, "Attempted to clear origin field using multiple methods");
 
   // Type the origin with a slower delay to ensure Google Flights can process it
-  log(LOG_LEVEL.INFO, `Typing origin with slower delay: ${from}`);
-  await page.keyboard.type(from, { delay: 200 });
+  // Remove commas from the input to avoid issues with Google Flights
+  const sanitizedFrom = from.replace(/,/g, "");
+  log(LOG_LEVEL.INFO, `Typing origin with slower delay (sanitized): ${sanitizedFrom}`);
+  await page.keyboard.type(sanitizedFrom, { delay: 200 });
   await takeScreenshot(page, "after-type-origin");
 
   // Wait longer for suggestions to appear and stabilize
@@ -137,7 +139,7 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
   try {
     await page.waitForSelector('[role="listbox"], [role="option"], .suggestions-list', { timeout: 5000 });
     log(LOG_LEVEL.INFO, "Suggestions dropdown appeared");
-  } catch (error) {
+  } catch {
     log(LOG_LEVEL.WARN, "No suggestions dropdown found after typing origin, continuing anyway");
   }
 
@@ -223,8 +225,10 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   log(LOG_LEVEL.INFO, "Attempted to clear destination field using multiple methods");
 
   // Type the destination with a slower delay to ensure Google Flights can process it
-  log(LOG_LEVEL.INFO, `Typing destination with slower delay: ${to}`);
-  await page.keyboard.type(to, { delay: 200 });
+  // Remove commas from the input to avoid issues with Google Flights
+  const sanitizedTo = to.replace(/,/g, "");
+  log(LOG_LEVEL.INFO, `Typing destination with slower delay (sanitized): ${sanitizedTo}`);
+  await page.keyboard.type(sanitizedTo, { delay: 200 });
   await takeScreenshot(page, "after-type-destination");
 
   // Wait longer for suggestions to appear and stabilize
@@ -235,7 +239,7 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   try {
     await page.waitForSelector('[role="listbox"], [role="option"], .suggestions-list', { timeout: 5000 });
     log(LOG_LEVEL.INFO, "Suggestions dropdown appeared");
-  } catch (error) {
+  } catch {
     log(LOG_LEVEL.WARN, "No suggestions dropdown found after typing destination, continuing anyway");
   }
 

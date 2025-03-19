@@ -114,7 +114,7 @@ export function createHashKey(args: unknown[]): string {
 }
 
 // Function decorator for caching
-export function cached<T, TArgs extends unknown[]>(cache: Cache<T>, fn: (...args: TArgs) => T): (...args: TArgs) => T {
+function cached<T, TArgs extends unknown[]>(cache: Cache<T>, fn: (...args: TArgs) => T): (...args: TArgs) => T {
   return (...args: TArgs): T => {
     const key = createHashKey(args);
 
