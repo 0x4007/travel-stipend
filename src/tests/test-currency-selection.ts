@@ -1,4 +1,4 @@
-import { GoogleFlightsScraper } from "./utils/google-flights-scraper/google-flights-scraper";
+import { GoogleFlightsScraper } from "../utils/google-flights-scraper/google-flights-scraper";
 
 async function testCurrencySelection() {
   console.log("Starting currency selection test with headful browser...");
@@ -15,7 +15,7 @@ async function testCurrencySelection() {
     console.log("Navigated to Google Flights");
 
     // Change currency to USD
-    await scraper.changeCurrencyToUSD();
+    await scraper.changeCurrencyToUsd();
     console.log("Successfully changed currency to USD");
 
     console.log("Test completed successfully!");
