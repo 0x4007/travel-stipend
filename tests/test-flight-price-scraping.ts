@@ -35,10 +35,9 @@ async function main() {
 
     // Take a screenshot of the search results
 
-
     // Wait for results to fully render
     console.log("Waiting for results to fully render...");
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 5000)));
+    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 5000)));
 
     // Scrape flight prices
     console.log("Scraping flight prices...");

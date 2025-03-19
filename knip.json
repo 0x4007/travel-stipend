@@ -8,9 +8,7 @@
     ".github/empty-string-checker.ts",
     "rename-to-kebab-case.ts"
   ],
-  "project": [
-    "src/**/*.ts"
-  ],
+  "project": ["src/**/*.ts"],
   "ignore": [
     "src/types/config.ts",
     "**/__mocks__/**",
@@ -20,12 +18,7 @@
     "src/utils/google-flights-scraper/**/*.ts"
   ],
   "ignoreExportsUsedInFile": true,
-  "ignoreDependencies": [
-    "@mswjs/data"
-  ],
-  "exclude": [
-    "files",
-    "devDependencies"
-  ],
+  "ignoreDependencies": ["@mswjs/data"],
+  "exclude": ["files", "devDependencies"],
   "eslint": true
 }

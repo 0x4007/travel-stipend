@@ -12,8 +12,7 @@
     "research",
     "src/tests/**",
     "src/utils/flights.ts",
-    "src/utils/google-flights-scraper/google-flights-scraper.ts",
-    "src/utils/google-flights-scraper/log-all-clickable-elements.ts"
+    "src/utils/google-flights-scraper/**"
   ],
   "useGitignore": true,
   "language": "en",

@@ -1,6 +1,13 @@
-
 export interface BrowserInitOptions {
   headless: boolean;
+}
+
+export interface FlightSearchResult {
+  success: boolean;
+  prices: number[];
+  airlines: string[];
+  durations: number[];
+  error?: string; // Optional error message when success is false
 }
 
 export interface FlightResults {

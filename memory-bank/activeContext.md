@@ -30,6 +30,7 @@ The most recent development has focused on:
    - Filtering for upcoming conferences
 
 4. **Implementing fallback mechanisms** for resilience:
+
    - Distance-based flight cost calculation when API lookup fails
    - Fuzzy matching for city names when exact matches aren't found
 
@@ -76,6 +77,7 @@ Several key decisions are currently being considered:
    - Exploring additional factors like conference popularity
 
 3. **Historical Data Analysis**:
+
    - Exploring ways to leverage historical stipend data
    - Considering trend analysis for budget forecasting
    - Potential for machine learning to improve estimates
