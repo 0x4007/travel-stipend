@@ -1,7 +1,7 @@
-import { GoogleFlightsScraper } from "../utils/google-flights-scraper";
+import { GoogleFlightsScraper } from "../src/utils/google-flights-scraper";
 
 async function main() {
-  console.log("Starting Google Flights scraper test with specific dates...");
+  console.log("Starting Google Flights scraper test...");
 
   // Create and initialize the scraper
   const scraper = new GoogleFlightsScraper();
@@ -20,15 +20,24 @@ async function main() {
     console.log("Changed currency to USD");
 
     // Set search parameters
-    const from = "Seoul South Korea";
-    const to = "Tokyo Japan";
+    const from = "Seoul, South Korea";
+    const to = "Tokyo, Japan";
 
-    // Use the specific dates mentioned by the user
-    const departureDate = "2025-03-26";
-    const returnDate = "2025-04-02";
+    // Get dates for next month (to ensure future dates)
+    const today = new Date();
+    const nextMonth = new Date(today);
+    nextMonth.setMonth(today.getMonth() + 1);
+
+    // Format departure date (next month, same day)
+    const departureDate = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, "0")}-${String(nextMonth.getDate()).padStart(2, "0")}`;
+
+    // Format return date (departure + 7 days)
+    const returnDay = new Date(nextMonth);
+    returnDay.setDate(returnDay.getDate() + 7);
+    const returnDate = `${returnDay.getFullYear()}-${String(returnDay.getMonth() + 1).padStart(2, "0")}-${String(returnDay.getDate()).padStart(2, "0")}`;
 
     console.log(`Searching for flights from ${from} to ${to}`);
-    console.log(`Departure: ${departureDate} Return: ${returnDate}`);
+    console.log(`Departure: ${departureDate}, Return: ${returnDate}`);
 
     // Search for flights
     const flightData = await scraper.searchFlights(from, to, departureDate, returnDate);
@@ -40,26 +49,30 @@ async function main() {
     if (flightData) {
       console.log(`Found ${flightData.prices.length} flight prices`);
 
+      console.trace("Flight data:", flightData);
+
       if (flightData.prices.length > 0) {
         console.log("\nPrices:");
-        flightData.prices.forEach((price, index) => {
+        flightData.prices.forEach((price: number, index: number) => {
           console.log(`  ${index + 1}. ${price}`);
         });
       }
 
-      if (flightData.airlines && flightData.airlines.length > 0) {
+      if (flightData.airlines.length > 0) {
         console.log("\nAirlines:");
-        flightData.airlines.forEach((airline, index) => {
+        flightData.airlines.forEach((airline: string, index: number) => {
           console.log(`  ${index + 1}. ${airline}`);
         });
       }
 
-      if (flightData.durations && flightData.durations.length > 0) {
+      if (flightData.durations.length > 0) {
         console.log("\nDurations:");
-        flightData.durations.forEach((duration, index) => {
+        flightData.durations.forEach((duration: string, index: number) => {
           console.log(`  ${index + 1}. ${duration}`);
         });
       }
+
+      // Times are no longer included in the flight data
 
       // Log price elements count if available
       if ("priceElements" in flightData) {

@@ -1,5 +1,4 @@
 import { Browser, Page } from "puppeteer";
-import { BrowserInitOptions, FlightSearchResult } from "../types";
 import { closeBrowser, initializeBrowser } from "./browser-setup";
 import { LOG_LEVEL } from "./config";
 import { changeCurrencyToUsd } from "./currency-handler";
@@ -16,7 +15,7 @@ export class GoogleFlightsScraper {
     log(LOG_LEVEL.INFO, "Initializing Google Flights Scraper");
   }
 
-  async initialize(options: BrowserInitOptions = { headless: false }): Promise<void> {
+  async initialize(options?: { headless: false }): Promise<void> {
     const { browser, page } = await initializeBrowser(options);
     this._browser = browser;
     this._page = page;
@@ -32,7 +31,7 @@ export class GoogleFlightsScraper {
     await changeCurrencyToUsd(this._page);
   }
 
-  async searchFlights(from: string, to: string, departureDate: string, returnDate?: string): Promise<FlightSearchResult> {
+  async searchFlights(from: string, to: string, departureDate: string, returnDate?: string) {
     if (!this._page) throw new Error("Page not initialized");
     return await searchFlights(this._page, from, to, departureDate, returnDate);
   }

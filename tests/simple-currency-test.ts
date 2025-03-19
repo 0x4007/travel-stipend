@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { GoogleFlightsScraper } from "../utils/google-flights-scraper/index";
+import { GoogleFlightsScraper } from "../src/utils/google-flights-scraper/index";
 
 // Create a log file for direct output
 const logDir = path.join(process.cwd(), "logs");

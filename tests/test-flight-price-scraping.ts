@@ -1,9 +1,8 @@
 import * as puppeteer from "puppeteer";
-import { changeCurrencyToUsd } from "../utils/google-flights-scraper/currency-handler";
-import { searchFlights } from "../utils/google-flights-scraper/flight-search";
+import { scrapeFlightPrices } from "../src/utils/google-flights-scraper/price-scraper";
 
 async function main() {
-  console.log("Starting full Google Flights search test...");
+  console.log("Starting Google Flights price scraping test...");
 
   // Launch browser in headful mode
   const browser = await puppeteer.launch({
@@ -19,39 +18,37 @@ async function main() {
     // Set user agent
     await page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
 
-    // Navigate to Google Flights
-    console.log("Navigating to Google Flights...");
-    await page.goto("https://www.google.com/travel/flights", {
-      waitUntil: "networkidle2",
-      timeout: 60000,
-    });
-    console.log("Google Flights loaded");
+    // Navigate to Google Flights with a sample search
+    // This URL simulates a search from Seoul to Tokyo for a specific date
+    console.log("Navigating to Google Flights with a sample search...");
+    await page.goto(
+      "https://www.google.com/travel/flights/search?tfs=CBwQAhoeagcIARIDSUNOEgoyMDI1LTA0LTAxcgcIARIDTlJUGh5qBwgBEgNOUlQSCjIwMjUtMDQtMDVyBwgBEgNJQ04&hl=en&curr=USD",
+      {
+        waitUntil: "networkidle2",
+        timeout: 60000,
+      }
+    );
+    console.log("Google Flights search results loaded");
 
-    // Change currency to USD
-    console.log("Changing currency to USD...");
-    await changeCurrencyToUsd(page);
+    // Wait for the page to be fully loaded
+    await page.waitForSelector("body", { timeout: 10000 });
 
-    // Define search parameters
-    // Note: We're removing commas from city names to avoid issues
-    const from = "Seoul Korea"; // No comma
-    const to = "Tokyo Japan"; // No comma
-    const departureDate = "2025-04-15";
-    const returnDate = "2025-04-20";
+    // Take a screenshot of the search results
 
-    console.log(`Searching flights from ${from} to ${to}`);
-    console.log(`Departure: ${departureDate}, Return: ${returnDate}`);
 
-    // Perform the flight search
-    const result = await searchFlights(page, from, to, departureDate, returnDate);
+    // Wait for results to fully render
+    console.log("Waiting for results to fully render...");
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 5000)));
+
+    // Scrape flight prices
+    console.log("Scraping flight prices...");
+    const prices = await scrapeFlightPrices(page);
 
     // Display the results
     console.log("\n-----------------------------------------");
-    console.log("Flight Search Results:");
-    console.log(`Success: ${result.success}`);
-    console.log(`Found ${result.prices.length} flight prices:`);
-
-    if (result.prices.length > 0) {
-      result.prices.forEach((price, index) => {
+    console.log(`Found ${prices.length} flight prices:`);
+    if (prices.length > 0) {
+      prices.forEach((price, index) => {
         console.log(`Price ${index + 1}: $${price}`);
       });
     } else {
@@ -66,6 +63,7 @@ async function main() {
     console.log("-----------------------------------------\n");
 
     // Keep the script running to allow manual debugging
+    // This effectively pauses the script while keeping the browser open
     await new Promise(() => {
       // This promise never resolves, keeping the script running
       // until manually terminated

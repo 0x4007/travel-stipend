@@ -1,9 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
 import puppeteer from "puppeteer";
-import { findAndClickCurrencyButton } from "../utils/google-flights-scraper/find-and-click-currency-button";
-import { navigateToGoogleFlights } from "../utils/google-flights-scraper/navigation";
-import { selectUsdInCurrencyDialog } from "../utils/google-flights-scraper/select-usd-in-currency-dialog";
+import { findAndClickCurrencyButton } from "../src/utils/google-flights-scraper/find-and-click-currency-button";
+import { navigateToGoogleFlights } from "../src/utils/google-flights-scraper/navigation";
+import { selectUsdInCurrencyDialog } from "../src/utils/google-flights-scraper/select-usd-in-currency-dialog";
 
 // Create a log file for direct output
 const logDir = path.join(process.cwd(), "logs");

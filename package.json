@@ -25,7 +25,8 @@
     "test:fast": "bun test",
     "test:watch": "bun test --watch",
     "rename-to-kebab": "bun rename-to-kebab-case.ts",
-    "rename-to-kebab:dry-run": "bun rename-to-kebab-case.ts --dry-run --verbose"
+    "rename-to-kebab:dry-run": "bun rename-to-kebab-case.ts --dry-run --verbose",
+    "tsc:no-emit": "tsc --noEmit"
   },
   "keywords": [
     "typescript",
