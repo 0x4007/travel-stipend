@@ -1,6 +1,6 @@
 import * as puppeteer from 'puppeteer';
-import { selectDateInCalendar } from '../selectDateInCalendar';
-import { calculateTravelDates } from './calculateTravelDates';
+import { selectDateInCalendar } from '../select-date-in-calendar';
+import { calculateTravelDates } from './calculate-travel-dates';
 
 /**
  * Open date picker and select dates

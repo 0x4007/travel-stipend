@@ -1,6 +1,6 @@
 import * as puppeteer from 'puppeteer';
-import { findButtonBySelectors } from '../findButtonBySelectors';
-import { tryMultipleClickApproaches } from '../tryMultipleClickApproaches';
+import { findButtonBySelectors } from '../find-button-by-selectors';
+import { tryMultipleClickApproaches } from '../try-multiple-click-approaches';
 
 /**
  * Click the Done button in the date picker

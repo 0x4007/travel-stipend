@@ -23,7 +23,9 @@
     "prepare": "husky install",
     "test": "bun test --coverage",
     "test:fast": "bun test",
-    "test:watch": "bun test --watch"
+    "test:watch": "bun test --watch",
+    "rename-to-kebab": "bun rename-to-kebab-case.ts",
+    "rename-to-kebab:dry-run": "bun rename-to-kebab-case.ts --dry-run --verbose"
   },
   "keywords": [
     "typescript",

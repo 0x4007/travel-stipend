@@ -1,5 +1,5 @@
 import * as puppeteer from 'puppeteer';
-import { ClickableElementInfo } from './ClickableElementInfo';
+import { ClickableElementInfo } from './clickable-element-info';
 
 /**
  * Log all clickable elements on the page

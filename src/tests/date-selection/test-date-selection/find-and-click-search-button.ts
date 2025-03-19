@@ -1,10 +1,10 @@
 import * as puppeteer from 'puppeteer';
-import { findButtonByPosition } from '../findButtonByPosition';
-import { findButtonBySelectors } from '../findButtonBySelectors';
-import { findButtonByTextContent } from '../findButtonByTextContent';
-import { clickFoundSearchButton } from './clickFoundSearchButton';
-import { logClickableElements } from './logClickableElements';
-import { tryJavaScriptClickApproach } from './tryJavaScriptClickApproach';
+import { findButtonByPosition } from '../find-button-by-position';
+import { findButtonBySelectors } from '../find-button-by-selectors';
+import { findButtonByTextContent } from '../find-button-by-text-content';
+import { clickFoundSearchButton } from './click-found-search-button';
+import { logClickableElements } from './log-clickable-elements';
+import { tryJavaScriptClickApproach } from './try-java-script-click-approach';
 
 /**
  * Find and click the search button

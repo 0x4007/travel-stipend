@@ -3,14 +3,14 @@ import * as path from "path";
 import { Browser, Page } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import { clickSaveButtonInCurrencyDialog } from "./clickSaveButtonInCurrencyDialog";
-import { findAndClickCurrencyButton } from "./findAndClickCurrencyButton";
+import { clickSaveButtonInCurrencyDialog } from "./click-save-button-in-currency-dialog";
+import { findAndClickCurrencyButton } from "./find-and-click-currency-button";
 import { log } from "./log";
-import { logAllClickableElements } from "./logAllClickableElements";
-import { logAllInputs } from "./logAllInputs";
-import { selectUsdInCurrencyDialog } from "./selectUsdInCurrencyDialog";
-import { takeScreenshot } from "./takeScreenshot";
-import { verifyCurrencyChangeToUsd } from "./verifyCurrencyChangeToUsd";
+import { logAllClickableElements } from "./log-all-clickable-elements";
+import { logAllInputs } from "./log-all-inputs";
+import { selectUsdInCurrencyDialog } from "./select-usd-in-currency-dialog";
+import { takeScreenshot } from "./take-screenshot";
+import { verifyCurrencyChangeToUsd } from "./verify-currency-change-to-usd";
 
 // Add stealth plugin to avoid detection
 puppeteer.use(StealthPlugin());

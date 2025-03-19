@@ -1,8 +1,8 @@
 import * as puppeteer from 'puppeteer';
-import { findDestinationInput } from './findDestinationInput';
-import { selectDropdownItem } from './selectDropdownItem';
-import { tryFallbackApproach } from './tryFallbackApproach';
-import { verifySelection } from './verifySelection';
+import { findDestinationInput } from './find-destination-input';
+import { selectDropdownItem } from './select-dropdown-item';
+import { tryFallbackApproach } from './try-fallback-approach';
+import { verifySelection } from './verify-selection';
 
 async function main() {
   console.log('Starting Google Flights specific destination input test...');

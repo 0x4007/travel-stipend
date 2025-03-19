@@ -1,10 +1,10 @@
-import { clickDoneButton } from './clickDoneButton';
-import { enterDestination } from './enterDestination';
-import { findAndClickSearchButton } from './findAndClickSearchButton';
-import { initializeBrowser } from './initializeBrowser';
-import { navigateToGoogleFlights } from './navigateToGoogleFlights';
-import { selectDates } from './selectDates';
-import { takeResultScreenshot } from './takeResultScreenshot';
+import { clickDoneButton } from './click-done-button';
+import { enterDestination } from './enter-destination';
+import { findAndClickSearchButton } from './find-and-click-search-button';
+import { initializeBrowser } from './initialize-browser';
+import { navigateToGoogleFlights } from './navigate-to-google-flights';
+import { selectDates } from './select-dates';
+import { takeResultScreenshot } from './take-result-screenshot';
 
 /**
  * Main function to run the test

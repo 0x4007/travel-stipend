@@ -1,5 +1,5 @@
 import * as puppeteer from 'puppeteer';
-import { tryJavaScriptClick } from '../tryJavaScriptClick';
+import { tryJavaScriptClick } from '../try-java-script-click';
 
 /**
  * Try JavaScript click approach when button element not found
