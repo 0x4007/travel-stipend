@@ -18,6 +18,9 @@ export interface FlightSearchResult {
   success: boolean;
   prices: FlightPrice[];
   searchUrl?: string;
+  screenshotPath?: string;
+  selectedDestination?: string;
+  allianceFiltersApplied?: boolean;
 }
 
 export interface FlightResults {

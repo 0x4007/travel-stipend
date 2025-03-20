@@ -11,3 +11,4 @@ junit.xml
 cypress/screenshots
 outputs
 logs
+test-screenshots

@@ -1,15 +1,15 @@
 import { Page } from "puppeteer";
-import { FlightSearchResult } from "../types";
+import { FlightPrice, FlightSearchResult } from "../types";
 import { applyAllianceFilters } from "./alliance-filter-handler";
 import { LOG_LEVEL } from "./config";
 import { selectDates } from "./date-selection-handler";
-import { mapFlightDataToFlightPrices } from "./flight-data-mapper";
 import { fillDestinationField, fillOriginField } from "./form-field-handler";
 import { log } from "./log";
 import { scrapeFlightPrices } from "./price-scraper";
+import { takeScreenshot } from "./screenshot-handler";
 import { clickSearchButton } from "./search-button-handler";
 
-export async function searchFlights(page: Page, from: string, to: string, departureDate: string, returnDate?: string): Promise<FlightSearchResult> {
+export async function searchFlights(page: Page, from: string, to: string, departureDate: string, returnDate?: string, takeScreenshots = false): Promise<FlightSearchResult> {
   if (!page) throw new Error("Page not initialized");
 
   log(LOG_LEVEL.INFO, `Searching flights from ${from} to ${to}`);
@@ -26,7 +26,15 @@ export async function searchFlights(page: Page, from: string, to: string, depart
     await fillOriginField(page, from);
 
     // Find and fill destination field
-    await fillDestinationField(page, to);
+    const destinationResult = await fillDestinationField(page, to);
+
+    // Verify destination was selected correctly
+    if (!destinationResult.success) {
+      log(LOG_LEVEL.ERROR, `Destination mismatch! Expected: ${to}, Got: ${destinationResult.selectedDestination}`);
+      throw new Error(`Destination mismatch! Expected: ${to}, Got: ${destinationResult.selectedDestination}`);
+    }
+
+    log(LOG_LEVEL.INFO, `Verified destination: ${destinationResult.selectedDestination}`);
 
     // Select dates in the calendar
     await selectDates(page, departureDate, returnDate);
@@ -34,12 +42,37 @@ export async function searchFlights(page: Page, from: string, to: string, depart
     // Click the search button to initiate the search
     await clickSearchButton(page);
 
-    // Try to apply alliance filters to show only legitimate airlines
-    const isAllianceFiltersApplied = await applyAllianceFilters(page);
-    if (isAllianceFiltersApplied) {
-      log(LOG_LEVEL.INFO, "Alliance filters applied successfully");
-    } else {
-      log(LOG_LEVEL.INFO, "Alliance filters were not applied (might not be available for this route)");
+    // Apply alliance filters with retries
+    let isAllianceFiltersApplied = false;
+    const maxFilterRetries = 3;
+
+    for (let attempt = 0; attempt < maxFilterRetries; attempt++) {
+      isAllianceFiltersApplied = await applyAllianceFilters(page);
+      if (isAllianceFiltersApplied) {
+        log(LOG_LEVEL.INFO, "Alliance filters applied successfully");
+        break;
+      }
+
+      if (attempt < maxFilterRetries - 1) {
+        log(LOG_LEVEL.WARN, `Alliance filters failed to apply (attempt ${attempt + 1}/${maxFilterRetries}), retrying...`);
+        // Refresh the page and wait before retrying
+        await page.reload();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Re-apply previous steps
+        await fillOriginField(page, from);
+        await fillDestinationField(page, to);
+        await selectDates(page, departureDate, returnDate);
+        await clickSearchButton(page);
+      } else {
+        throw new Error("Failed to apply alliance filters after maximum retries");
+      }
+    }
+
+    // Take verification screenshot if enabled (after ensuring filters are applied)
+    let screenshotPath = "";
+    if (takeScreenshots) {
+      screenshotPath = await takeScreenshot(page, to, "verification");
+      log(LOG_LEVEL.INFO, `Verification screenshot saved to: ${screenshotPath}`);
     }
 
     // Wait for results to load
@@ -49,15 +82,28 @@ export async function searchFlights(page: Page, from: string, to: string, depart
     const searchUrl = page.url();
 
     // Scrape flight prices from the results page
-    const rawPrices = await scrapeFlightPrices(page);
-    const prices = mapFlightDataToFlightPrices(rawPrices);
+    const flightData = await scrapeFlightPrices(page);
+    const prices: FlightPrice[] = flightData.map(flight => ({
+      price: flight.price,
+      airline: flight.airlines.join("/") ?? "Unknown",
+      departureTime: flight.departureTime ?? "Unknown",
+      arrivalTime: flight.arrivalTime ?? "Unknown",
+      duration: flight.duration ?? "Unknown",
+      stops: flight.stops,
+      origin: flight.origin ?? "Unknown",
+      destination: flight.destination ?? "Unknown",
+      isTopFlight: flight.isTopFlight
+    }));
     log(LOG_LEVEL.INFO, `Found ${prices.length} flight prices`);
 
-    // Return the flight search results with search URL
+    // Return the flight search results with search URL and screenshot path
     return {
       success: true,
       prices,
-      searchUrl
+      searchUrl,
+      screenshotPath: screenshotPath !== "" ? screenshotPath : undefined,
+      selectedDestination: destinationResult.selectedDestination ?? undefined,
+      allianceFiltersApplied: isAllianceFiltersApplied
     };
   } catch (error) {
     log(LOG_LEVEL.ERROR, "Error searching flights:", error instanceof Error ? error.message : String(error));

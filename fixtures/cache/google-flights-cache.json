@@ -330,162 +330,181 @@
   },
   "fd139773ee17c126c5012d094abae341d950e79a4ef9b8a6882fd8bc061336cd": {
     "value": {
-      "price": 209,
-      "timestamp": "2025-03-20T12:34:35.314Z",
+      "price": 261,
+      "timestamp": "2025-03-20T15:03:29.846Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wM2g2NBooEgoyMDI1LTA2LTAxagwIAxIIL20vMDNoNjRyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDNoNjQaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wM2g2NHIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
     }
   },
   "5b67ed4486239bf22eff822bbde1680428e8d045282e3a64f27e0f0f4bad7b77": {
     "value": {
-      "price": 1530,
-      "timestamp": "2025-03-20T12:34:54.096Z",
+      "price": 1494,
+      "timestamp": "2025-03-20T15:04:06.745Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMmNsMRooEgoyMDI1LTA2LTAxagwIAxIIL20vMDJjbDFyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMmNsMRooEgoyMDI1LTA2LTAxagwIAxIIL20vMDJjbDFyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "denver"
     }
   },
   "b824677c988dbc1b3b4f42a36c1a69966cb0938bcb9b9170f62fa1d789e09b78": {
     "value": {
-      "price": 875,
-      "timestamp": "2025-03-20T12:35:13.089Z",
+      "price": 845,
+      "timestamp": "2025-03-20T15:04:43.551Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wOTQ3bBooEgoyMDI1LTA2LTAxagwIAxIIL20vMDk0N2xyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDk0N2waShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wOTQ3bHIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "milan"
     }
   },
   "61e9437527e6d1d7efc09f902d70e1fa6c87a68d77ae1739da4c15779e069498": {
     "value": {
-      "price": 1151,
-      "timestamp": "2025-03-20T12:35:32.947Z",
+      "price": 1143,
+      "timestamp": "2025-03-20T15:05:21.114Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMWY2MhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDFmNjJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMWY2MhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDFmNjJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "barcelona"
     }
   },
   "b135bdf48a389faf28aed0e3ef6fb210e6c6db601323f2173b4b3ced948319f2": {
     "value": {
-      "price": 1237,
-      "timestamp": "2025-03-20T12:35:52.365Z",
+      "price": 1262,
+      "timestamp": "2025-03-20T15:05:58.915Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wY3YzdxooEgoyMDI1LTA2LTAxagwIAxIIL20vMGN2M3dyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMGN2M3caShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wY3Yzd3IMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "las vegas"
     }
   },
   "31073cffcad7f051c39ec2848cf975ddb6759c485a8606c63bc7b43d5950d5f2": {
     "value": {
-      "price": 1066,
-      "timestamp": "2025-03-20T12:36:12.794Z",
+      "price": 1071,
+      "timestamp": "2025-03-20T15:06:37.544Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZDZscBooEgoyMDI1LTA2LTAxagwIAxIIL20vMGQ2bHByDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZDZscBooEgoyMDI1LTA2LTAxagwIAxIIL20vMGQ2bHByDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "san francisco"
     }
   },
   "f313515f514131502ebb33f78fe3c53ae866e6293680c5363aede582832f8f1c": {
     "value": {
       "price": 1350,
-      "timestamp": "2025-03-20T12:37:35.192Z",
+      "timestamp": "2025-03-20T15:08:37.855Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhopEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDQgDEgkvbS8wMTNtY2QaKRIKMjAyNS0wNi0wMWoNCAMSCS9tLzAxM21jZHIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhopEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDQgDEgkvbS8wMTNtY2QaKRIKMjAyNS0wNi0wMWoNCAMSCS9tLzAxM21jZHIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "grapevine"
     }
   },
   "a75cdd9c7e0437bcb32c1da6e261f19ef484ad58f4c05c69f61db9f2913cb3f6": {
     "value": {
-      "price": 1081,
-      "timestamp": "2025-03-20T12:37:54.257Z",
+      "price": 1135,
+      "timestamp": "2025-03-20T15:09:15.155Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZjA0dhooEgoyMDI1LTA2LTAxagwIAxIIL20vMGYwNHZyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMGYwNHYaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wZjA0dnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "san jose"
     }
   },
   "6e6eb47830a5853a13d1d7bdb88d30d452094a6c545bc167a9dee6824b790585": {
     "value": {
-      "price": 1128,
-      "timestamp": "2025-03-20T12:38:13.279Z",
+      "price": 1133,
+      "timestamp": "2025-03-20T15:09:52.213Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMV9kNBooEgoyMDI1LTA2LTAxagwIAxIIL20vMDFfZDRyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMV9kNBooEgoyMDI1LTA2LTAxagwIAxIIL20vMDFfZDRyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "chicago"
     }
   },
   "cd77b201eea8e034f830b2421a3a410d2363e1b2e4becd02d07b43eb72d5acf6": {
     "value": {
-      "price": 1128,
-      "timestamp": "2025-03-20T12:38:31.641Z",
+      "price": 703,
+      "timestamp": "2025-03-20T15:10:29.066Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMV9kNBooEgoyMDI1LTA2LTAxagwIAxIIL20vMDFfZDRyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDRqcGwaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNGpwbHIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "london"
     }
   },
   "2bb1c5ae4358287d3691733d003ad2a1119b732087c9bcc7c110c39cd5ec631c": {
     "value": {
-      "price": 317,
-      "timestamp": "2025-03-20T12:38:51.626Z",
+      "price": 322,
+      "timestamp": "2025-03-20T15:11:06.232Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZm4yZxooEgoyMDI1LTA2LTAxagwIAxIIL20vMGZuMmdyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZm4yZxooEgoyMDI1LTA2LTAxagwIAxIIL20vMGZuMmdyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "bangkok"
     }
   },
   "9ce965c0479ba00916ea794d5a24f3014748921ed1cac2f5aa863b15fc4b6095": {
     "value": {
-      "price": 920,
-      "timestamp": "2025-03-20T12:39:11.310Z",
+      "price": 1125,
+      "timestamp": "2025-03-20T15:11:43.262Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMTU2cRooEgoyMDI1LTA2LTAxagwIAxIIL20vMDE1NnFyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDE1NnEaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wMTU2cXIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "berlin"
     }
   },
   "7634030609864fc260f75658098525497940cb17df426990a423d44d60401f84": {
     "value": {
-      "price": 248,
-      "timestamp": "2025-03-20T12:39:30.810Z",
+      "price": 249,
+      "timestamp": "2025-03-20T15:12:20.402Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZnRreBooEgoyMDI1LTA2LTAxagwIAxIIL20vMGZ0a3hyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZnRreBooEgoyMDI1LTA2LTAxagwIAxIIL20vMGZ0a3hyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "taipei"
     }
   },
   "18395209ab16532d3bb3cd8c85e0d396ca03819aa822c7dbd3b9d986d54d90b1": {
     "value": {
-      "price": 876,
-      "timestamp": "2025-03-20T12:39:50.017Z",
+      "price": 920,
+      "timestamp": "2025-03-20T15:12:57.178Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNXF0ahooEgoyMDI1LTA2LTAxagwIAxIIL20vMDVxdGpyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDVxdGoaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNXF0anIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "paris"
     }
   },
   "0374b09282fef43ea263bd785b309e1fcb005da07e87c7633e93797fc26424a6": {
     "value": {
-      "price": 246,
-      "timestamp": "2025-03-20T12:40:10.708Z",
+      "price": 247,
+      "timestamp": "2025-03-20T15:13:35.141Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8waG40aBooEgoyMDI1LTA2LTAxagwIAxIIL20vMGhuNGhyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8waG40aBooEgoyMDI1LTA2LTAxagwIAxIIL20vMGhuNGhyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "ho chi minh"
     }
   },
   "508294d9ca9eb9208a086ba4b3cbb6a1a3659b2c8e57689424d4ee99c28e51df": {
     "value": {
-      "price": 246,
-      "timestamp": "2025-03-20T12:40:29.701Z",
+      "price": 247,
+      "timestamp": "2025-03-20T15:14:11.726Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8waHNxZhooEgoyMDI1LTA2LTAxagwIAxIIL20vMGhzcWZyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMGhzcWYaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8waHNxZnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "seoul"
     }
   },
   "10081135eac2417cbf7a0258a948b3b8d02da2f446187812fecd00a724431957": {
     "value": {
-      "price": 1457,
-      "timestamp": "2025-03-20T12:40:49.597Z",
+      "price": 1459,
+      "timestamp": "2025-03-20T15:14:49.182Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNTJwNxooEgoyMDI1LTA2LTAxagwIAxIIL20vMDUycDdyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNTJwNxooEgoyMDI1LTA2LTAxagwIAxIIL20vMDUycDdyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "montreal"
     }
   },
   "c33caf5099705de17654cbe0f84cc67ee17c2a4f7f7c11d4538fb53e183b8ad2": {
     "value": {
-      "price": 306,
-      "timestamp": "2025-03-20T12:41:08.637Z",
+      "price": 388,
+      "timestamp": "2025-03-20T15:15:25.857Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wN2RmaxooEgoyMDI1LTA2LTAxagwIAxIIL20vMDdkZmtyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDdkZmsaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wN2Rma3IMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "tokyo"
     }
   },
   "2e931a58d795a731a86dcfd4185f669924c254f0b64dc6766b218aa74b1fa527": {
     "value": {
-      "price": 1525,
-      "timestamp": "2025-03-20T12:41:27.676Z",
+      "price": 1695,
+      "timestamp": "2025-03-20T15:16:02.804Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhonEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyCwgDEgcvbS8wdnptGicSCjIwMjUtMDYtMDFqCwgDEgcvbS8wdnptcgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhonEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyCwgDEgcvbS8wdnptGicSCjIwMjUtMDYtMDFqCwgDEgcvbS8wdnptcgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD",
+      "selectedDestination": "austin"
     }
   },
   "29900482e6639f966e1430becb588f5b9f59cbca2b9a794c734b858c59807509": {
     "value": {
-      "price": 448,
-      "timestamp": "2025-03-20T12:41:46.205Z",
+      "price": 485,
+      "timestamp": "2025-03-20T15:16:40.168Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNnQydBooEgoyMDI1LTA2LTAxagwIAxIIL20vMDZ0MnRyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDZ0MnQaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNnQydHIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "singapore"
     }
   },
   "0cda30a22182eba0e936e41dcef9deeabb5811a4b5bfc1cd882ffdf83685e738": {
@@ -498,162 +517,341 @@
   },
   "bbd93fda0ca1660f1a82683661cea3ef6c7c13f7bd2274013aee682701367f93": {
     "value": {
-      "price": 732,
-      "timestamp": "2025-03-20T12:42:25.871Z",
+      "price": 756,
+      "timestamp": "2025-03-20T15:19:12.692Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhonEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyCwgDEgcvbS8wazNwGicSCjIwMjUtMDYtMDFqCwgDEgcvbS8wazNwcgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpJEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgsIAxIHL20vMGszcBpJEgoyMDI1LTA2LTAxMghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoLCAMSBy9tLzBrM3ByDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "amsterdam"
     }
   },
   "06892a18a2427fa6f02787b7414c83b11a9d832f06db6af24b0a0bb5ac366a31": {
     "value": {
-      "price": 1025,
-      "timestamp": "2025-03-20T12:42:45.708Z",
+      "price": 1035,
+      "timestamp": "2025-03-20T15:19:49.761Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNGxsYhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDRsbGJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNGxsYhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDRsbGJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "lisbon"
     }
   },
   "1f57f8f96f5b46feb398885fcbe1e4a72927ea02af19cee3f6778df425cb8104": {
     "value": {
-      "price": 1025,
-      "timestamp": "2025-03-20T12:43:05.005Z",
+      "price": 1255,
+      "timestamp": "2025-03-20T15:20:27.175Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNGxsYhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDRsbGJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpJEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgsIAxIHL20vMGd4ahpJEgoyMDI1LTA2LTAxMghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoLCAMSBy9tLzBneGpyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "abu dhabi"
     }
   },
   "9a4ce1bee35e1b2ccb61e016c4a8241a82f07e0ab741cade3fd6fb84046cbee1": {
     "value": {
-      "price": 1229,
-      "timestamp": "2025-03-20T12:43:24.684Z",
+      "price": 1271,
+      "timestamp": "2025-03-20T15:21:04.186Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8waDdoNhooEgoyMDI1LTA2LTAxagwIAxIIL20vMGg3aDZyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8waDdoNhooEgoyMDI1LTA2LTAxagwIAxIIL20vMGg3aDZyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "toronto"
     }
   },
   "ca580dcb6fda1d3295906a003e1b03e5a0073f45e8bfb0c0c06b12a0e9954999": {
     "value": {
-      "price": 1483,
-      "timestamp": "2025-03-20T12:43:44.084Z",
+      "price": 1504,
+      "timestamp": "2025-03-20T15:21:41.613Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNzF2chooEgoyMDI1LTA2LTAxagwIAxIIL20vMDcxdnJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDcxdnIaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNzF2cnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "san diego"
     }
   },
   "520c7e3b6caa6f22de5967642e769d1154a125760defdb34d98c84770ec53eae": {
     "value": {
       "price": 362,
-      "timestamp": "2025-03-20T12:44:04.306Z",
+      "timestamp": "2025-03-20T15:22:18.657Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNDRydhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDQ0cnZyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNDRydhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDQ0cnZyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "jakarta"
     }
   },
   "bc8a287fd3096759f411a797de41e9b5a569abdced9bd7574ce0d3fd6d5242f1": {
     "value": {
-      "price": 362,
-      "timestamp": "2025-03-20T12:44:25.320Z",
+      "price": 977,
+      "timestamp": "2025-03-20T15:22:55.529Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNDRydhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDQ0cnZyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDV5d2caShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNXl3Z3IMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "prague"
     }
   },
   "324d143681e1c825135510659cb15f17fc063474cb166cc584fc67dd0416b8b0": {
     "value": {
       "price": 919,
-      "timestamp": "2025-03-20T12:44:44.304Z",
+      "timestamp": "2025-03-20T15:23:32.438Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZDlqchooEgoyMDI1LTA2LTAxagwIAxIIL20vMGQ5anJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZDlqchooEgoyMDI1LTA2LTAxagwIAxIIL20vMGQ5anJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "seattle"
     }
   },
   "e7d760785629172c7a9498017dca80a05dd7462630f88b1fbfbd98f586fdc33e": {
     "value": {
-      "price": 901,
-      "timestamp": "2025-03-20T12:45:04.749Z",
+      "price": 956,
+      "timestamp": "2025-03-20T14:32:08.735Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wODk2NhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDg5NjZyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDg5NjYaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wODk2NnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
     }
   },
   "e7ffa8a57667b3f3b108af0e3bb52da13e49481c6e65af93f4483c1997776a65": {
     "value": {
-      "price": 1591,
-      "timestamp": "2025-03-20T12:45:23.963Z",
+      "price": 1610,
+      "timestamp": "2025-03-20T14:32:44.006Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wdzBzeRooEgoyMDI1LTA2LTAxagwIAxIIL20vMHcwc3lyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wdzBzeRooEgoyMDI1LTA2LTAxagwIAxIIL20vMHcwc3lyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "brooklyn"
     }
   },
   "7050fd76b8f5c5f9b186fb5c8d9a55db236b205b6b7c3ccd3131b753e33d9903": {
     "value": {
-      "price": 1072,
-      "timestamp": "2025-03-20T12:45:43.310Z",
+      "price": 1175,
+      "timestamp": "2025-03-20T14:33:18.764Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wa3lndhooEgoyMDI1LTA2LTAxagwIAxIIL20vMGt5Z3ZyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMGt5Z3YaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wa3lndnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "cannes"
     }
   },
   "717cdc9fad32b9d27c03ea13708c4e8f6c2e68d166758e27b8cf1b0ee07f106e": {
     "value": {
-      "price": 202,
-      "timestamp": "2025-03-20T12:46:02.239Z",
+      "price": 186,
+      "timestamp": "2025-03-20T14:33:53.571Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wOWQ0XxooEgoyMDI1LTA2LTAxagwIAxIIL20vMDlkNF9yDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wOWQ0XxooEgoyMDI1LTA2LTAxagwIAxIIL20vMDlkNF9yDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "kyoto"
     }
   },
   "f076cd5ab4811a31cead733f5e8698f61a639179c0b61a9257b50b27541741df": {
     "value": {
-      "price": 1026,
-      "timestamp": "2025-03-20T12:46:22.901Z",
+      "price": 1214,
+      "timestamp": "2025-03-20T14:34:28.556Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMzkwMhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDM5MDJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDM5MDIaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wMzkwMnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "geneva"
     }
   },
   "88c6223afff329a22e083ef0919fee7d4dab730d98a3afc6ca222260aab62aac": {
     "value": {
-      "price": 1192,
-      "timestamp": "2025-03-20T12:46:42.168Z",
+      "price": 1191,
+      "timestamp": "2025-03-20T14:35:04.028Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhopEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDQgDEgkvbS8wMl8yODYaKRIKMjAyNS0wNi0wMWoNCAMSCS9tLzAyXzI4NnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhopEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDQgDEgkvbS8wMl8yODYaKRIKMjAyNS0wNi0wMWoNCAMSCS9tLzAyXzI4NnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "new york"
     }
   },
   "9163c1a327930015bc0b29c5c1874bffd95d154f65e60d51098ac095e2a47229": {
     "value": {
-      "price": 1202,
-      "timestamp": "2025-03-20T12:47:01.790Z",
+      "price": 1263,
+      "timestamp": "2025-03-20T14:35:39.311Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMzF5MhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDMxeTJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDMxeTIaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wMzF5MnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "florence"
     }
   },
   "fa0724557c476be65fce72515db7a09a7f6473aad14a50be20650acde7acdf92": {
     "value": {
-      "price": 1494,
-      "timestamp": "2025-03-20T12:47:21.857Z",
+      "price": 1505,
+      "timestamp": "2025-03-20T14:36:14.718Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wM2tobhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDNraG5yDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wM2tobhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDNraG5yDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "helsinki"
     }
   },
   "8a9a89759a61d05b66ffc8f8ed51d3eeebb495f8e4724eb75b0053aa2c770bb0": {
     "value": {
-      "price": 1464,
-      "timestamp": "2025-03-20T12:47:40.670Z",
+      "price": 1458,
+      "timestamp": "2025-03-20T14:36:49.580Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMWN4XxooEgoyMDI1LTA2LTAxagwIAxIIL20vMDFjeF9yDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDFjeF8aShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wMWN4X3IMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "boston"
     }
   },
   "b47b8f55cc9ab51b0869d1e7ca8394bf25e3895b730033080bb507cd89e97ccf": {
     "value": {
-      "price": 1464,
-      "timestamp": "2025-03-20T12:48:00.668Z",
+      "price": 1350,
+      "timestamp": "2025-03-20T14:37:25.113Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMWN4XxooEgoyMDI1LTA2LTAxagwIAxIIL20vMDFjeF9yDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wbnFwaBooEgoyMDI1LTA2LTAxagwIAxIIL20vMG5xcGhyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "arlington"
     }
   },
   "a6a4be6a7d8be68a2ed54bb957a80db0c090da7468ec767ea95142875e6df364": {
     "value": {
-      "price": 943,
-      "timestamp": "2025-03-20T12:48:20.335Z",
+      "price": 1322,
+      "timestamp": "2025-03-20T14:37:59.995Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoqEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDggDEgovbS8wMmg2XzZwGioSCjIwMjUtMDYtMDFqDggDEgovbS8wMmg2XzZwcgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpMEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3Fmcg4IAxIKL20vMDJoNl82cBpMEgoyMDI1LTA2LTAxMghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoOCAMSCi9tLzAyaDZfNnByDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "munich"
     }
   },
   "69e35a0ed22884df35a3ff98efe2eced04b35f72670a48e95a1354d3e7ce2593": {
     "value": {
       "price": 1565,
-      "timestamp": "2025-03-20T12:48:40.538Z",
+      "timestamp": "2025-03-20T14:38:35.158Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wN19rcRooEgoyMDI1LTA2LTAxagwIAxIIL20vMDdfa3FyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "vilnius"
+    }
+  },
+  "2095adc98d0e7bb3b0c2b79d7b9b30c1b4f7e6c205371639a50ad8a0d6c917b4": {
+    "value": {
+      "price": 1505,
+      "timestamp": "2025-03-20T13:14:30.984Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wM2tobhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDNraG5yDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "04e376eb86285737823d0cff18484c70fc6f08e3622eae71704ef09d3e82665b": {
+    "value": {
+      "price": 1565,
+      "timestamp": "2025-03-20T13:14:52.287Z",
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wN19rcRooEgoyMDI1LTA2LTAxagwIAxIIL20vMDdfa3FyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "88321b7d30796239edb54b5d3ea0cf193cdcb8204664fdb8a01f874545536c72": {
+    "value": {
+      "price": 1565,
+      "timestamp": "2025-03-20T13:15:12.662Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wN19rcRooEgoyMDI1LTA2LTAxagwIAxIIL20vMDdfa3FyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "d309a1f17b1aadbdbc650c7959d468890f8ed07e81d44391b2b678194acf5227": {
+    "value": {
+      "price": 1530,
+      "timestamp": "2025-03-20T13:15:32.420Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMmNsMRooEgoyMDI1LTA2LTAxagwIAxIIL20vMDJjbDFyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "62203b1690785cceae62fe7791ef8bedff3fd83ea2c1ac0f0a78fdf333b6319d": {
+    "value": {
+      "price": 1483,
+      "timestamp": "2025-03-20T13:15:52.863Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNzF2chooEgoyMDI1LTA2LTAxagwIAxIIL20vMDcxdnJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "9cadf0965b06519a8bc084dee6dbca42e9d6c4c6942b84471ca409ca742e96d4": {
+    "value": {
+      "price": 1483,
+      "timestamp": "2025-03-20T13:16:14.966Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNzF2chooEgoyMDI1LTA2LTAxagwIAxIIL20vMDcxdnJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "863c77294a0c20baa0e678276fb993c402d9b4b91654ffd97b83e0fc7662adc3": {
+    "value": {
+      "price": 1607,
+      "timestamp": "2025-03-20T13:16:35.196Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wdzBzeRooEgoyMDI1LTA2LTAxagwIAxIIL20vMHcwc3lyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "865d57282e270c73e51e2e48c71ed1e6e3657dd9a679af67098f1422434f32d2": {
+    "value": {
+      "price": 1455,
+      "timestamp": "2025-03-20T13:16:56.085Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNTJwNxooEgoyMDI1LTA2LTAxagwIAxIIL20vMDUycDdyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "5c98371ccb58b2f3c44fa74d9c554b78a302069f131d8455206ab5a15d9e3041": {
+    "value": {
+      "price": 1522,
+      "timestamp": "2025-03-20T13:17:15.903Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhonEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyCwgDEgcvbS8wdnptGicSCjIwMjUtMDYtMDFqCwgDEgcvbS8wdnptcgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD"
+    }
+  },
+  "423191859aec9ccfc5aa692fd5c88343781ab7ab16200879d4510766f85af39d": {
+    "value": {
+      "price": 1200,
+      "timestamp": "2025-03-20T13:17:36.489Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMzF5MhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDMxeTJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "c587b4c3fba3ce11014494251b03e2cc9cde05d4adf10429249df5a3467ed7b8": {
+    "value": {
+      "price": 1461,
+      "timestamp": "2025-03-20T13:17:56.316Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMWN4XxooEgoyMDI1LTA2LTAxagwIAxIIL20vMDFjeF9yDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "a25c8bd000cd7bbfae25176de8e4db8cda2b3db38ef0f2331086c3056cd7a062": {
+    "value": {
+      "price": 1461,
+      "timestamp": "2025-03-20T13:18:17.411Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMWN4XxooEgoyMDI1LTA2LTAxagwIAxIIL20vMDFjeF9yDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "6bb6e6baeb6092195fa559055977febde38ff577702847a53b19f32ea943c4ec": {
+    "value": {
+      "price": 1235,
+      "timestamp": "2025-03-20T13:18:37.919Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wY3YzdxooEgoyMDI1LTA2LTAxagwIAxIIL20vMGN2M3dyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "bd015c527085abc41a7d7df58a17b2a2c5ed1888d22563ebef799e9b984b958a": {
+    "value": {
+      "price": 1235,
+      "timestamp": "2025-03-20T13:18:57.464Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wY3YzdxooEgoyMDI1LTA2LTAxagwIAxIIL20vMGN2M3dyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "cab8f0fc328a184bb0074d2eef116edcc4239f48371a556f6f5d59b753442214": {
+    "value": {
+      "price": 1347,
+      "timestamp": "2025-03-20T13:19:19.165Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhopEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDQgDEgkvbS8wMTNtY2QaKRIKMjAyNS0wNi0wMWoNCAMSCS9tLzAxM21jZHIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
+    }
+  },
+  "6b74cb43413274936f3891de94b2b3e93c7a3306bfcc0a18339c5922a7d0621e": {
+    "value": {
+      "price": 1146,
+      "timestamp": "2025-03-20T13:19:40.117Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMWY2MhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDFmNjJyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "ca7bb4b7351640760552b800a4bc122d3fdb2bea9db444adc26dde3ca449dfae": {
+    "value": {
+      "price": 209,
+      "timestamp": "2025-03-20T13:19:59.750Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wM2g2NBooEgoyMDI1LTA2LTAxagwIAxIIL20vMDNoNjRyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "df6f7abb12b699dd1e43e064c940d50abe775be6a77f564e01fd5e1b2dc4f897": {
+    "value": {
+      "price": 1081,
+      "timestamp": "2025-03-20T13:20:19.985Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZjA0dhooEgoyMDI1LTA2LTAxagwIAxIIL20vMGYwNHZyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "2cce6d9ebc519a2035a13d58933e6ecd7f09c1b8d4ac6bc841cbdb72e285706f": {
+    "value": {
+      "price": 452,
+      "timestamp": "2025-03-20T13:20:39.698Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNnQydBooEgoyMDI1LTA2LTAxagwIAxIIL20vMDZ0MnRyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "56b7a0ae273a51c8a37cbd48dc66d1795a0f086df8f64421c64bc357a8516c4b": {
+    "value": {
+      "price": 1066,
+      "timestamp": "2025-03-20T13:21:01.162Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZDZscBooEgoyMDI1LTA2LTAxagwIAxIIL20vMGQ2bHByDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
     }
   }
 }

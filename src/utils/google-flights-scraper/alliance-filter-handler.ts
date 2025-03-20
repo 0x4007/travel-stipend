@@ -26,21 +26,66 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+const MAX_RETRIES = 5;  // Increased from 3
+const INITIAL_RETRY_DELAY = 1500;  // Decreased from 2000 to be more responsive
+const MAX_RETRY_DELAY = 8000;
+
 export async function applyAllianceFilters(page: Page): Promise<boolean> {
   if (!page) throw new Error("Page not initialized");
 
   log(LOG_LEVEL.INFO, "Attempting to apply alliance filters");
 
-  try {
-    const result = await runFilterProcess(page);
-    return result.success;
-  } catch (error) {
-    if (error instanceof Error) {
-      log(LOG_LEVEL.ERROR, "Error applying alliance filters:", error.message);
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      if (attempt > 0) {
+        const delay = Math.min(
+          INITIAL_RETRY_DELAY * Math.pow(1.5, attempt - 1),
+          MAX_RETRY_DELAY
+        );
+        log(LOG_LEVEL.INFO, `Retry attempt ${attempt + 1}, waiting ${delay}ms`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+
+        // If we failed verification before, try refreshing the page
+        if (attempt > 1) {
+          await page.reload();
+          await delay(2000); // Wait for page load
+        }
+      }
+
+      const initialUrl = page.url();
+      const result = await runFilterProcess(page);
+
+      if (result.success) {
+        // Check if URL changed after filter application
+        const currentUrl = page.url();
+        if (currentUrl !== initialUrl) {
+          log(LOG_LEVEL.INFO, "URL changed after filter application, waiting for stabilization");
+          await delay(2000);
+        }
+
+        // Verify filters were actually applied
+        const verified = await verifyFiltersApplied(page);
+        if (verified) {
+          log(LOG_LEVEL.INFO, "Alliance filters successfully applied and verified");
+          return true;
+        }
+        log(LOG_LEVEL.WARN, "Filter application could not be verified, retrying...");
+        lastError = new Error("Filter verification failed");
+        continue;
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      log(LOG_LEVEL.ERROR, `Error applying alliance filters (attempt ${attempt + 1}):`, lastError.message);
+
+      if (attempt === MAX_RETRIES - 1) {
+        log(LOG_LEVEL.WARN, `Max retries reached, last error: ${lastError.message}`);
+        return false;
+      }
     }
-    log(LOG_LEVEL.WARN, "Continuing search despite filter error");
-    return false;
   }
+  return false;
 }
 
 async function runFilterProcess(page: Page): Promise<FilterResult> {
@@ -82,6 +127,22 @@ async function findButtonByContains(page: Page, selector: string): Promise<Eleme
   if (!containsMatch) return null;
 
   const buttonText = containsMatch[1];
+
+  // Wait for any button containing the text
+  try {
+    await page.waitForFunction(
+      (text) => {
+        const buttons = Array.from(document.querySelectorAll<HTMLElement>('button, [role="button"]'));
+        return buttons.some(element => element.textContent?.includes(text));
+      },
+      { timeout: 5000 },
+      buttonText
+    );
+  } catch (error) {
+    log(LOG_LEVEL.DEBUG, `No button found containing text "${buttonText}" after waiting`);
+    return null;
+  }
+
   const button = await page.evaluateHandle((text: string): Element | null => {
     const buttons = Array.from(document.querySelectorAll<HTMLElement>('button, [role="button"]'));
     return buttons.find((element) => element.textContent?.includes(text)) ?? null;
@@ -242,17 +303,18 @@ async function waitForAllianceOptions(page: Page): Promise<boolean> {
   }
 }
 
-function findCheckboxForLabel(label: HTMLLabelElement): HTMLInputElement | null {
-  const forId = label.getAttribute("for");
-  if (forId) {
-    const checkbox = document.getElementById(forId) as HTMLInputElement | null;
-    if (checkbox?.type === "checkbox") return checkbox;
-  }
-  return label.querySelector('input[type="checkbox"]');
-}
-
 async function checkAllianceSpecificCheckboxes(page: Page): Promise<number> {
   return await page.evaluate((allianceNames: string[]) => {
+    // Define the findCheckboxForLabel function inside the evaluate context
+    function findCheckboxForLabel(label: HTMLLabelElement): HTMLInputElement | null {
+      const forId = label.getAttribute("for");
+      if (forId) {
+        const checkbox = document.getElementById(forId) as HTMLInputElement | null;
+        if (checkbox?.type === "checkbox") return checkbox;
+      }
+      return label.querySelector('input[type="checkbox"]');
+    }
+
     const labels = Array.from(document.querySelectorAll<HTMLLabelElement>("label"));
     let count = 0;
 
@@ -287,6 +349,15 @@ async function checkAllAllianceCheckboxes(page: Page): Promise<number> {
   log(LOG_LEVEL.INFO, "Checking all alliance checkboxes");
 
   try {
+    // Wait for alliance section to be fully loaded
+    await page.waitForFunction(
+      () => {
+        const elements = Array.from(document.querySelectorAll("div, span, h3, h4, label"));
+        return elements.some(el => el.textContent?.includes("Alliances"));
+      },
+      { timeout: 5000 }
+    );
+
     // First try alliance-specific checkboxes
     let checkboxCount = await checkAllianceSpecificCheckboxes(page);
 
@@ -297,7 +368,8 @@ async function checkAllAllianceCheckboxes(page: Page): Promise<number> {
 
     if (checkboxCount > 0) {
       log(LOG_LEVEL.INFO, `Checked ${checkboxCount} checkboxes with JavaScript approach`);
-      await delay(1000);
+      // Increased delay to ensure changes are registered
+      await delay(2000);
     } else {
       log(LOG_LEVEL.INFO, "No checkboxes were checked (they might already be checked)");
     }
@@ -311,17 +383,132 @@ async function checkAllAllianceCheckboxes(page: Page): Promise<number> {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function waitForResultsUpdate(page: Page): Promise<void> {
   log(LOG_LEVEL.INFO, "Waiting for results to update after applying filters");
 
   try {
-    await delay(5000); // Wait 5 seconds for results to update
-    log(LOG_LEVEL.INFO, "Waited for results to update");
+    // Wait for any loading indicators to appear and disappear
+    const loadingSelector = '[role="progressbar"], .gws-flights-results__progress-bar';
+
+    // Wait up to 2 seconds for loading indicator to appear
+    try {
+      await page.waitForSelector(loadingSelector, { timeout: 2000 });
+      log(LOG_LEVEL.INFO, "Detected loading indicator");
+    } catch {
+      log(LOG_LEVEL.INFO, "No loading indicator detected");
+    }
+
+    // Wait for loading indicator to disappear if it appeared
+    try {
+      await page.waitForSelector(loadingSelector, { hidden: true, timeout: 10000 });
+      log(LOG_LEVEL.INFO, "Loading completed");
+    } catch {
+      log(LOG_LEVEL.WARN, "Loading indicator did not disappear");
+    }
+
+    // Additional delay to ensure results are fully rendered
+    await delay(2000);
+
+    log(LOG_LEVEL.INFO, "Results should be updated now");
   } catch (error) {
     if (error instanceof Error) {
       log(LOG_LEVEL.ERROR, "Error waiting for results update:", error.message);
       log(LOG_LEVEL.WARN, "Continuing search despite error waiting for results update");
     }
+  }
+}
+
+async function verifyFiltersApplied(page: Page): Promise<boolean> {
+  try {
+    // First check: URL contains alliance parameters
+    const url = page.url();
+    const hasAllianceParams = url.includes("ONEWORLD") || url.includes("SKYTEAM") || url.includes("STAR_ALLIANCE");
+
+    if (hasAllianceParams) {
+      log(LOG_LEVEL.INFO, "Verified alliance filters in URL");
+      return true;
+    }
+
+    // Second check: Deep UI element inspection
+    const uiState = await page.evaluate(() => {
+      const results: { [key: string]: boolean } = {
+        hasCheckedBoxes: false,
+        hasActiveFilters: false,
+        hasAllianceText: false,
+        hasDataAttributes: false,
+        hasAllianceLabels: false
+      };
+
+      // Check for checked checkboxes (expanded selector)
+      const checkboxes = Array.from(document.querySelectorAll<HTMLInputElement>(
+        'input[type="checkbox"], [role="checkbox"], [aria-checked="true"]'
+      ));
+      results.hasCheckedBoxes = checkboxes.some(checkbox =>
+        checkbox.checked ||
+        checkbox.getAttribute('aria-checked') === 'true'
+      );
+
+      // Check for active filter indicators (expanded)
+      const activeFilters = document.querySelectorAll(
+        '[aria-selected="true"], .active-filter, .selected-filter, ' +
+        '[data-selected="true"], [data-active="true"], ' +
+        '[aria-pressed="true"], .VfPpkd-LgbsSe-OWXEXe-INsAgc'
+      );
+      results.hasActiveFilters = activeFilters.length > 0;
+
+      // Check for alliance names in active elements
+      const allianceKeywords = ['Oneworld', 'SkyTeam', 'Star Alliance', 'ONEWORLD', 'SKYTEAM', 'STAR ALLIANCE'];
+      const allText = document.body.textContent || '';
+      results.hasAllianceText = allianceKeywords.some(keyword => allText.includes(keyword));
+
+      // Check for alliance-related data attributes
+      results.hasDataAttributes = Array.from(document.querySelectorAll('[data-filtertype="6"]')).length > 0;
+
+      // Check for alliance labels
+      results.hasAllianceLabels = Array.from(document.querySelectorAll('label, span, div')).some(el =>
+        allianceKeywords.some(keyword => el.textContent?.includes(keyword))
+      );
+
+      return results;
+    });
+
+    log(LOG_LEVEL.INFO, "UI State:", JSON.stringify(uiState));
+
+    // If we see positive indicators in the UI, consider it verified
+    if (uiState.hasCheckedBoxes || uiState.hasActiveFilters || uiState.hasDataAttributes || uiState.hasAllianceLabels) {
+      log(LOG_LEVEL.INFO, "Verified alliance filters through UI state");
+      return true;
+    }
+
+    // Try reopening the filter panel and checking again
+    if (uiState.hasAllianceText) {
+      log(LOG_LEVEL.INFO, "Found alliance text, attempting to refresh filters");
+      await clickAirlinesFilterButton(page);
+      await delay(2000);
+      await clickAirlinesFilterButton(page); // Close it again
+      await delay(1000);
+
+      // Re-check URL
+      const updatedUrl = page.url();
+      if (updatedUrl.includes("ONEWORLD") || updatedUrl.includes("SKYTEAM") || updatedUrl.includes("STAR_ALLIANCE")) {
+        log(LOG_LEVEL.INFO, "Successfully verified filters after refresh");
+        return true;
+      }
+    }
+
+    // If still not verified, try force-applying filters again
+    if (!await applyAllianceFilters(page)) {
+      log(LOG_LEVEL.WARN, "Could not verify or reapply filters");
+      return false;
+    }
+
+    // Final verification after reapplying
+    const finalUrl = page.url();
+    return finalUrl.includes("ONEWORLD") || finalUrl.includes("SKYTEAM") || finalUrl.includes("STAR_ALLIANCE");
+  } catch (error) {
+    if (error instanceof Error) {
+      log(LOG_LEVEL.ERROR, "Error verifying filters:", error.message);
+    }
+    return false;
   }
 }

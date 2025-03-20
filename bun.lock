@@ -9,6 +9,7 @@
         "countries-list": "^3.1.1",
         "country-data": "^0.0.31",
         "csv-parse": "^5.6.0",
+        "csv-parser": "^3.2.0",
         "dotenv": "^16.4.4",
         "puppeteer": "^24.4.0",
         "puppeteer-extra": "^3.3.6",
@@ -953,6 +954,8 @@
     "csv-generate": ["csv-generate@0.0.6", "", {}, "sha512-artADf2o+rZUc224aalspj+rQXeYXXSXZ4s7hylW9xLgawkn1Ac5yLG+qNb1rRTcQ2CdDFHixvRuC1GlujCCkw=="],
 
     "csv-parse": ["csv-parse@5.6.0", "", {}, "sha512-l3nz3euub2QMg5ouu5U09Ew9Wf6/wQ8I++ch1loQ0ljmzhmfZYrH9fflS22i/PQEvsPvxCwxgz5q7UB8K1JO4Q=="],
+
+    "csv-parser": ["csv-parser@3.2.0", "", { "bin": { "csv-parser": "bin/csv-parser" } }, "sha512-fgKbp+AJbn1h2dcAHKIdKNSSjfp43BZZykXsCjzALjKy80VXQNHPFJ6T9Afwdzoj24aMkq8GwDS7KGcDPpejrA=="],
 
     "csv-stringify": ["csv-stringify@0.0.8", "", {}, "sha512-REHUwgPO2wPr69PZXW3cXmtvi+imJKvnqfxJw115rBsAMIKGQUP7a/nWo5SGzN5wmcKpN4v6uBcvc9CzvnT5zw=="],
 

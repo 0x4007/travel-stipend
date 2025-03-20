@@ -2,6 +2,36 @@ import { ElementHandle, Page } from "puppeteer";
 import { LOG_LEVEL } from "./config";
 import { log } from "./log";
 
+/**
+ * Extracts just the city name from a destination string
+ * Examples:
+ * "New York, USA" -> "New York"
+ * "Abu Dhabi, UAE" -> "Abu Dhabi"
+ * "Prague, Czech Republic" -> "Prague"
+ */
+function extractCityName(destination: string): string {
+  // First try to split by comma and take the first part
+  if (destination.includes(",")) {
+    return destination.split(",")[0].trim();
+  }
+
+  // If no comma, try to extract the first word or words that likely represent the city
+  // This is a simple heuristic and might need refinement
+  const words = destination.split(" ");
+  if (words.length <= 2) {
+    return destination.trim(); // If it's just 1-2 words, use the whole string
+  }
+
+  // For longer strings, use the first two words as they likely represent the city
+  // This is a simple approach and might need adjustment for specific cases
+  return words.slice(0, 2).join(" ").trim();
+}
+
+// Helper function to create a delay
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 // Helper function to clear an input field using multiple methods
 async function clearInputField(page: Page, field: ElementHandle<Element>): Promise<void> {
   log(LOG_LEVEL.DEBUG, "Attempting to clear input field using multiple methods");
@@ -56,7 +86,7 @@ async function clearInputField(page: Page, field: ElementHandle<Element>): Promi
       log(LOG_LEVEL.DEBUG, "Field appears to be cleared successfully");
     }
   } catch (error) {
-    log(LOG_LEVEL.ERROR, "Error while trying to clear input field:", error);
+    log(LOG_LEVEL.ERROR, "Error while trying to clear input field:", error instanceof Error ? error.message : String(error));
     // Continue despite errors - we've tried multiple methods
   }
 }
@@ -153,7 +183,7 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
   log(LOG_LEVEL.INFO, "Selected origin");
 }
 
-export async function fillDestinationField(page: Page, to: string): Promise<void> {
+export async function fillDestinationField(page: Page, to: string): Promise<{ success: boolean; selectedDestination: string | null }> {
   if (!page) throw new Error("Page not initialized");
 
   log(LOG_LEVEL.INFO, "STEP 2: Finding and filling destination field");
@@ -215,11 +245,11 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   await clearInputField(page, destinationField);
   log(LOG_LEVEL.INFO, "Attempted to clear destination field using multiple methods");
 
-  // Type the destination with a slower delay to ensure Google Flights can process it
-  // Remove commas from the input to avoid issues with Google Flights
-  const sanitizedTo = to.replace(/,/g, "");
-  log(LOG_LEVEL.INFO, `Typing destination with slower delay (sanitized): ${sanitizedTo}`);
-  await page.keyboard.type(sanitizedTo, { delay: 200 });
+  // Extract just the city name from the destination string
+  // This helps avoid issues with Google Flights not recognizing full destination strings
+  const cityOnly = extractCityName(to);
+  log(LOG_LEVEL.INFO, `Typing destination city only: ${cityOnly} (from: ${to})`);
+  await page.keyboard.type(cityOnly, { delay: 200 });
 
   // Wait longer for suggestions to appear and stabilize
   // log(LOG_LEVEL.INFO, "Waiting for suggestions to appear and stabilize");
@@ -243,6 +273,67 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   await page.keyboard.press("Enter");
 
   // Wait after selection to ensure it's processed
-  // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
+  await delay(1000);
+
+  // Wait a bit longer to ensure the field is updated
+  await delay(2000);
+
+  // Verify the selected destination
+  let selectedDestination: string | null = null;
+  try {
+    // Try to get the selected destination from the input field
+    selectedDestination = await destinationField.evaluate((el) => {
+      if (el instanceof HTMLInputElement) {
+        return el.value;
+      } else if (el.hasAttribute("contenteditable")) {
+        return el.textContent;
+      }
+      return null;
+    });
+
+    if (selectedDestination) {
+      log(LOG_LEVEL.INFO, `Selected destination: ${selectedDestination}`);
+
+      // Check if the selected destination contains the city name
+      const cityName = extractCityName(to).toLowerCase().trim();
+      const normalizedSelected = selectedDestination.toLowerCase().trim();
+
+      // Check if either string contains the other
+      if (normalizedSelected.includes(cityName) || cityName.includes(normalizedSelected)) {
+        log(LOG_LEVEL.INFO, `Destination match confirmed: ${cityName} matches ${normalizedSelected}`);
+      } else {
+        log(LOG_LEVEL.WARN, `Destination mismatch! Expected city: ${cityName}, Got: ${normalizedSelected}`);
+
+        // Try to get the destination from the page title as a fallback
+        const pageTitle = await page.title();
+        log(LOG_LEVEL.INFO, `Page title: ${pageTitle}`);
+
+        if (pageTitle.toLowerCase().includes(cityName)) {
+          log(LOG_LEVEL.INFO, `Found destination in page title: ${pageTitle}`);
+          selectedDestination = cityName;
+          return { success: true, selectedDestination };
+        }
+
+        return { success: false, selectedDestination };
+      }
+    } else {
+      log(LOG_LEVEL.WARN, "Could not verify selected destination from input field");
+
+      // Try to get the destination from the page title as a fallback
+      const pageTitle = await page.title();
+      log(LOG_LEVEL.INFO, `Page title: ${pageTitle}`);
+
+      const cityName = extractCityName(to).toLowerCase().trim();
+      if (pageTitle.toLowerCase().includes(cityName)) {
+        log(LOG_LEVEL.INFO, `Found destination in page title: ${pageTitle}`);
+        selectedDestination = cityName;
+        return { success: true, selectedDestination };
+      }
+    }
+  } catch (error) {
+    log(LOG_LEVEL.ERROR, "Error verifying destination:", error instanceof Error ? error.message : String(error));
+  }
+
   log(LOG_LEVEL.INFO, "Selected destination");
+  return { success: true, selectedDestination };
 }

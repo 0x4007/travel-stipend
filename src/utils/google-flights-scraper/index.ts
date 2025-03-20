@@ -11,7 +11,7 @@ import { navigateToGoogleFlights } from "./navigation";
 export class GoogleFlightsScraper {
   private _browser: Browser | null = null;
   private _page: Page | null = null;
-  private _cache: PersistentCache<{ price: number; timestamp: string; source: string; url?: string }>;
+  private _cache: PersistentCache<{ price: number; timestamp: string; source: string; url?: string; selectedDestination?: string }>;
 
   async needsFreshData(searches: Array<{from: string, to: string, departureDate: string, returnDate?: string}>): Promise<boolean> {
     for (const search of searches) {
@@ -29,7 +29,7 @@ export class GoogleFlightsScraper {
 
   constructor(trainingMode = false) {
     log(LOG_LEVEL.INFO, "Initializing Google Flights Scraper");
-    this._cache = new PersistentCache<{ price: number; timestamp: string; source: string; url?: string }>(
+    this._cache = new PersistentCache<{ price: number; timestamp: string; source: string; url?: string; selectedDestination?: string }>(
       "fixtures/cache/google-flights-cache.json",
       trainingMode
     );
@@ -85,28 +85,30 @@ export class GoogleFlightsScraper {
     await changeCurrencyToUsd(this._page);
   }
 
-  async searchFlights(from: string, to: string, departureDate: string, returnDate?: string) {
+  async searchFlights(from: string, to: string, departureDate: string, returnDate?: string, takeScreenshots = false) {
     const cacheKey = this._createCacheKey(from, to, departureDate, returnDate);
     const { shouldFetch, cachedResult } = this._checkCache(cacheKey);
 
     if (!shouldFetch && cachedResult) {
+      log(LOG_LEVEL.INFO, `Using cached result for ${from} to ${to}`);
       return cachedResult;
     }
 
     if (!this._page) throw new Error("Page not initialized");
-    const result = await searchFlights(this._page, from, to, departureDate, returnDate);
+    const result = await searchFlights(this._page, from, to, departureDate, returnDate, takeScreenshots);
 
     if (result.success && result.prices.length > 0) {
       // Calculate average price from all results
       const avgPrice = Math.round(result.prices.reduce((sum, price) => sum + price.price, 0) / result.prices.length);
 
-      // Store in cache with URL for verification
+      // Store in cache with URL and destination verification
       log(LOG_LEVEL.INFO, `Storing result in cache with key: ${cacheKey}`);
       this._cache.set(cacheKey, {
         price: avgPrice,
         timestamp: new Date().toISOString(),
         source: "Google Flights",
-        url: result.searchUrl
+        url: result.searchUrl,
+        selectedDestination: result.selectedDestination
       });
       // Save cache to disk
       this._cache.saveToDisk();
@@ -117,7 +119,10 @@ export class GoogleFlightsScraper {
         price: avgPrice,
         source: "Google Flights",
         prices: result.prices,
-        searchUrl: result.searchUrl
+        searchUrl: result.searchUrl,
+        screenshotPath: result.screenshotPath,
+        selectedDestination: result.selectedDestination,
+        allianceFiltersApplied: result.allianceFiltersApplied
       };
     }
 
