@@ -1,8 +1,11 @@
+import airportCodes from "airport-codes";
+import cityTimezones from "city-timezones";
+import { countries } from "countries-list";
+import { config } from "dotenv";
+import { AmadeusApi } from "./amadeus-api";
 import { createHashKey, PersistentCache } from "./cache";
 import { ORIGIN } from "./constants";
 import { GoogleFlightsScraper } from "./google-flights-scraper";
-import { AmadeusApi } from "./amadeus-api";
-import { config } from "dotenv";
 
 // Load environment variables
 config();
@@ -19,16 +22,16 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
     return cachedCost;
   }
 
-  // Base cost parameters - reduced to match observed prices
-  const BASE_COST = 150; // Reduced base cost as prices are generally lower than expected
+  // Base cost parameters - final optimization based on comprehensive testing
+  const BASE_COST = 200; // Balanced base cost for short/medium flights
 
-  // Multi-tier distance factors - adjusted based on test data without overfitting
+  // Multi-tier distance factors - final calibration based on analysis
   const DISTANCE_TIERS = [
-    { threshold: 500, factor: 0.3, exponent: 0.9 }, // Very short flights (<500km)
-    { threshold: 1500, factor: 0.2, exponent: 0.85 }, // Short flights (500-1500km)
-    { threshold: 4000, factor: 0.1, exponent: 0.8 }, // Medium flights - further reduced factor for better accuracy
-    { threshold: 8000, factor: 0.08, exponent: 0.75 }, // Long flights (4000-8000km)
-    { threshold: Infinity, factor: 0.05, exponent: 0.7 }, // Very long flights (>8000km)
+    { threshold: 500, factor: 0.2, exponent: 0.9 }, // Very short flights (<500km)
+    { threshold: 1500, factor: 0.18, exponent: 0.85 }, // Short flights (500-1500km)
+    { threshold: 4000, factor: 0.15, exponent: 0.8 }, // Medium flights (1500-4000km)
+    { threshold: 8000, factor: 0.18, exponent: 0.75 }, // Long flights (4000-8000km)
+    { threshold: Infinity, factor: 0.2, exponent: 0.72 }, // Very long flights (>8000km)
   ];
 
   // Regional factors (multipliers based on regions)
@@ -37,19 +40,37 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
     const originRegion = getRegion(origin);
     const destRegion = getRegion(destination);
 
-    // Same region flights are typically cheaper due to competition
+    // Regional pricing based on final analysis
     if (originRegion === destRegion) {
-      return 1.0; // Adjusted from 0.9 to better match observed prices in Asia
+      // Regional competition factors
+      switch (originRegion) {
+        case "Asia":
+          return 0.85; // High competition in Asia
+        case "Europe":
+          return 0.9; // Strong competition in Europe
+        case "North America":
+          return 1.0; // Standard pricing within North America
+        case "Middle East":
+          return 1.1; // Higher prices in Middle East
+        default:
+          return 1.0;
+      }
     }
 
-    // Premium for flights between certain regions
+    // Premium routes based on observed data
     const premiumRoutes = [
-      { from: "North America", to: "Asia", factor: 1.2 },
-      { from: "Asia", to: "North America", factor: 1.2 },
-      { from: "Europe", to: "Australia", factor: 1.3 },
-      { from: "Australia", to: "Europe", factor: 1.3 },
-      { from: "South America", to: "Asia", factor: 1.25 },
-      { from: "Asia", to: "South America", factor: 1.25 },
+      { from: "North America", to: "Asia", factor: 1.8 },
+      { from: "Asia", to: "North America", factor: 1.8 },
+      { from: "Europe", to: "Asia", factor: 1.7 },
+      { from: "Asia", to: "Europe", factor: 1.7 },
+      { from: "Europe", to: "North America", factor: 1.6 },
+      { from: "North America", to: "Europe", factor: 1.6 },
+      { from: "Europe", to: "Australia", factor: 1.75 },
+      { from: "Australia", to: "Europe", factor: 1.75 },
+      { from: "South America", to: "Asia", factor: 1.7 },
+      { from: "Asia", to: "South America", factor: 1.7 },
+      { from: "Middle East", to: "Asia", factor: 1.6 },
+      { from: "Asia", to: "Middle East", factor: 1.6 }
     ];
 
     const premiumRoute = premiumRoutes.find((route) => route.from === originRegion && route.to === destRegion);
@@ -117,174 +138,143 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
   return flightCost;
 }
 
-function getRegion(location: string): string {
-  const locationLower = location.toLowerCase();
+// Normalize country names to match countries-list format
+function normalizeCountryName(countryName: string): string {
+  const countryNameMap: Record<string, string> = {
+    "USA": "United States",
+    "US": "United States",
+    "UK": "United Kingdom",
+    "South Korea": "Korea, Republic of",
+    "Korea": "Korea, Republic of"
+  };
 
-  // Extract country if available
-  let country = "";
+  return countryNameMap[countryName] || countryName;
+}
+
+// Export for testing
+export function getRegion(location: string): string {
+  // Extract city and country if available
+  let city = location;
+  let countryName = "";
+
   if (location.includes(",")) {
-    country = location.split(",")[1].trim().toLowerCase();
+    const parts = location.split(",");
+    city = parts[0].trim();
+    countryName = parts[1].trim();
   }
 
-  // North America
-  if (
-    country.includes("united states") ||
-    country.includes("usa") ||
-    country.includes("canada") ||
-    country.includes("mexico") ||
-    locationLower.includes("new york") ||
-    locationLower.includes("san francisco") ||
-    locationLower.includes("los angeles") ||
-    locationLower.includes("toronto") ||
-    locationLower.includes("vancouver") ||
-    locationLower.includes("mexico city")
-  ) {
-    return "North America";
+  // If no country was provided, try to determine it from city-timezones
+  if (!countryName) {
+    const cityInfo = cityTimezones.lookupViaCity(city);
+    if (cityInfo && cityInfo.length > 0) {
+      countryName = cityInfo[0].country;
+    }
   }
 
-  // Europe
-  if (
-    country.includes("uk") ||
-    country.includes("united kingdom") ||
-    country.includes("france") ||
-    country.includes("germany") ||
-    country.includes("italy") ||
-    country.includes("spain") ||
-    country.includes("netherlands") ||
-    country.includes("switzerland") ||
-    country.includes("sweden") ||
-    country.includes("norway") ||
-    country.includes("denmark") ||
-    country.includes("finland") ||
-    country.includes("poland") ||
-    country.includes("belgium") ||
-    locationLower.includes("london") ||
-    locationLower.includes("paris") ||
-    locationLower.includes("berlin") ||
-    locationLower.includes("rome") ||
-    locationLower.includes("madrid") ||
-    locationLower.includes("amsterdam") ||
-    locationLower.includes("zurich") ||
-    locationLower.includes("stockholm") ||
-    locationLower.includes("oslo") ||
-    locationLower.includes("copenhagen")
-  ) {
-    return "Europe";
+  // Normalize country name
+  if (countryName) {
+    countryName = normalizeCountryName(countryName);
   }
 
-  // Asia
-  if (
-    country.includes("korea") ||
-    country.includes("japan") ||
-    country.includes("china") ||
-    country.includes("taiwan") ||
-    country.includes("hong kong") ||
-    country.includes("singapore") ||
-    country.includes("malaysia") ||
-    country.includes("thailand") ||
-    country.includes("vietnam") ||
-    country.includes("india") ||
-    locationLower.includes("seoul") ||
-    locationLower.includes("tokyo") ||
-    locationLower.includes("beijing") ||
-    locationLower.includes("shanghai") ||
-    locationLower.includes("taipei") ||
-    locationLower.includes("hong kong") ||
-    locationLower.includes("singapore") ||
-    locationLower.includes("kuala lumpur") ||
-    locationLower.includes("bangkok") ||
-    locationLower.includes("mumbai")
-  ) {
-    return "Asia";
-  }
+  // Try to find the country in the countries-list library
+  if (countryName) {
+    // Normalize country name for lookup
+    const normalizedCountryName = countryName.trim();
 
-  // Australia/Oceania
-  if (
-    country.includes("australia") ||
-    country.includes("new zealand") ||
-    locationLower.includes("sydney") ||
-    locationLower.includes("melbourne") ||
-    locationLower.includes("brisbane") ||
-    locationLower.includes("auckland") ||
-    locationLower.includes("wellington")
-  ) {
-    return "Australia";
-  }
+    // Find country by name or code
+    const countryCode = Object.keys(countries).find(code => {
+      const country = countries[code as keyof typeof countries];
+      return (
+        country.name.toLowerCase() === normalizedCountryName.toLowerCase() ||
+        code.toLowerCase() === normalizedCountryName.toLowerCase() ||
+        (country.native && country.native.toLowerCase() === normalizedCountryName.toLowerCase())
+      );
+    });
 
-  // South America
-  if (
-    country.includes("brazil") ||
-    country.includes("argentina") ||
-    country.includes("chile") ||
-    country.includes("colombia") ||
-    country.includes("peru") ||
-    locationLower.includes("são paulo") ||
-    locationLower.includes("sao paulo") ||
-    locationLower.includes("rio de janeiro") ||
-    locationLower.includes("buenos aires") ||
-    locationLower.includes("santiago") ||
-    locationLower.includes("bogota") ||
-    locationLower.includes("lima")
-  ) {
-    return "South America";
-  }
+    if (countryCode) {
+      const country = countries[countryCode as keyof typeof countries];
+      const continentCode = country.continent;
 
-  // Africa
-  if (
-    country.includes("south africa") ||
-    country.includes("egypt") ||
-    country.includes("morocco") ||
-    country.includes("kenya") ||
-    country.includes("nigeria") ||
-    locationLower.includes("johannesburg") ||
-    locationLower.includes("cape town") ||
-    locationLower.includes("cairo") ||
-    locationLower.includes("casablanca") ||
-    locationLower.includes("nairobi") ||
-    locationLower.includes("lagos")
-  ) {
-    return "Africa";
+      // Map continent code to our region format
+      switch (continentCode) {
+        case "NA": return "North America";
+        case "SA": return "South America";
+        case "EU": return "Europe";
+        case "AS": return "Asia";
+        case "OC": return "Australia";
+        case "AF": return "Africa";
+        default: return "Other";
+      }
+    }
   }
 
   // Default to 'Other' if region can't be determined
   return "Other";
 }
 
+// Find airport code for a city
+function findAirportCode(cityName: string): string | null {
+  try {
+    // Try to find the airport by city name
+    const airports = Array.from(airportCodes)
+      .filter((airport) => {
+        const name = airport.get('city') || '';
+        return name.toLowerCase() === cityName.toLowerCase();
+      });
+
+    if (airports.length > 0) {
+      // Return the IATA code of the first match
+      return airports[0].get('iata');
+    }
+
+    // If no exact match, try a more flexible search
+    const fuzzyAirports = Array.from(airportCodes)
+      .filter((airport) => {
+        const name = airport.get('city') || '';
+        return name.toLowerCase().includes(cityName.toLowerCase());
+      });
+
+    if (fuzzyAirports.length > 0) {
+      // Return the IATA code of the first fuzzy match
+      return fuzzyAirports[0].get('iata');
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error finding airport code:", error);
+    return null;
+  }
+}
+
+// Simplified version of getAmadeusPrice to reduce cognitive complexity
 async function getAmadeusPrice(
   origin: string,
   destination: string,
   dates: { outbound: string; return: string }
 ): Promise<{ price: number | null; source: string }> {
-  // Extract city names and convert to airport codes
+  // Extract city names
   const originCity = origin.split(",")[0].trim();
   const destCity = destination.split(",")[0].trim();
 
-  // Airport code mapping (extend as needed)
-  const cityToCode: Record<string, string> = {
-    Seoul: "ICN",
-    Tokyo: "HND",
-    Taipei: "TPE",
-    "Hong Kong": "HKG",
-    Singapore: "SIN",
-    Bangkok: "BKK",
-    "San Francisco": "SFO",
-    "Los Angeles": "LAX",
-    "New York": "JFK",
-    London: "LHR",
-    Paris: "CDG",
-    Sydney: "SYD",
-    Beijing: "PEK",
-    Shanghai: "PVG",
-  };
+  // Find airport codes using the airport-codes library
+  const originCode = findAirportCode(originCity);
+  const destCode = findAirportCode(destCity);
 
-  const originCode = cityToCode[originCity];
-  const destCode = cityToCode[destCity];
-
+  // Check if we have valid airport codes
   if (!originCode || !destCode) {
     console.log("Could not find airport code for one of the cities:", originCity, destCity);
     return { price: null, source: "Amadeus API - Invalid city" };
   }
 
+  return await searchAmadeusFlights(originCode, destCode, dates);
+}
+
+// Helper function to search flights with Amadeus API
+async function searchAmadeusFlights(
+  originCode: string,
+  destCode: string,
+  dates: { outbound: string; return: string }
+): Promise<{ price: number | null; source: string }> {
   const apiKey = process.env.AMADEUS_API_KEY;
   const apiSecret = process.env.AMADEUS_API_SECRET;
 

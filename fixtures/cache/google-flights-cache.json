@@ -68,5 +68,250 @@
       "timestamp": "2025-03-20T08:57:45.648Z",
       "source": "Google Flights"
     }
+  },
+  "149dfca605b6cfdf63bc59c8e90c072356323995cea741778b7ae87e965f859f": {
+    "value": {
+      "price": 1207,
+      "timestamp": "2025-03-20T09:32:54.461Z",
+      "source": "Google Flights"
+    }
+  },
+  "9feaa1cc6daecce823f9422f31dd1f25b4ea781b54dfc2217d1126d1bf786569": {
+    "value": {
+      "price": 709,
+      "timestamp": "2025-03-20T09:33:11.566Z",
+      "source": "Google Flights"
+    }
+  },
+  "edbea51fb6cedcfa63963630c790870f7eaab1082cbfdb5608be465223082e78": {
+    "value": {
+      "price": 962,
+      "timestamp": "2025-03-20T09:33:29.284Z",
+      "source": "Google Flights"
+    }
+  },
+  "e6204b311abbe79ae37cbc28e5e120d852d6eb4735df7114a980c2dc69685aa9": {
+    "value": {
+      "price": 1116,
+      "timestamp": "2025-03-20T09:33:46.899Z",
+      "source": "Google Flights"
+    }
+  },
+  "07b25ec984360d65db84ee2428eb96afb99a152dc39ef2d2f7f0578f16ef091e": {
+    "value": {
+      "price": 911,
+      "timestamp": "2025-03-20T09:34:05.160Z",
+      "source": "Google Flights"
+    }
+  },
+  "e847fa2ec5799d8cc100a2e28600f030e6eabf4b2bcd77953f3aafacbd84474a": {
+    "value": {
+      "price": 910,
+      "timestamp": "2025-03-20T09:34:57.423Z",
+      "source": "Google Flights"
+    }
+  },
+  "98f526462da808581ed42e67cbd7fabde53e10bc1529a4d60fe1c087b8afcb34": {
+    "value": {
+      "price": 1071,
+      "timestamp": "2025-03-20T09:35:14.539Z",
+      "source": "Google Flights"
+    }
+  },
+  "a8b316fe48eadd76b998d0b958518302330f92fbfc00894a16af127455628509": {
+    "value": {
+      "price": 1071,
+      "timestamp": "2025-03-20T09:35:31.023Z",
+      "source": "Google Flights"
+    }
+  },
+  "8e502e38e4ff234a76615749b6c9a8c60c18384f3222f93c7bd393fa3f296591": {
+    "value": {
+      "price": 855,
+      "timestamp": "2025-03-20T09:35:49.042Z",
+      "source": "Google Flights"
+    }
+  },
+  "6ebef2200bf05bbc28e6c60fea26f9cb44831266848e8abaa3262dcff1b81d1e": {
+    "value": {
+      "price": 732,
+      "timestamp": "2025-03-20T09:36:06.449Z",
+      "source": "Google Flights"
+    }
+  },
+  "68ec775920eebb34ea1c92aa5932ffa9e338b100fba2edf0d52ff7f6673afff8": {
+    "value": {
+      "price": 263,
+      "timestamp": "2025-03-20T09:36:25.437Z",
+      "source": "Google Flights"
+    }
+  },
+  "ee0035f541c31671a1a5335869fa0409c76cfcc599e1e1998956215cbea75928": {
+    "value": {
+      "price": 263,
+      "timestamp": "2025-03-20T09:36:42.675Z",
+      "source": "Google Flights"
+    }
+  },
+  "d3fa6ff24770ad78189be5a2c48a3f96efb40f256ee693900258ac5b0e350536": {
+    "value": {
+      "price": 1346,
+      "timestamp": "2025-03-20T09:37:01.232Z",
+      "source": "Google Flights"
+    }
+  },
+  "57b2ee4de2906314b74b02ebed8836667446b073ee2b3a61f802ce1cd1e001d5": {
+    "value": {
+      "price": 1399,
+      "timestamp": "2025-03-20T09:37:17.904Z",
+      "source": "Google Flights"
+    }
+  },
+  "df2ab68fb17e1d70231172a0d3645d17f6d223c9682d6d18c75ee7014d8b0cf3": {
+    "value": {
+      "price": 1399,
+      "timestamp": "2025-03-20T09:37:34.411Z",
+      "source": "Google Flights"
+    }
+  },
+  "c332671d04f9382aabe29148af07787b331b9ae576ab9580309f09f35f9f3c5f": {
+    "value": {
+      "price": 707,
+      "timestamp": "2025-03-20T09:37:53.722Z",
+      "source": "Google Flights"
+    }
+  },
+  "3b25b57ba3ec6c54b3ecb3d98994158f9face40c796da312d2541ef912a3f863": {
+    "value": {
+      "price": 784,
+      "timestamp": "2025-03-20T09:38:11.623Z",
+      "source": "Google Flights"
+    }
+  },
+  "aaf4301e4f825b58ccb65f18d4f4987ea91511e3c438abdf6dc7ea0173d52175": {
+    "value": {
+      "price": 784,
+      "timestamp": "2025-03-20T09:38:28.967Z",
+      "source": "Google Flights"
+    }
+  },
+  "a21d16175145dcc72898ee2363539c28cf38aba3d308eb12ea38672e6e8577e8": {
+    "value": {
+      "price": 1190,
+      "timestamp": "2025-03-20T09:38:46.579Z",
+      "source": "Google Flights"
+    }
+  },
+  "8dc0ae848a866e9c782524b6a8d3585a2fdcb6ba0a88c6744d5086beb4ae691b": {
+    "value": {
+      "price": 1258,
+      "timestamp": "2025-03-20T09:39:03.897Z",
+      "source": "Google Flights"
+    }
+  },
+  "5f638b3e7da31c937cf6ca3a13ec28119a3acf0c05abc36186100a1868d51432": {
+    "value": {
+      "price": 402,
+      "timestamp": "2025-03-20T09:39:22.177Z",
+      "source": "Google Flights"
+    }
+  },
+  "b5872278fd536b4b0607ef99020875515dc5b601d43ffe28c9a9463a4860ebd4": {
+    "value": {
+      "price": 402,
+      "timestamp": "2025-03-20T09:39:41.250Z",
+      "source": "Google Flights"
+    }
+  },
+  "e1d7deb31dab8698fca1e71a801e3752ededf7b4cc21a428fce23d1cecf682c2": {
+    "value": {
+      "price": 838,
+      "timestamp": "2025-03-20T09:39:58.298Z",
+      "source": "Google Flights"
+    }
+  },
+  "decdc91aa62ba6b08cc01e6a8122fea3708ebf22775ef4677a3c801ca4dcefb2": {
+    "value": {
+      "price": 727,
+      "timestamp": "2025-03-20T09:40:16.907Z",
+      "source": "Google Flights"
+    }
+  },
+  "53c4cb57a8da8c67eb55191f3208ffc39b014decdf7aad4595b3db284bcf367f": {
+    "value": {
+      "price": 1272,
+      "timestamp": "2025-03-20T09:40:34.081Z",
+      "source": "Google Flights"
+    }
+  },
+  "f7a5c5802ddcb5ba582e11c747622cbd690c4e3c891c03fe4408ede3086e3724": {
+    "value": {
+      "price": 905,
+      "timestamp": "2025-03-20T09:40:51.391Z",
+      "source": "Google Flights"
+    }
+  },
+  "818dcada6c41b82413752f626103692ae8a493116f801234fbbbb07e003d41a0": {
+    "value": {
+      "price": 155,
+      "timestamp": "2025-03-20T09:41:08.373Z",
+      "source": "Google Flights"
+    }
+  },
+  "336e8b1f575f91e05323c6222932f40b067c39bd21d1a58d75deb13211c83cc7": {
+    "value": {
+      "price": 801,
+      "timestamp": "2025-03-20T09:41:26.993Z",
+      "source": "Google Flights"
+    }
+  },
+  "70706ee0360df5b17765ee6828ea2063c8de8d0ec0cc3934dba6fb5f986f1a64": {
+    "value": {
+      "price": 910,
+      "timestamp": "2025-03-20T09:41:44.267Z",
+      "source": "Google Flights"
+    }
+  },
+  "2f3098afb2e874e813e8b03c7952679d8e7e0f7214fb54acfd7a2e975d089999": {
+    "value": {
+      "price": 1396,
+      "timestamp": "2025-03-20T09:42:02.039Z",
+      "source": "Google Flights"
+    }
+  },
+  "889a9b32d31b656b84a9b87532e18573bd3f87054b518665c82c5bd61542afbb": {
+    "value": {
+      "price": 1415,
+      "timestamp": "2025-03-20T09:42:20.172Z",
+      "source": "Google Flights"
+    }
+  },
+  "992f7221bb95564ab007b46d6aad763abfec0a1311bd2908ee88524e1184dd43": {
+    "value": {
+      "price": 1225,
+      "timestamp": "2025-03-20T09:42:36.956Z",
+      "source": "Google Flights"
+    }
+  },
+  "75bb76292c58b73f42336f3bb3f0bf2efb505164ca7d9e6b8b10553c0b4676c9": {
+    "value": {
+      "price": 1225,
+      "timestamp": "2025-03-20T09:42:55.037Z",
+      "source": "Google Flights"
+    }
+  },
+  "e0a8ff1b3e328eaccf3130235f3f65023dc166dc1e800c2a656039febeac4c3d": {
+    "value": {
+      "price": 828,
+      "timestamp": "2025-03-20T09:43:12.782Z",
+      "source": "Google Flights"
+    }
+  },
+  "dff16ac004e6ed07218c25b07692d43dcfe205bae0947d07d69037cbe98774f2": {
+    "value": {
+      "price": 1227,
+      "timestamp": "2025-03-20T09:46:50.891Z",
+      "source": "Google Flights"
+    }
   }
 }

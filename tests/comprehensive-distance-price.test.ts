@@ -2,8 +2,8 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { CoordinatesMapping } from '../src/utils/coordinates';
 import { getDistanceKmFromCities } from '../src/utils/distance';
-import { GoogleFlightsScraper } from '../src/utils/google-flights-scraper';
 import { calculateFlightCost } from '../src/utils/flights';
+import { GoogleFlightsScraper } from '../src/utils/google-flights-scraper';
 
 interface RouteAnalysis {
   origin: string;
@@ -35,7 +35,7 @@ const TEST_DESTINATIONS = [
   'Las Vegas, USA',
   'San Francisco, USA',
   'Turin, Italy',
-  'Grapevine, TX, USA',
+  'Grapevine, Texas, USA',
   'San Jose, USA',
   'Chicago, USA',
   'London, UK',
@@ -87,7 +87,7 @@ const INITIAL_TEST_DESTINATIONS = [
 ];
 
 // Set to true to test all destinations, false for initial subset
-const shouldTestAllDestinations = false;
+const shouldTestAllDestinations = true;
 const DESTINATIONS_TO_TEST = shouldTestAllDestinations ? TEST_DESTINATIONS : INITIAL_TEST_DESTINATIONS;
 const ORIGIN = 'Seoul, South Korea';
 
@@ -109,7 +109,7 @@ const COORDINATES: Record<string, { lat: number; lng: number }> = {
   'Barcelona, Spain': { lat: 41.3851, lng: 2.1734 },
   'Las Vegas, USA': { lat: 36.1699, lng: -115.1398 },
   'Turin, Italy': { lat: 45.0703, lng: 7.6869 },
-  'Grapevine, TX, USA': { lat: 32.9343, lng: -97.0781 },
+  'Grapevine, Texas, USA': { lat: 32.9343, lng: -97.0781 },
   'San Jose, USA': { lat: 37.3382, lng: -121.8863 },
   'Chicago, USA': { lat: 41.8781, lng: -87.6298 },
   'Ho Chi Minh, Vietnam': { lat: 10.8231, lng: 106.6297 },
