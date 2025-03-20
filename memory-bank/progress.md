@@ -29,10 +29,11 @@
 
 ✅ **Flight Price Lookup**
 
-- SerpAPI integration for flight prices
+- Google Flights scraper integration
 - Fallback to distance-based calculation
 - Flight date generation based on conference dates
-- Google Flights scraper with robust currency selection
+- Average price calculation for multiple flights
+- Flight price source tracking in output
 
 ✅ **City Matching**
 
@@ -46,6 +47,7 @@
 - CSV file output with timestamp
 - Console table display
 - Detailed cost breakdown
+- Flight price source information
 
 ### Utilities
 
@@ -83,12 +85,12 @@
 
 ## In Progress
 
-🔄 **Flight Price API Integration**
+🔄 **Flight Price Scraper Improvements**
 
-- Improving reliability of API lookups
-- Handling rate limits
-- Caching API responses
-- Enhancing scraper robustness
+- Enhancing scraper reliability
+- Handling edge cases for less common destinations
+- Improving error handling and recovery
+- Optimizing scraper performance
 
 🔄 **Data Expansion**
 
@@ -182,7 +184,7 @@
 
 🐛 **Flight Price Volatility**
 
-- API prices can vary significantly
+- Scraped prices can vary significantly
 - Need strategies for price stabilization
 - Consider averaging multiple lookups
 
@@ -198,6 +200,12 @@
 - Some cities lack cost of living information
 - Need fallback strategy for missing data
 
+🐛 **Scraper Reliability**
+
+- Google Flights UI can change, breaking selectors
+- Some destinations fail to scrape consistently
+- Need for more robust error handling and recovery
+
 ### Low Priority
 
 🐛 **CSV Format Sensitivity**
@@ -212,21 +220,28 @@
 
 ## Recent Achievements
 
-✅ **Fixed Google Flights Currency Selection**
+✅ **Integrated Google Flights Scraper**
 
-- Implemented a robust multi-approach strategy for selecting USD currency
-- Added detailed logging and screenshots for debugging
-- Improved code organization and reduced cognitive complexity
-- Successfully tested with direct test script
+- Replaced SerpAPI with custom Google Flights scraper
+- Added flight price source tracking in the output
+- Implemented average price calculation for multiple flights
+- Enhanced caching for scraped flight prices
+- Improved error handling and fallback mechanisms
+
+✅ **Enhanced Output Format**
+
+- Added flight price source information to CSV output
+- Updated console table display with source information
+- Improved sorting options to include new fields
 
 ## Next Milestone Goals
 
-1. **Complete Flight API Integration**
+1. **Improve Scraper Reliability**
 
-   - Reliable flight price lookups
-   - Proper error handling and fallbacks
-   - Caching to reduce API calls
-   - Further improvements to web scraping reliability
+   - Enhance error handling and recovery
+   - Implement more robust selectors
+   - Add retry mechanisms for failed scrapes
+   - Optimize performance for batch processing
 
 2. **Expand Data Coverage**
 

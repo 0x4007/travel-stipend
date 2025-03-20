@@ -10,7 +10,7 @@ The most recent development has focused on:
 
 1. **Implementing the core stipend calculation logic** that factors in:
 
-   - Flight costs (via API lookup or distance-based calculation)
+   - Flight costs (via Google Flights scraper or distance-based calculation)
    - Lodging costs adjusted by location's cost of living
    - Meal costs with basic and business entertainment components
    - Local transportation costs based on taxi data
@@ -31,14 +31,15 @@ The most recent development has focused on:
 
 4. **Implementing fallback mechanisms** for resilience:
 
-   - Distance-based flight cost calculation when API lookup fails
+   - Distance-based flight cost calculation when scraping fails
    - Fuzzy matching for city names when exact matches aren't found
 
-5. **Improving the Google Flights scraper**:
-   - Fixed USD currency selection in the currency dialog
-   - Implemented multiple approaches to find and select USD currency
-   - Added better error handling and logging
-   - Improved code organization and reduced cognitive complexity
+5. **Integrating the Google Flights scraper**:
+   - Replaced SerpAPI with custom Google Flights scraper
+   - Added flight price source tracking in the output
+   - Implemented average price calculation for multiple flights
+   - Enhanced caching for scraped flight prices
+   - Improved error handling and fallback mechanisms
 
 ## Current Focus
 
@@ -46,10 +47,10 @@ The current development focus is on:
 
 1. **Refining the flight price lookup** to provide more accurate estimates:
 
-   - Improving API integration with SerpAPI
-   - Handling edge cases for less common destinations
-   - Optimizing API usage to stay within rate limits
    - Enhancing the Google Flights scraper reliability
+   - Handling edge cases for less common destinations
+   - Improving error handling and recovery
+   - Optimizing scraper performance
 
 2. **Enhancing the cost-of-living adjustments** for better accuracy:
 
@@ -98,12 +99,17 @@ Current known issues that need attention:
 
 2. **Flight Price Volatility**:
 
-   - Flight prices from API can vary significantly
+   - Flight prices from scraping can vary significantly
    - Need for strategies to handle price fluctuations
 
 3. **Currency Conversion**:
    - All calculations currently in USD
    - Need for handling multiple currencies
+
+4. **Scraper Reliability**:
+   - Google Flights UI can change, breaking selectors
+   - Some destinations fail to scrape consistently
+   - Need for more robust error handling and recovery
 
 ## Next Steps
 

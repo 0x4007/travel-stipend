@@ -14,7 +14,7 @@
 
 - **csv-parse**: Library for parsing CSV files into JavaScript objects.
 - **dotenv**: Used for loading environment variables from .env files.
-- **serpapi**: API client for accessing flight price data.
+- **puppeteer**: Headless browser automation library used for web scraping.
 
 #### Development Dependencies
 
@@ -51,6 +51,7 @@ travel-stipend/
 │   └── cache/              # Persistent cache storage
 ├── src/                    # Source code
 │   ├── utils/              # Utility functions
+│   │   ├── google-flights-scraper/ # Google Flights scraper components
 │   ├── travel-stipend-calculator.ts  # Main calculator
 │   └── historical-stipend-calculator.ts  # Historical data processor
 ├── tests/                  # Test files
@@ -96,53 +97,61 @@ The project uses esbuild for fast compilation and bundling:
    - Longitude: Geographic longitude
 
 4. **taxis.csv**: Contains taxi fare information:
-
    - City: City name
    - Base Fare: Starting fare
    - Per KM: Cost per kilometer
    - Currency: Local currency
 
-5. **airport-codes.csv**: Contains airport reference data:
-   - IATA code: Three-letter airport code
-   - City: Associated city
-   - Country: Country location
-
 ### Output Data
 
-1. **CSV Files**: Generated in the outputs directory with timestamp and sort information.
+1. **CSV Files**: Generated in the outputs directory with timestamp and sort information, including flight price source.
 2. **Console Output**: Tabular display of stipend calculations.
 3. **Cache Files**: JSON files storing calculation results for reuse.
 
-## External Services
+## Flight Price Lookup
 
-### Flight Price API
+### Google Flights Scraper
 
-The application can use the SerpAPI service to look up flight prices:
+The application uses a custom Google Flights scraper to look up flight prices:
 
-- **API Key**: Required in .env file for authentication.
-- **Endpoint**: Google Flights search via SerpAPI.
-- **Fallback**: Distance-based calculation when API is unavailable.
+- **Web Scraping**: Uses Puppeteer to automate browser interactions with Google Flights.
+- **Currency Selection**: Ensures USD currency for consistent pricing.
+- **Price Averaging**: Calculates average price from top flights when multiple are available.
+- **Headless Mode**: Runs in headless mode for better performance.
+- **Fallback**: Distance-based calculation when scraping fails.
+
+### Distance-Based Calculation
+
+When scraping fails, the application falls back to a distance-based calculation:
+
+- **Haversine Formula**: Calculates distance between cities using coordinates.
+- **Multi-tier Pricing**: Different pricing tiers based on flight distance.
+- **Regional Factors**: Adjusts prices based on regional flight patterns.
+- **Popular Route Discounts**: Special pricing for common city pairs.
 
 ## Technical Constraints
 
 1. **Performance Considerations**:
 
    - Caching is essential for performance with large datasets.
-   - API rate limits may affect flight price lookups.
+   - Web scraping can be slow for batch processing.
 
 2. **Data Accuracy**:
 
    - Cost-of-living data requires regular updates.
    - Flight prices are volatile and may change frequently.
+   - Web scraping reliability depends on Google Flights UI stability.
 
 3. **Error Handling**:
 
    - Must gracefully handle missing or malformed data.
-   - Should provide fallbacks when external services fail.
+   - Should provide fallbacks when scraping fails.
+   - Needs robust error recovery for web scraping.
 
 4. **Scalability**:
    - Current design handles hundreds of conferences efficiently.
    - Larger datasets may require pagination or streaming.
+   - Parallel scraping may be needed for very large datasets.
 
 ## Configuration Parameters
 

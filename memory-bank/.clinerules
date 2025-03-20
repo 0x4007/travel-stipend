@@ -89,7 +89,7 @@
 ## Known Challenges
 
 - City name matching is sensitive to formatting and spelling
-- Flight price API has rate limits and can be unreliable
+- Web scraping reliability depends on Google Flights UI stability
 - Cost-of-living data may be outdated for some locations
 - Weekend detection logic has edge cases around date boundaries
 - Web UI elements may change structure or attributes
@@ -105,9 +105,12 @@
 ## Project Evolution
 
 - Originally focused on distance-based flight cost calculation
-- Added API-based flight price lookup as an enhancement
+- Added SerpAPI-based flight price lookup as an enhancement
 - Expanded to include local transportation costs
 - Added business entertainment allowance
 - Implemented weekend rate adjustments for lodging
 - Added command-line sorting options
 - Improved web scraping reliability with multi-approach strategies
+- Replaced SerpAPI with custom Google Flights scraper
+- Added flight price source tracking in the output
+- Implemented average price calculation for multiple flights
