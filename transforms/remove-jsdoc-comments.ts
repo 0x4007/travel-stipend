@@ -4,8 +4,7 @@ import { Transform } from 'jscodeshift';
  * This transform removes JSDoc style comments from TypeScript files.
  * It preserves the code structure while removing comments that match the JSDoc pattern.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const transform: Transform = (file, api) => {
+function transform(file: { source: string }, /* eslint-disable-line @typescript-eslint/no-unused-vars */ api: unknown): string {
   // A simpler approach: use regex to remove JSDoc comments
   // This is more reliable than AST manipulation for comments
   let source = file.source;
@@ -18,6 +17,6 @@ const transform: Transform = (file, api) => {
 
   // Return the modified source
   return source;
-};
+}
 
-export default transform;
+export default transform as Transform;

@@ -1,6 +1,11 @@
 import { createHashKey, PersistentCache } from "./cache";
 import { ORIGIN } from "./constants";
 import { GoogleFlightsScraper } from "./google-flights-scraper";
+import { AmadeusApi } from "./amadeus-api";
+import { config } from "dotenv";
+
+// Load environment variables
+config();
 
 // Initialize flight cache
 const flightCache = new PersistentCache<{ price: number; timestamp: string; source: string }>("fixtures/cache/flight-cache.json");
@@ -252,12 +257,65 @@ function getRegion(location: string): string {
 }
 
 
+async function getAmadeusPrice(
+  origin: string,
+  destination: string,
+  dates: { outbound: string; return: string }
+): Promise<{ price: number | null; source: string }> {
+  // Extract city names and convert to airport codes
+  const originCity = origin.split(",")[0].trim();
+  const destCity = destination.split(",")[0].trim();
+
+  // Airport code mapping (extend as needed)
+  const cityToCode: Record<string, string> = {
+    Seoul: "ICN",
+    Tokyo: "HND",
+    Taipei: "TPE",
+    "Hong Kong": "HKG",
+    Singapore: "SIN",
+    Bangkok: "BKK",
+    "San Francisco": "SFO",
+    "Los Angeles": "LAX",
+    "New York": "JFK",
+    London: "LHR",
+    Paris: "CDG",
+    Sydney: "SYD",
+    Beijing: "PEK",
+    Shanghai: "PVG",
+  };
+
+  const originCode = cityToCode[originCity];
+  const destCode = cityToCode[destCity];
+
+  if (!originCode || !destCode) {
+    console.log("Could not find airport code for one of the cities:", originCity, destCity);
+    return { price: null, source: "Amadeus API - Invalid city" };
+  }
+
+  const apiKey = process.env.AMADEUS_API_KEY;
+  const apiSecret = process.env.AMADEUS_API_SECRET;
+
+  if (!apiKey || !apiSecret) {
+    console.log("Missing Amadeus API credentials");
+    return { price: null, source: "Amadeus API - Missing credentials" };
+  }
+
+  try {
+    const amadeus = new AmadeusApi(apiKey, apiSecret); // Uses major carriers by default
+    const result = await amadeus.searchFlights(originCode, destCode, dates.outbound, dates.return);
+    return { price: result.price, source: result.source };
+  } catch (error) {
+    console.error("Error getting Amadeus price:", error);
+    return { price: null, source: "Amadeus API error" };
+  }
+}
+
 export async function scrapeFlightPrice(
   origin: string,
   destination: string,
   dates: { outbound: string; return: string }
 ): Promise<{ price: number | null; source: string }> {
-  const cacheKey = createHashKey([origin, destination, dates.outbound, dates.return, "scraper-v1"]);
+  const cacheKey = createHashKey([origin, destination, dates.outbound, dates.return, "v2"]); // Updated cache version
 
   // Check cache first
   const cachedData = flightCache.get(cacheKey);
@@ -321,10 +379,12 @@ export async function scrapeFlightPrice(
       }
     }
 
-    console.log("No flight prices found from scraper");
-    return { price: null, source: "Scraping failed" };
+    console.log("No flight prices found from Google Flights scraper, trying Amadeus API...");
+    // Try Amadeus API as fallback
+    return getAmadeusPrice(origin, destination, dates);
   } catch (error) {
-    console.error("Error scraping flight price:", error);
-    return { price: null, source: "Scraping error" };
+    console.error("Error scraping Google Flights price:", error);
+    // Try Amadeus API as fallback
+    return getAmadeusPrice(origin, destination, dates);
   }
 }

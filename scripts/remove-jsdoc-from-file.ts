@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Function to remove JSDoc comments from a string
-function removeJSDocComments(content: string): string {
+function removeJsDocComments(content: string): string {
   // Regex to match JSDoc comments (/** ... */)
   const jsdocRegex = /\/\*\*[\s\S]*?\*\//g;
 
@@ -50,7 +50,7 @@ try {
   const content = fs.readFileSync(filePath, 'utf-8');
 
   // Remove JSDoc comments
-  const processedContent = removeJSDocComments(content);
+  const processedContent = removeJsDocComments(content);
 
   // Check if any changes were made
   if (content !== processedContent) {

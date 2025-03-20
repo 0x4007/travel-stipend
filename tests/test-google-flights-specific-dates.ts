@@ -41,23 +41,14 @@ async function main() {
       console.log(`Found ${flightData.prices.length} flight prices`);
 
       if (flightData.prices.length > 0) {
-        console.log("\nPrices:");
-        flightData.prices.forEach((price, index) => {
-          console.log(`  ${index + 1}. ${price}`);
-        });
-      }
-
-      if (flightData.airlines && flightData.airlines.length > 0) {
-        console.log("\nAirlines:");
-        flightData.airlines.forEach((airline, index) => {
-          console.log(`  ${index + 1}. ${airline}`);
-        });
-      }
-
-      if (flightData.durations && flightData.durations.length > 0) {
-        console.log("\nDurations:");
-        flightData.durations.forEach((duration, index) => {
-          console.log(`  ${index + 1}. ${duration}`);
+        console.log("\nFlight Details:");
+        flightData.prices.forEach((flight, index) => {
+          console.log(`  ${index + 1}. Airline: ${flight.airline}`);
+          console.log(`     Duration: ${flight.duration}`);
+          console.log(`     Departure: ${flight.departureTime}`);
+          console.log(`     Arrival: ${flight.arrivalTime}`);
+          console.log(`     Stops: ${flight.stops}`);
+          console.log(`     Price: $${flight.price.toFixed(2)}\n`);
         });
       }
 

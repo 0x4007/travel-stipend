@@ -24,9 +24,9 @@ export async function logAllClickableElements(page: Page): Promise<void> {
 
         return {
           tag: el.tagName.toLowerCase(),
-          id: el.id || "",
-          classes: (el as HTMLElement).className || "",
-          text: el.textContent?.trim() || "",
+          id: el.id ?? "",
+          classes: (el as HTMLElement).className ?? "",
+          text: el.textContent?.trim() ?? "",
           isVisible,
           attributes: Array.from(el.attributes).map(attr => `${attr.name}="${attr.value}"`).join(", "),
           position: `x: ${Math.round(rect.left)}, y: ${Math.round(rect.top)}, width: ${Math.round(rect.width)}, height: ${Math.round(rect.height)}`
@@ -49,6 +49,6 @@ export async function logAllClickableElements(page: Page): Promise<void> {
       }
     });
   } catch (error) {
-    log(LOG_LEVEL.ERROR, "Error logging clickable elements:", error);
+    log(LOG_LEVEL.ERROR, "Error logging clickable elements:", error as Error);
   }
 }

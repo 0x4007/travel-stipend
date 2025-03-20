@@ -57,8 +57,8 @@ async function main() {
     console.log(`Found ${result.prices.length} flight prices:`);
 
     if (result.prices.length > 0) {
-      result.prices.forEach((price, index) => {
-        console.log(`Price ${index + 1}: $${price}`);
+      result.prices.forEach((flight, index) => {
+        console.log(`Price ${index + 1}: $${typeof flight.price === 'number' ? flight.price.toFixed(2) : 'N/A'}`);
       });
     } else {
       console.log("No prices found. Check the screenshots for debugging.");

@@ -40,7 +40,8 @@ export async function findAndClickCurrencyButton(page: Page): Promise<boolean> {
   });
 
   if (isCurrencyButtonFound) {
-
+    // Currency button was found and clicked
+    return true;
   } else {
     // Approach 2: Try to find the settings menu first, then look for currency option
 
@@ -74,7 +75,7 @@ export async function findAndClickCurrencyButton(page: Page): Promise<boolean> {
     });
 
     if (isSettingsMenuFound) {
-
+      // Settings menu was found and clicked
 
       // Wait for the menu to appear
       await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 1000)));
@@ -104,7 +105,7 @@ export async function findAndClickCurrencyButton(page: Page): Promise<boolean> {
       });
 
       if (isCurrencyOptionFound) {
-
+        // Currency option was found and clicked
         return true;
       }
     }

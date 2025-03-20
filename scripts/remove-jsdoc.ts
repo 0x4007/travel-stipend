@@ -21,28 +21,57 @@ const args = process.argv.slice(2);
 const dirs = args.length > 0 ? args : defaultDirs;
 const extensions = ['.ts', '.tsx'];
 
-// Process each directory
-for (const dir of dirs) {
+/**
+ * Process a directory with jscodeshift
+ * Using a safer approach with execSync
+ */
+function processDirectory(dir: string): void {
   const dirPath = path.resolve(process.cwd(), dir);
 
   // Check if directory exists
   if (!fs.existsSync(dirPath)) {
     console.warn(`Directory not found, skipping: ${dirPath}`);
-    continue;
+    return;
   }
 
   console.log(`Processing TypeScript files in ${dir}...`);
 
   try {
-    // Run jscodeshift on the directory with verbose output
-    const command = `npx jscodeshift --extensions=${extensions.join(',')} --parser=ts -t ${transformPath} ${dirPath} --verbose=2`;
-    console.log(`Executing: ${command}`);
+    // Get the absolute path to npx
+    const npxPath = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 
-    const output = execSync(command, { encoding: 'utf-8' });
-    console.log(output);
+    // Build the command with proper escaping
+    const extensionsArg = extensions.join(',');
+
+    // Use execSync with explicit command and arguments
+    console.log(`Executing jscodeshift on ${dir}...`);
+
+    // Use execSync but with a safer approach
+    const result = execSync(
+      `"${npxPath}" jscodeshift --extensions=${extensionsArg} --parser=ts -t "${transformPath}" "${dirPath}" --verbose=2`,
+      {
+        encoding: 'utf-8',
+        // We need shell features for this command
+        shell: true,
+        // Set a specific PATH to avoid PATH manipulation attacks
+        env: {
+          ...process.env,
+          // Use nullish coalescing operator instead of logical OR
+          PATH: process.env.PATH?.split(path.delimiter)[0] ?? '/usr/bin'
+        }
+      }
+    );
+
+    console.log(result);
+    console.log(`Successfully processed ${dir}`);
   } catch (error) {
     console.error(`Error processing ${dir}:`, error);
   }
+}
+
+// Process each directory
+for (const dir of dirs) {
+  processDirectory(dir);
 }
 
 console.log('JSDoc comment removal complete!');
