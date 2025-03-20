@@ -3,23 +3,33 @@ import { searchFlightPrices } from './flexible-flight-search';
 describe('Flexible Flight Search', () => {
   jest.setTimeout(120000); // 2 minutes timeout for flight searches
 
+  // Define test routes based on distance ranges rather than specific cities
   const testRoutes = [
     {
-      name: "Seoul to Taipei (round trip)",
+      name: "Short distance route (800-1500km)",
       params: {
-        from: "Seoul, South Korea",
-        to: "Taipei, Taiwan",
+        from: "Origin City A, Country A",
+        to: "Destination City B, Country B",
         departureDate: "2024-05-20",
-        returnDate: "2024-05-27"  // Added return date
+        returnDate: "2024-05-27"
       }
     },
     {
-      name: "Tokyo round trip",
+      name: "Medium distance route (2500-4000km)",
       params: {
-        from: "Seoul, South Korea",
-        to: "Tokyo, Japan",
+        from: "Origin City C, Country C",
+        to: "Destination City D, Country D",
         departureDate: "2024-06-01",
         returnDate: "2024-06-07"
+      }
+    },
+    {
+      name: "Long distance route (5000-8000km)",
+      params: {
+        from: "Origin City E, Country E",
+        to: "Destination City F, Country F",
+        departureDate: "2024-06-15",
+        returnDate: "2024-06-22"
       }
     }
   ];
@@ -27,12 +37,9 @@ describe('Flexible Flight Search', () => {
   test.each(testRoutes)("$name", async ({ name, params }) => {
     console.log(`\nExecuting test: ${name}`);
 
-    // Override flight search params to match working example
+    // Use generic location format for testing
     const result = await searchFlightPrices({
-      ...params,
-      // Use consistent format for city names
-      from: params.from.includes(',') ? params.from : `${params.from}, South Korea`,
-      to: params.to.includes(',') ? params.to : `${params.to}, Japan`
+      ...params
     });
 
     // Basic validation

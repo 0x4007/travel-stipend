@@ -25,80 +25,18 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
   // Base cost parameters - final optimization based on comprehensive testing
   const BASE_COST = 200; // Balanced base cost for short/medium flights
 
-  // Multi-tier distance factors - final calibration based on analysis
+  // Multi-tier distance factors - final calibration
   const DISTANCE_TIERS = [
-    { threshold: 500, factor: 0.2, exponent: 0.9 }, // Very short flights (<500km)
-    { threshold: 1500, factor: 0.18, exponent: 0.85 }, // Short flights (500-1500km)
-    { threshold: 4000, factor: 0.15, exponent: 0.8 }, // Medium flights (1500-4000km)
-    { threshold: 8000, factor: 0.18, exponent: 0.75 }, // Long flights (4000-8000km)
-    { threshold: Infinity, factor: 0.2, exponent: 0.72 }, // Very long flights (>8000km)
+    { threshold: 500, factor: 0.11, exponent: 0.95 },    // Very short flights (<500km)
+    { threshold: 1500, factor: 0.11, exponent: 0.92 },   // Short flights (500-1500km)
+    { threshold: 4000, factor: 0.14, exponent: 0.90 },   // Medium flights (1500-4000km)
+    { threshold: 8000, factor: 0.18, exponent: 0.88 },   // Long flights (4000-8000km)
+    { threshold: Infinity, factor: 0.20, exponent: 0.85 } // Very long flights (>8000km)
   ];
 
-  // Regional factors (multipliers based on regions)
-  function getRegionalFactor(origin: string, destination: string): number {
-    // Extract regions from origin and destination
-    const originRegion = getRegion(origin);
-    const destRegion = getRegion(destination);
-
-    // Regional pricing based on final analysis
-    if (originRegion === destRegion) {
-      // Regional competition factors
-      switch (originRegion) {
-        case "Asia":
-          return 0.85; // High competition in Asia
-        case "Europe":
-          return 0.9; // Strong competition in Europe
-        case "North America":
-          return 1.0; // Standard pricing within North America
-        case "Middle East":
-          return 1.1; // Higher prices in Middle East
-        default:
-          return 1.0;
-      }
-    }
-
-    // Premium routes based on observed data
-    const premiumRoutes = [
-      { from: "North America", to: "Asia", factor: 1.8 },
-      { from: "Asia", to: "North America", factor: 1.8 },
-      { from: "Europe", to: "Asia", factor: 1.7 },
-      { from: "Asia", to: "Europe", factor: 1.7 },
-      { from: "Europe", to: "North America", factor: 1.6 },
-      { from: "North America", to: "Europe", factor: 1.6 },
-      { from: "Europe", to: "Australia", factor: 1.75 },
-      { from: "Australia", to: "Europe", factor: 1.75 },
-      { from: "South America", to: "Asia", factor: 1.7 },
-      { from: "Asia", to: "South America", factor: 1.7 },
-      { from: "Middle East", to: "Asia", factor: 1.6 },
-      { from: "Asia", to: "Middle East", factor: 1.6 }
-    ];
-
-    const premiumRoute = premiumRoutes.find((route) => route.from === originRegion && route.to === destRegion);
-
-    return premiumRoute ? premiumRoute.factor : 1.0; // Default no premium for same region
-  }
-
-  // Regional-based popularity factor
-  function getPopularityFactor(origin: string, destination: string): number {
-    // Extract regions
-    const originRegion = getRegion(origin);
-    const destRegion = getRegion(destination);
-
-    // Apply discounts based on regional competition patterns
-    if (originRegion === "Asia" && destRegion === "Asia") {
-      return 0.85; // 15% discount for intra-Asia flights (high competition)
-    }
-
-    if (originRegion === "Europe" && destRegion === "Europe") {
-      return 0.9; // 10% discount for intra-Europe flights (high competition)
-    }
-
-    if (originRegion === "North America" && destRegion === "North America") {
-      return 0.9; // 10% discount for intra-North America flights
-    }
-
-    // Default - no specific adjustment
-    return 1.0;
+  // Distance-based scaling with diminishing returns
+  function getScalingFactor(distanceKm: number): number {
+    return 1.0 + (Math.log10(distanceKm) / 11.5); // Slightly increased scaling for better short-range accuracy
   }
 
   // Calculate the base distance cost using the appropriate tier
@@ -122,12 +60,9 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
     currentTierIndex++;
   }
 
-  // Apply regional and popularity factors
-  const regionalFactor = getRegionalFactor(origin, destination);
-  const popularityFactor = getPopularityFactor(origin, destination);
-
-  // Calculate final cost
-  let flightCost = (BASE_COST + distanceCost) * regionalFactor * popularityFactor;
+  // Calculate final cost using only distance-based scaling
+  const scalingFactor = getScalingFactor(distanceKm);
+  let flightCost = (BASE_COST + distanceCost) * scalingFactor;
 
   // Round to nearest $5 for cleaner numbers
   flightCost = Math.round(flightCost / 5) * 5;
@@ -138,78 +73,65 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
   return flightCost;
 }
 
-// Normalize country names to match countries-list format
-function normalizeCountryName(countryName: string): string {
-  const countryNameMap: Record<string, string> = {
-    "USA": "United States",
-    "US": "United States",
-    "UK": "United Kingdom",
-    "South Korea": "Korea, Republic of",
-    "Korea": "Korea, Republic of"
-  };
-
-  return countryNameMap[countryName] || countryName;
-}
-
 // Export for testing
 export function getRegion(location: string): string {
-  // Extract city and country if available
-  let city = location;
-  let countryName = "";
+  // Extract country from location string
+  const countryPart = location.includes(",") ? location.split(",")[1].trim() : "";
 
-  if (location.includes(",")) {
-    const parts = location.split(",");
-    city = parts[0].trim();
-    countryName = parts[1].trim();
+  if (!countryPart) {
+    return getRegionFromCity(location.split(",")[0].trim());
   }
 
-  // If no country was provided, try to determine it from city-timezones
-  if (!countryName) {
-    const cityInfo = cityTimezones.lookupViaCity(city);
-    if (cityInfo && cityInfo.length > 0) {
-      countryName = cityInfo[0].country;
-    }
+  return getRegionFromCountry(countryPart);
+}
+
+// Helper function to get region from city name
+function getRegionFromCity(city: string): string {
+  const cityInfo = cityTimezones.lookupViaCity(city);
+  const countryCode = cityInfo?.[0]?.country;
+
+  if (!countryCode) {
+    return "Other";
   }
 
-  // Normalize country name
-  if (countryName) {
-    countryName = normalizeCountryName(countryName);
+  const country = countries[countryCode as keyof typeof countries];
+  if (!country) {
+    return "Other";
   }
 
-  // Try to find the country in the countries-list library
-  if (countryName) {
-    // Normalize country name for lookup
-    const normalizedCountryName = countryName.trim();
+  return getContinentName(country.continent);
+}
 
-    // Find country by name or code
-    const countryCode = Object.keys(countries).find(code => {
-      const country = countries[code as keyof typeof countries];
-      return (
-        country.name.toLowerCase() === normalizedCountryName.toLowerCase() ||
-        code.toLowerCase() === normalizedCountryName.toLowerCase() ||
-        (country.native && country.native.toLowerCase() === normalizedCountryName.toLowerCase())
-      );
-    });
+// Helper function to get region from country name
+function getRegionFromCountry(countryName: string): string {
+  const countryCode = Object.keys(countries).find(code => {
+    const country = countries[code as keyof typeof countries];
+    return (
+      country.name.toLowerCase() === countryName.toLowerCase() ||
+      code.toLowerCase() === countryName.toLowerCase()
+    );
+  });
 
-    if (countryCode) {
-      const country = countries[countryCode as keyof typeof countries];
-      const continentCode = country.continent;
-
-      // Map continent code to our region format
-      switch (continentCode) {
-        case "NA": return "North America";
-        case "SA": return "South America";
-        case "EU": return "Europe";
-        case "AS": return "Asia";
-        case "OC": return "Australia";
-        case "AF": return "Africa";
-        default: return "Other";
-      }
-    }
+  if (!countryCode) {
+    return "Other";
   }
 
-  // Default to 'Other' if region can't be determined
-  return "Other";
+  const country = countries[countryCode as keyof typeof countries];
+  return getContinentName(country.continent);
+}
+
+// Helper function to convert continent codes to names
+function getContinentName(code: string): string {
+  const map: Record<string, string> = {
+    "NA": "North America",
+    "SA": "South America",
+    "EU": "Europe",
+    "AS": "Asia",
+    "OC": "Australia",
+    "AF": "Africa"
+  };
+
+  return map[code] || "Other";
 }
 
 // Find airport code for a city
@@ -298,82 +220,104 @@ export async function scrapeFlightPrice(
   destination: string,
   dates: { outbound: string; return: string }
 ): Promise<{ price: number | null; source: string }> {
-  const cacheKey = createHashKey([origin, destination, dates.outbound, dates.return, "v2"]); // Updated cache version
+  const cacheKey = createHashKey([origin, destination, dates.outbound, dates.return, "v2"]);
 
-  // Check cache first
+  const cachedResult = checkFlightCache(cacheKey);
+  if (cachedResult) {
+    return cachedResult;
+  }
+
+  try {
+    const googlePrice = await searchGoogleFlights(origin, destination, dates);
+    if (googlePrice.price !== null) {
+      return googlePrice;
+    }
+
+    return getAmadeusPrice(origin, destination, dates);
+  } catch (error) {
+    console.error("Error scraping Google Flights price:", error);
+    return getAmadeusPrice(origin, destination, dates);
+  }
+}
+
+function checkFlightCache(cacheKey: string): { price: number; source: string } | null {
   const cachedData = flightCache.get(cacheKey);
   if (cachedData) {
     console.log(`Using cached flight price from ${cachedData.timestamp} (${cachedData.source})`);
     return { price: cachedData.price, source: cachedData.source };
   }
+  return null;
+}
+
+async function searchGoogleFlights(
+  origin: string,
+  destination: string,
+  dates: { outbound: string; return: string }
+): Promise<{ price: number | null; source: string }> {
+  console.log(`Scraping flight prices from ${origin} to ${destination}`);
+  console.log(`Dates: ${dates.outbound} to ${dates.return}`);
+
+  const scraper = new GoogleFlightsScraper();
+  await scraper.initialize({ headless: true });
 
   try {
-    console.log(`Scraping flight prices from ${origin} to ${destination}`);
-    console.log(`Dates: ${dates.outbound} to ${dates.return}`);
-
-    // Initialize scraper
-    const scraper = new GoogleFlightsScraper();
-    await scraper.initialize({ headless: true });
-
-    // Navigate and search
     await scraper.navigateToGoogleFlights();
     await scraper.changeCurrencyToUsd();
     const results = await scraper.searchFlights(origin, destination, dates.outbound, dates.return);
 
-    // Clean up
     await scraper.close();
-
-    // Handle different result types
-    if (results.success) {
-      if ('prices' in results && results.prices.length > 0) {
-        // Handle array of prices
-        const topFlights = results.prices.filter((flight: { isTopFlight: boolean; price: number }) => flight.isTopFlight);
-
-        if (topFlights.length > 0) {
-          // Calculate average of top flights
-          const sum = topFlights.reduce((total: number, flight: { price: number }) => total + flight.price, 0);
-          const avg = Math.round(sum / topFlights.length);
-
-          // Store in cache only if we have a valid price
-          if (avg > 0) {
-            flightCache.set(cacheKey, {
-              price: avg,
-              timestamp: new Date().toISOString(),
-              source: "Google Flights",
-            });
-            console.log(`Stored flight price in cache: $${avg} (from top flights)`);
-          }
-
-          return { price: avg, source: "Google Flights" };
-        } else {
-          // Calculate average of all flights
-          const sum = results.prices.reduce((total: number, flight: { price: number }) => total + flight.price, 0);
-          const avg = Math.round(sum / results.prices.length);
-
-          // Store in cache only if we have a valid price
-          if (avg > 0) {
-            flightCache.set(cacheKey, {
-              price: avg,
-              timestamp: new Date().toISOString(),
-              source: "Google Flights",
-            });
-            console.log(`Stored flight price in cache: $${avg} (from all flights)`);
-          }
-
-          return { price: avg, source: "Google Flights" };
-        }
-      } else if ('price' in results) {
-        // Handle single price result
-        return { price: results.price, source: results.source };
-      }
-    }
-
-    console.log("No flight prices found from Google Flights scraper, trying Amadeus API...");
-    // Try Amadeus API as fallback
-    return getAmadeusPrice(origin, destination, dates);
+    return processGoogleFlightsResults(results);
   } catch (error) {
-    console.error("Error scraping Google Flights price:", error);
-    // Try Amadeus API as fallback
-    return getAmadeusPrice(origin, destination, dates);
+    await scraper.close();
+    throw error;
   }
+}
+
+interface FlightPrice {
+  isTopFlight: boolean;
+  price: number;
+}
+
+interface GoogleFlightsResult {
+  success: boolean;
+  prices?: FlightPrice[];
+  price?: number;
+  source?: string;
+}
+
+function processGoogleFlightsResults(results: GoogleFlightsResult): { price: number | null; source: string } {
+  if (!results.success) {
+    return { price: null, source: "Google Flights" };
+  }
+
+  if ('prices' in results && Array.isArray(results.prices) && results.prices.length > 0) {
+    const topFlights = results.prices.filter(flight => flight.isTopFlight);
+    const flightsToAverage = topFlights.length > 0 ? topFlights : results.prices;
+    return calculateFlightAverage(flightsToAverage);
+  }
+
+  if ('price' in results && typeof results.price === 'number') {
+    return {
+      price: results.price,
+      source: results.source ?? "Google Flights"
+    };
+  }
+
+  return { price: null, source: "Google Flights" };
+}
+
+function calculateFlightAverage(flights: FlightPrice[]): { price: number; source: string } {
+  const sum = flights.reduce((total: number, flight: { price: number }) => total + flight.price, 0);
+  const avg = Math.round(sum / flights.length);
+
+  if (avg > 0) {
+    flightCache.set(createHashKey([String(avg)]), {
+      price: avg,
+      timestamp: new Date().toISOString(),
+      source: "Google Flights",
+    });
+    console.log(`Stored flight price in cache: $${avg}`);
+  }
+
+  return { price: avg, source: "Google Flights" };
 }

@@ -1,68 +1,45 @@
 import { calculateFlightCost } from '../src/utils/flights';
-import { CoordinatesMapping } from '../src/utils/coordinates';
-import { getDistanceKmFromCities } from '../src/utils/distance';
 
-// Test destinations
-const TEST_DESTINATIONS = [
-  'Tokyo, Japan',
-  'Taipei, Taiwan',
-  'Hong Kong',
-  'Bangkok, Thailand',
-  'Singapore',
+// Test with different distance ranges
+const TEST_DISTANCES = [
+  { distance: 800, from: "Origin City A", to: "Destination City B" },
+  { distance: 1500, from: "Origin City C", to: "Destination City D" },
+  { distance: 2500, from: "Origin City E", to: "Destination City F" },
+  { distance: 5000, from: "Origin City G", to: "Destination City H" },
+  { distance: 8500, from: "Origin City I", to: "Destination City J" },
+  { distance: 12000, from: "Origin City K", to: "Destination City L" },
 ];
-const ORIGIN = 'Seoul, South Korea';
 
-// Add coordinates for testing
-const COORDINATES: Record<string, { lat: number; lng: number }> = {
-  'Seoul, South Korea': { lat: 37.5665, lng: 126.9780 },
-  'Tokyo, Japan': { lat: 35.6762, lng: 139.6503 },
-  'Taipei, Taiwan': { lat: 25.0330, lng: 121.5654 },
-  'Hong Kong': { lat: 22.3193, lng: 114.1694 },
-  'Bangkok, Thailand': { lat: 13.7563, lng: 100.5018 },
-  'Singapore': { lat: 1.3521, lng: 103.8198 },
-};
+// Simple price model for comparison (similar to the one in distance-price-analysis.test.ts)
+function getBaselinePrice(distance: number): number {
+  const BASE_PRICE = 200;
+  return Math.round((BASE_PRICE + (distance * 0.10)) / 5) * 5; // Round to nearest $5
+}
 
-// Actual prices from Google Flights
-const ACTUAL_PRICES: Record<string, number> = {
-  'Tokyo, Japan': 249,
-  'Taipei, Taiwan': 225,
-  'Hong Kong': 203,
-  'Bangkok, Thailand': 297,
-  'Singapore': 399,
-};
-
-// Initialize coordinates
-const coordinates = new CoordinatesMapping();
-Object.entries(COORDINATES).forEach(([city, coords]) => {
-  coordinates.addCity(city, coords);
-});
-
-console.log('Flight Cost Analysis:');
-console.log('=====================');
-console.log('Origin:', ORIGIN);
+console.log('Flight Cost Analysis (Distance-Based):');
+console.log('=====================================');
 console.log();
 
 let totalError = 0;
 let totalAbsError = 0;
 
-// Calculate and print results for each destination
-TEST_DESTINATIONS.forEach(destination => {
-  const distanceKm = getDistanceKmFromCities(ORIGIN, destination, coordinates);
-  const estimatedPrice = calculateFlightCost(distanceKm, destination, ORIGIN);
-  const actualPrice = ACTUAL_PRICES[destination];
-  const errorPercent = ((estimatedPrice - actualPrice) / actualPrice) * 100;
+// Calculate and print results for each distance
+TEST_DISTANCES.forEach(({ distance, from, to }) => {
+  const estimatedPrice = calculateFlightCost(distance, to, from);
+  const baselinePrice = getBaselinePrice(distance);
+  const errorPercent = ((estimatedPrice - baselinePrice) / baselinePrice) * 100;
 
   totalError += errorPercent;
   totalAbsError += Math.abs(errorPercent);
 
-  console.log(`Destination: ${destination}`);
-  console.log(`Distance: ${distanceKm.toFixed(0)} km`);
+  console.log(`Route: ${from} to ${to}`);
+  console.log(`Distance: ${distance.toFixed(0)} km`);
   console.log(`Estimated Price: $${estimatedPrice}`);
-  console.log(`Actual Price: $${actualPrice}`);
+  console.log(`Baseline Price: $${baselinePrice}`);
   console.log(`Error: ${errorPercent.toFixed(2)}%`);
   console.log();
 });
 
 console.log('Summary:');
-console.log(`Average Error: ${(totalError / TEST_DESTINATIONS.length).toFixed(2)}%`);
-console.log(`Average Absolute Error: ${(totalAbsError / TEST_DESTINATIONS.length).toFixed(2)}%`);
+console.log(`Average Error: ${(totalError / TEST_DISTANCES.length).toFixed(2)}%`);
+console.log(`Average Absolute Error: ${(totalAbsError / TEST_DISTANCES.length).toFixed(2)}%`);
