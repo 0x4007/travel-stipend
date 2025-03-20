@@ -13,6 +13,28 @@ export async function searchFlights(page: Page, from: string, to: string, depart
   if (!page) throw new Error("Page not initialized");
 
   log(LOG_LEVEL.INFO, `Searching flights from ${from} to ${to}`);
+
+  // If origin and destination are the same, return zero price result immediately
+  if (from === to) {
+    log(LOG_LEVEL.INFO, "Origin and destination are the same - returning zero price result");
+    return {
+      success: true,
+      prices: [{
+        price: 0,
+        airline: "N/A",
+        departureTime: "N/A",
+        arrivalTime: "N/A",
+        duration: "0h 0m",
+        stops: 0,
+        origin: from,
+        destination: to,
+        isTopFlight: true
+      }],
+      searchUrl: "https://www.google.com/travel/flights",
+      allianceFiltersApplied: true
+    };
+  }
+
   const dateInfo = `Departure date: ${departureDate}`;
   const returnInfo = returnDate ? `, Return date: ${returnDate}` : "";
   log(LOG_LEVEL.INFO, dateInfo + returnInfo);

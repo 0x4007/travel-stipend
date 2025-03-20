@@ -695,10 +695,11 @@
   },
   "2095adc98d0e7bb3b0c2b79d7b9b30c1b4f7e6c205371639a50ad8a0d6c917b4": {
     "value": {
-      "price": 1563,
-      "timestamp": "2025-03-20T17:44:18.245Z",
+      "price": 1547,
+      "timestamp": "2025-03-20T17:54:25.625Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDNraG4aShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wM2tobnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMGhzcWYaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8waHNxZnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "helsinki"
     }
   },
   "04e376eb86285737823d0cff18484c70fc6f08e3622eae71704ef09d3e82665b": {
@@ -711,10 +712,11 @@
   },
   "88321b7d30796239edb54b5d3ea0cf193cdcb8204664fdb8a01f874545536c72": {
     "value": {
-      "price": 1565,
-      "timestamp": "2025-03-20T13:15:12.662Z",
+      "price": 1212,
+      "timestamp": "2025-03-20T17:55:05.072Z",
       "source": "Google Flights",
-      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wN19rcRooEgoyMDI1LTA2LTAxagwIAxIIL20vMDdfa3FyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhonEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyCwgDEgcvbS8wZ3hqGicSCjIwMjUtMDYtMDFqCwgDEgcvbS8wZ3hqcgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD",
+      "selectedDestination": "abu dhabi"
     }
   },
   "d309a1f17b1aadbdbc650c7959d468890f8ed07e81d44391b2b678194acf5227": {
@@ -851,6 +853,33 @@
       "timestamp": "2025-03-20T13:21:01.162Z",
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZDZscBooEgoyMDI1LTA2LTAxagwIAxIIL20vMGQ2bHByDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
+    }
+  },
+  "a51f8fc1dbce45de0825e1131f8d7bdf3abcab09232052902ab136dd3faceb4c": {
+    "value": {
+      "price": 1547,
+      "timestamp": "2025-03-20T17:54:28.380Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMGhzcWYaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8waHNxZnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "seoul"
+    }
+  },
+  "054a71850ad8742cfe939a5c9d521ba5e2b0421f7472dfc928337a21a70d74a8": {
+    "value": {
+      "price": 1123,
+      "timestamp": "2025-03-20T17:55:41.104Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDE1NnEaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wMTU2cXIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "berlin"
+    }
+  },
+  "cedcf345460178204b25210ca90afebffc92c1a65aad138e3b79d2f76fa1c174": {
+    "value": {
+      "price": 946,
+      "timestamp": "2025-03-20T17:56:19.954Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoqEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDggDEgovbS8wMmg2XzZwGioSCjIwMjUtMDYtMDFqDggDEgovbS8wMmg2XzZwcgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD",
+      "selectedDestination": "munich"
     }
   }
 }
