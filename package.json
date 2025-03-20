@@ -38,6 +38,7 @@
     "ubiquity"
   ],
   "dependencies": {
+    "country-data": "^0.0.31",
     "csv-parse": "^5.6.0",
     "dotenv": "^16.4.4",
     "puppeteer": "^24.4.0",

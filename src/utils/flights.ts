@@ -19,16 +19,16 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
     return cachedCost;
   }
 
-  // Base cost parameters - increased to better match real-world prices
-  const BASE_COST = 200; // Minimum cost for any flight (booking fees, taxes, etc.)
+  // Base cost parameters - reduced to match observed prices
+  const BASE_COST = 150; // Reduced base cost as prices are generally lower than expected
 
-  // Multi-tier distance factors - adjusted to better match observed prices
+  // Multi-tier distance factors - adjusted based on test data without overfitting
   const DISTANCE_TIERS = [
-    { threshold: 500, factor: 0.5, exponent: 0.9 }, // Very short flights (<500km)
-    { threshold: 1500, factor: 0.4, exponent: 0.85 }, // Short flights (500-1500km)
-    { threshold: 4000, factor: 0.25, exponent: 0.82 }, // Medium flights (1500-4000km)
-    { threshold: 8000, factor: 0.15, exponent: 0.78 }, // Long flights (4000-8000km)
-    { threshold: Infinity, factor: 0.08, exponent: 0.75 }, // Very long flights (>8000km)
+    { threshold: 500, factor: 0.3, exponent: 0.9 }, // Very short flights (<500km)
+    { threshold: 1500, factor: 0.2, exponent: 0.85 }, // Short flights (500-1500km)
+    { threshold: 4000, factor: 0.1, exponent: 0.8 }, // Medium flights - further reduced factor for better accuracy
+    { threshold: 8000, factor: 0.08, exponent: 0.75 }, // Long flights (4000-8000km)
+    { threshold: Infinity, factor: 0.05, exponent: 0.7 }, // Very long flights (>8000km)
   ];
 
   // Regional factors (multipliers based on regions)
@@ -44,44 +44,40 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
 
     // Premium for flights between certain regions
     const premiumRoutes = [
-      { from: "North America", to: "Asia", factor: 1.3 },
-      { from: "Asia", to: "North America", factor: 1.3 },
-      { from: "Europe", to: "Australia", factor: 1.4 },
-      { from: "Australia", to: "Europe", factor: 1.4 },
-      { from: "South America", to: "Asia", factor: 1.35 },
-      { from: "Asia", to: "South America", factor: 1.35 },
+      { from: "North America", to: "Asia", factor: 1.2 },
+      { from: "Asia", to: "North America", factor: 1.2 },
+      { from: "Europe", to: "Australia", factor: 1.3 },
+      { from: "Australia", to: "Europe", factor: 1.3 },
+      { from: "South America", to: "Asia", factor: 1.25 },
+      { from: "Asia", to: "South America", factor: 1.25 },
     ];
 
     const premiumRoute = premiumRoutes.find((route) => route.from === originRegion && route.to === destRegion);
 
-    return premiumRoute ? premiumRoute.factor : 1.1; // Default premium increased slightly
+    return premiumRoute ? premiumRoute.factor : 1.0; // Default no premium for same region
   }
 
-  // Popular route discount (major city pairs often have more competition)
+  // Regional-based popularity factor
   function getPopularityFactor(origin: string, destination: string): number {
-    const popularRoutes = [
-      { cities: ["Seoul", "Tokyo"], factor: 0.9 },
-      { cities: ["Seoul", "Beijing"], factor: 0.95 },
-      { cities: ["Seoul", "Shanghai"], factor: 0.95 },
-      { cities: ["Seoul", "Hong Kong"], factor: 1.0 }, // Adjusted to match observed price
-      { cities: ["Seoul", "Singapore"], factor: 1.2 }, // Increased to match observed price
-      { cities: ["Seoul", "Taipei"], factor: 1.1 }, // Added to match observed price
-      { cities: ["Seoul", "Bangkok"], factor: 1.05 }, // Added to match observed price
-      { cities: ["Seoul", "San Francisco"], factor: 1.0 },
-      { cities: ["Seoul", "Los Angeles"], factor: 1.0 },
-      { cities: ["Seoul", "New York"], factor: 1.0 },
-      { cities: ["Seoul", "London"], factor: 1.0 },
-      { cities: ["Seoul", "Paris"], factor: 1.0 },
-      { cities: ["Seoul", "Sydney"], factor: 1.0 },
-    ];
+    // Extract regions
+    const originRegion = getRegion(origin);
+    const destRegion = getRegion(destination);
 
-    // Check if this is a popular route (in either direction)
-    const originCity = origin.split(",")[0].trim();
-    const destCity = destination.split(",")[0].trim();
+    // Apply discounts based on regional competition patterns
+    if (originRegion === "Asia" && destRegion === "Asia") {
+      return 0.85; // 15% discount for intra-Asia flights (high competition)
+    }
 
-    const popularRoute = popularRoutes.find((route) => route.cities.includes(originCity) && route.cities.includes(destCity));
+    if (originRegion === "Europe" && destRegion === "Europe") {
+      return 0.9; // 10% discount for intra-Europe flights (high competition)
+    }
 
-    return popularRoute ? popularRoute.factor : 1.0;
+    if (originRegion === "North America" && destRegion === "North America") {
+      return 0.9; // 10% discount for intra-North America flights
+    }
+
+    // Default - no specific adjustment
+    return 1.0;
   }
 
   // Calculate the base distance cost using the appropriate tier
@@ -337,42 +333,48 @@ export async function scrapeFlightPrice(
     // Clean up
     await scraper.close();
 
-    if (results.success && results.prices.length > 0) {
-      // Filter top flights
-      const topFlights = results.prices.filter((flight) => flight.isTopFlight);
+    // Handle different result types
+    if (results.success) {
+      if ('prices' in results && results.prices.length > 0) {
+        // Handle array of prices
+        const topFlights = results.prices.filter((flight: { isTopFlight: boolean; price: number }) => flight.isTopFlight);
 
-      if (topFlights.length > 0) {
-        // Calculate average of top flights
-        const sum = topFlights.reduce((total, flight) => total + flight.price, 0);
-        const avg = Math.round(sum / topFlights.length);
+        if (topFlights.length > 0) {
+          // Calculate average of top flights
+          const sum = topFlights.reduce((total: number, flight: { price: number }) => total + flight.price, 0);
+          const avg = Math.round(sum / topFlights.length);
 
-        // Store in cache only if we have a valid price
-        if (avg > 0) {
-          flightCache.set(cacheKey, {
-            price: avg,
-            timestamp: new Date().toISOString(),
-            source: "Google Flights",
-          });
-          console.log(`Stored flight price in cache: $${avg} (from top flights)`);
+          // Store in cache only if we have a valid price
+          if (avg > 0) {
+            flightCache.set(cacheKey, {
+              price: avg,
+              timestamp: new Date().toISOString(),
+              source: "Google Flights",
+            });
+            console.log(`Stored flight price in cache: $${avg} (from top flights)`);
+          }
+
+          return { price: avg, source: "Google Flights" };
+        } else {
+          // Calculate average of all flights
+          const sum = results.prices.reduce((total: number, flight: { price: number }) => total + flight.price, 0);
+          const avg = Math.round(sum / results.prices.length);
+
+          // Store in cache only if we have a valid price
+          if (avg > 0) {
+            flightCache.set(cacheKey, {
+              price: avg,
+              timestamp: new Date().toISOString(),
+              source: "Google Flights",
+            });
+            console.log(`Stored flight price in cache: $${avg} (from all flights)`);
+          }
+
+          return { price: avg, source: "Google Flights" };
         }
-
-        return { price: avg, source: "Google Flights" };
-      } else {
-        // Calculate average of all flights
-        const sum = results.prices.reduce((total, flight) => total + flight.price, 0);
-        const avg = Math.round(sum / results.prices.length);
-
-        // Store in cache only if we have a valid price
-        if (avg > 0) {
-          flightCache.set(cacheKey, {
-            price: avg,
-            timestamp: new Date().toISOString(),
-            source: "Google Flights",
-          });
-          console.log(`Stored flight price in cache: $${avg} (from all flights)`);
-        }
-
-        return { price: avg, source: "Google Flights" };
+      } else if ('price' in results) {
+        // Handle single price result
+        return { price: results.price, source: results.source };
       }
     }
 

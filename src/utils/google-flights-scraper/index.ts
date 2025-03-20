@@ -13,6 +13,20 @@ export class GoogleFlightsScraper {
   private _page: Page | null = null;
   private _cache: PersistentCache<{ price: number; timestamp: string; source: string }>;
 
+  async needsFreshData(searches: Array<{from: string, to: string, departureDate: string, returnDate?: string}>): Promise<boolean> {
+    for (const search of searches) {
+      const cacheKey = this._createCacheKey(
+        search.from,
+        search.to,
+        search.departureDate,
+        search.returnDate
+      );
+      const {shouldFetch} = this._checkCache(cacheKey);
+      if (shouldFetch) return true;
+    }
+    return false;
+  }
+
   constructor() {
     log(LOG_LEVEL.INFO, "Initializing Google Flights Scraper");
     this._cache = new PersistentCache<{ price: number; timestamp: string; source: string }>("fixtures/cache/google-flights-cache.json");
@@ -60,8 +74,6 @@ export class GoogleFlightsScraper {
   }
 
   async searchFlights(from: string, to: string, departureDate: string, returnDate?: string) {
-    if (!this._page) throw new Error("Page not initialized");
-
     const cacheKey = this._createCacheKey(from, to, departureDate, returnDate);
     const { shouldFetch, cachedResult } = this._checkCache(cacheKey);
 
@@ -69,6 +81,7 @@ export class GoogleFlightsScraper {
       return cachedResult;
     }
 
+    if (!this._page) throw new Error("Page not initialized");
     const result = await searchFlights(this._page, from, to, departureDate, returnDate);
 
     if (result.success && result.prices.length > 0) {
