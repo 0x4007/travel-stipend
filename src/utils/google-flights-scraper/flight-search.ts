@@ -3,6 +3,7 @@ import { FlightSearchResult } from "../types";
 import { applyAllianceFilters } from "./alliance-filter-handler";
 import { LOG_LEVEL } from "./config";
 import { selectDates } from "./date-selection-handler";
+import { mapFlightDataToFlightPrices } from "./flight-data-mapper";
 import { fillDestinationField, fillOriginField } from "./form-field-handler";
 import { log } from "./log";
 import { scrapeFlightPrices } from "./price-scraper";
@@ -44,17 +45,22 @@ export async function searchFlights(page: Page, from: string, to: string, depart
     // Wait for results to load
     log(LOG_LEVEL.INFO, "Waiting for results to load");
 
+    // Get the current URL after search is complete
+    const searchUrl = page.url();
+
     // Scrape flight prices from the results page
-    const prices = await scrapeFlightPrices(page);
+    const rawPrices = await scrapeFlightPrices(page);
+    const prices = mapFlightDataToFlightPrices(rawPrices);
     log(LOG_LEVEL.INFO, `Found ${prices.length} flight prices`);
 
-    // Return the flight search results
+    // Return the flight search results with search URL
     return {
       success: true,
-      prices: prices,
+      prices,
+      searchUrl
     };
   } catch (error) {
-    log(LOG_LEVEL.ERROR, "Error searching flights:", error);
+    log(LOG_LEVEL.ERROR, "Error searching flights:", error instanceof Error ? error.message : String(error));
 
     throw error;
   }

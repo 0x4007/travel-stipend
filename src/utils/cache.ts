@@ -51,10 +51,20 @@ export class MemoryCache<T> implements Cache<T> {
 export class PersistentCache<T> implements Cache<T> {
   private _memoryCache: MemoryCache<T> = new MemoryCache<T>();
   private _filePath: string;
+  private _trainingMode: boolean;
 
-  constructor(cacheFileName: string) {
+  constructor(cacheFileName: string, trainingMode = false) {
     this._filePath = path.join(process.cwd(), cacheFileName);
+    this._trainingMode = trainingMode;
     this._loadFromDisk();
+  }
+
+  isTrainingMode(): boolean {
+    return this._trainingMode;
+  }
+
+  setTrainingMode(enabled: boolean): void {
+    this._trainingMode = enabled;
   }
 
   private _loadFromDisk(): void {
@@ -87,6 +97,10 @@ export class PersistentCache<T> implements Cache<T> {
   }
 
   get(key: string): T | undefined {
+    // In training mode, always return undefined to force fresh data
+    if (this._trainingMode) {
+      return undefined;
+    }
     return this._memoryCache.get(key);
   }
 
@@ -100,6 +114,18 @@ export class PersistentCache<T> implements Cache<T> {
 
   has(key: string): boolean {
     return this._memoryCache.has(key);
+  }
+
+  // Add method to get all entries
+  getAllEntries(): Record<string, T> {
+    const entries = this._memoryCache.getAllEntries();
+    const result: Record<string, T> = {};
+
+    for (const [key, entry] of Object.entries(entries)) {
+      result[key] = entry.value;
+    }
+
+    return result;
   }
 }
 

@@ -2,19 +2,22 @@ export interface BrowserInitOptions {
   headless: boolean;
 }
 
+export interface FlightPrice {
+  price: number;
+  airline: string;
+  departureTime: string;
+  arrivalTime: string;
+  duration: string;
+  stops: number;
+  origin: string;
+  destination: string;
+  isTopFlight: boolean;
+}
+
 export interface FlightSearchResult {
   success: boolean;
-  prices: {
-    price: number;
-    airline: string;
-    departureTime: string;
-    arrivalTime: string;
-    duration: string;
-    stops: number;
-    origin: string;
-    destination: string;
-    isTopFlight: boolean;
-  }[];
+  prices: FlightPrice[];
+  searchUrl?: string;
 }
 
 export interface FlightResults {

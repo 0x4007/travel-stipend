@@ -11,7 +11,7 @@ import { navigateToGoogleFlights } from "./navigation";
 export class GoogleFlightsScraper {
   private _browser: Browser | null = null;
   private _page: Page | null = null;
-  private _cache: PersistentCache<{ price: number; timestamp: string; source: string }>;
+  private _cache: PersistentCache<{ price: number; timestamp: string; source: string; url?: string }>;
 
   async needsFreshData(searches: Array<{from: string, to: string, departureDate: string, returnDate?: string}>): Promise<boolean> {
     for (const search of searches) {
@@ -27,16 +27,23 @@ export class GoogleFlightsScraper {
     return false;
   }
 
-  constructor() {
+  constructor(trainingMode = false) {
     log(LOG_LEVEL.INFO, "Initializing Google Flights Scraper");
-    this._cache = new PersistentCache<{ price: number; timestamp: string; source: string }>("fixtures/cache/google-flights-cache.json");
+    this._cache = new PersistentCache<{ price: number; timestamp: string; source: string; url?: string }>(
+      "fixtures/cache/google-flights-cache.json",
+      trainingMode
+    );
+  }
+
+  setTrainingMode(enabled: boolean): void {
+    this._cache.setTrainingMode(enabled);
   }
 
   private _createCacheKey(from: string, to: string, departureDate: string, returnDate?: string): string {
     return createHashKey([from, to, departureDate, returnDate ?? "", "google-flights-v1"]);
   }
 
-  private _checkCache(cacheKey: string): { shouldFetch: boolean; cachedResult?: { success: boolean; price: number; source: string } } {
+  private _checkCache(cacheKey: string): { shouldFetch: boolean; cachedResult?: { success: boolean; price: number; source: string; searchUrl?: string } } {
     log(LOG_LEVEL.INFO, `Checking cache with key: ${cacheKey}`);
     const cachedData = this._cache.get(cacheKey);
 
@@ -49,7 +56,12 @@ export class GoogleFlightsScraper {
       log(LOG_LEVEL.INFO, `Using cached flight price from ${cachedData.timestamp} (${cachedData.source})`);
       return {
         shouldFetch: false,
-        cachedResult: { success: true, price: cachedData.price, source: cachedData.source },
+        cachedResult: {
+          success: true,
+          price: cachedData.price,
+          source: cachedData.source,
+          searchUrl: cachedData.url
+        },
       };
     }
 
@@ -88,12 +100,13 @@ export class GoogleFlightsScraper {
       // Calculate average price from all results
       const avgPrice = Math.round(result.prices.reduce((sum, price) => sum + price.price, 0) / result.prices.length);
 
-      // Store in cache
+      // Store in cache with URL for verification
       log(LOG_LEVEL.INFO, `Storing result in cache with key: ${cacheKey}`);
       this._cache.set(cacheKey, {
         price: avgPrice,
         timestamp: new Date().toISOString(),
         source: "Google Flights",
+        url: result.searchUrl
       });
       // Save cache to disk
       this._cache.saveToDisk();
@@ -104,6 +117,7 @@ export class GoogleFlightsScraper {
         price: avgPrice,
         source: "Google Flights",
         prices: result.prices,
+        searchUrl: result.searchUrl
       };
     }
 

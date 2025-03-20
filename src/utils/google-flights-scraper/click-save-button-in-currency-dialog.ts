@@ -3,57 +3,75 @@ import { LOG_LEVEL } from "./config";
 import { log } from "./log";
 
 export async function clickSaveButtonInCurrencyDialog(page: Page): Promise<boolean> {
-  if (!page) {
-    log(LOG_LEVEL.ERROR, "Cannot click save button: page is null");
-    return false;
-  }
+  if (!page) throw new Error("Page not initialized");
+
+  log(LOG_LEVEL.INFO, "Attempting to click Save button in currency dialog");
 
   try {
-    log(LOG_LEVEL.DEBUG, "Attempting to find and click save button in currency dialog");
+    // Try multiple selectors for the Save button
+    const saveButtonSelectors = [
+      'button[jsname="LgbsSe"]',
+      'button[aria-label="Save"]',
+      'button:has-text("Save")',
+      'button:has-text("Done")',
+      'button:has-text("Apply")',
+      'button.gws-flights__dialog-button',
+      'button.VfPpkd-LgbsSe',
+      '[role="button"]:has-text("Save")',
+      '[role="button"]:has-text("Done")',
+      '[role="button"]:has-text("Apply")',
+    ];
 
-    // Try multiple approaches to find and click the save button
-    const isSaveButtonClicked = await page.evaluate((): boolean => {
+    for (const selector of saveButtonSelectors) {
       try {
-        // Find all buttons in the dialog
-        const dialog = document.querySelector('[role="dialog"], .dialog, [aria-modal="true"]');
-        if (!dialog) return false;
-
-        // Look for buttons with text like "OK", "Save", "Done", etc.
-        const buttonTexts = ["OK", "Save", "Done", "Apply", "Confirm"];
-        const buttons = Array.from(dialog.querySelectorAll("button"));
-
-        // Try to find a button with matching text
-        for (const text of buttonTexts) {
-          for (const button of buttons) {
-            if (button.textContent?.includes(text)) {
-              (button as HTMLElement).click();
-              return true;
-            }
-          }
-        }
-
-        // If no button with specific text was found, try the last button in the dialog
-        if (buttons.length > 0) {
-          (buttons[buttons.length - 1] as HTMLElement).click();
+        log(LOG_LEVEL.DEBUG, `Trying Save button selector: ${selector}`);
+        const saveButton = await page.$(selector);
+        if (saveButton) {
+          log(LOG_LEVEL.INFO, `Found Save button with selector: ${selector}`);
+          await saveButton.click();
+          log(LOG_LEVEL.INFO, "Clicked Save button");
           return true;
         }
-
-        return false;
-      } catch (e) {
-        console.error("Error clicking save button:", e);
-        return false;
+      } catch (error) {
+        log(LOG_LEVEL.DEBUG, `Selector ${selector} not found or error: ${error instanceof Error ? error.message : String(error)}`);
       }
+    }
+
+    // If no button found with selectors, try JavaScript approach
+    const isSaveButtonClicked = await page.evaluate(() => {
+      // Find buttons with Save, Done, or Apply text
+      const buttons = Array.from(document.querySelectorAll("button"));
+      for (const button of buttons) {
+        const text = button.textContent?.trim().toLowerCase() || "";
+        if (text.includes("save") || text.includes("done") || text.includes("apply") || text.includes("ok")) {
+          button.click();
+          return true;
+        }
+      }
+
+      // Try any button in dialog as last resort
+      const dialog = document.querySelector('[role="dialog"]');
+      if (dialog) {
+        const dialogButtons = dialog.querySelectorAll("button");
+        if (dialogButtons.length > 0) {
+          // Try the last button in the dialog (often the confirm button)
+          dialogButtons[dialogButtons.length - 1].click();
+          return true;
+        }
+      }
+
+      return false;
     });
 
     if (isSaveButtonClicked) {
-      log(LOG_LEVEL.INFO, "Successfully clicked save button in currency dialog");
-    } else {
-      log(LOG_LEVEL.WARN, "Could not find or click save button in currency dialog");
+      log(LOG_LEVEL.INFO, "Clicked Save button with JavaScript");
+      return true;
     }
 
-    return isSaveButtonClicked;
+    log(LOG_LEVEL.WARN, "Could not find Save button in currency dialog");
+    return false;
   } catch (error) {
-    log(LOG_LEVEL.ERROR, "Error clicking save button in currency dialog:", error);
+    log(LOG_LEVEL.ERROR, "Error clicking Save button:", error instanceof Error ? error.message : String(error));
     return false;
   }
 }
