@@ -1,7 +1,7 @@
-import { getAirlineAlliance, isMajorCarrier } from "../src/utils/airline-alliances";
-import { createHashKey, PersistentCache } from "../src/utils/cache";
+import { loadAirportCoordinatesData } from "../src/utils/coordinates";
 import { getDistanceKmFromCities } from "../src/utils/distance";
 import { calculateFlightCost, scrapeFlightPrice } from "../src/utils/flights";
+import { AmadeusApi } from "../src/utils/amadeus-api";
 
 // Interface for comparison results
 interface ComparisonResult {
@@ -16,196 +16,6 @@ interface ComparisonResult {
   googleFlightsSource: string;
   distanceBasedSource: string;
   distanceKm: number | null;
-}
-
-// Amadeus API client for flight price fetching (reused from test-amadeus-flight-prices.ts)
-class AmadeusApi {
-  private _apiKey: string;
-  private _apiSecret: string;
-  private _accessToken: string | null = null;
-  private _tokenExpiry: number = 0;
-  private _cache: PersistentCache<{ price: number; timestamp: string; source: string }>;
-  private _filterMajorCarriersOnly: boolean;
-
-  constructor(apiKey: string, apiSecret: string, filterMajorCarriersOnly: boolean = false) {
-    this._apiKey = apiKey;
-    this._apiSecret = apiSecret;
-    this._filterMajorCarriersOnly = filterMajorCarriersOnly;
-    this._cache = new PersistentCache<{ price: number; timestamp: string; source: string }>(
-      "fixtures/cache/amadeus-flight-cache.json"
-    );
-  }
-
-
-  private async _getAccessToken(): Promise<string> {
-    // Check if we have a valid token
-    const now = Date.now();
-    if (this._accessToken && now < this._tokenExpiry) {
-      return this._accessToken;
-    }
-
-    console.log("Getting new Amadeus access token...");
-
-    try {
-      const response = await fetch("https://test.api.amadeus.com/v1/security/oauth2/token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          grant_type: "client_credentials",
-          client_id: this._apiKey,
-          client_secret: this._apiSecret,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to get access token: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      this._accessToken = data.access_token;
-      // Set expiry time (convert seconds to milliseconds and subtract a buffer)
-      this._tokenExpiry = now + (data.expires_in * 1000) - 60000; // 1 minute buffer
-
-      return this._accessToken as string;
-    } catch (error) {
-      console.error("Error getting Amadeus access token:", error);
-      throw error;
-    }
-  }
-
-
-  async searchFlights(
-    originLocationCode: string,
-    destinationLocationCode: string,
-    departureDate: string,
-    returnDate: string,
-    adults: number = 1
-  ) {
-    // Create cache key
-    const cacheKey = createHashKey([
-      originLocationCode,
-      destinationLocationCode,
-      departureDate,
-      returnDate,
-      adults.toString(),
-      this._filterMajorCarriersOnly ? "amadeus-major-carriers-v1" : "amadeus-v1",
-    ]);
-
-    // Check cache first
-    console.log(`Checking cache with key: ${cacheKey}`);
-    const cachedData = this._cache.get(cacheKey);
-    if (cachedData) {
-      console.log(`Using cached flight price from ${cachedData.timestamp} (${cachedData.source})`);
-      return { success: true, price: cachedData.price, source: cachedData.source };
-    } else {
-      console.log("No cache entry found, fetching from API");
-    }
-
-    try {
-      // Get access token
-      const token = await this._getAccessToken();
-
-      // Build URL with query parameters
-      const url = new URL("https://test.api.amadeus.com/v2/shopping/flight-offers");
-      url.searchParams.append("originLocationCode", originLocationCode);
-      url.searchParams.append("destinationLocationCode", destinationLocationCode);
-      url.searchParams.append("departureDate", departureDate);
-      url.searchParams.append("returnDate", returnDate);
-      url.searchParams.append("adults", adults.toString());
-      url.searchParams.append("currencyCode", "USD");
-      url.searchParams.append("max", "5"); // Limit to 5 results for testing
-
-      console.log(`Searching flights from ${originLocationCode} to ${destinationLocationCode}`);
-      console.log(`Dates: ${departureDate} to ${returnDate}`);
-
-      // Make API request with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-
-      console.log("Sending request to Amadeus API...");
-      const response = await fetch(url.toString(), {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        signal: controller.signal,
-      }).finally(() => clearTimeout(timeoutId));
-
-      console.log(`Received response with status: ${response.status}`);
-
-      if (!response.ok) {
-        throw new Error(`Flight search failed: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      // Process and return results
-      if (data.data && data.data.length > 0) {
-        // Extract prices from offers
-        const prices = data.data.map((offer: { price: { total: string }; validatingAirlineCodes: string[]; itineraries: unknown }) => ({
-          price: parseFloat(offer.price.total),
-          airline: offer.validatingAirlineCodes[0],
-          itineraries: offer.itineraries,
-        }));
-
-        // Filter for major carriers if requested
-        let flightsToUse = prices;
-        let sourceDescription = "Amadeus API";
-
-        if (this._filterMajorCarriersOnly) {
-          const majorCarrierFlights = prices.filter((flight: { airline: string }) => isMajorCarrier(flight.airline));
-
-          // Only use major carrier flights if we found some
-          if (majorCarrierFlights.length > 0) {
-            flightsToUse = majorCarrierFlights;
-            sourceDescription = "Amadeus API (Major Carriers Only)";
-            console.log(`Filtered to ${majorCarrierFlights.length} major carrier flights out of ${prices.length} total flights`);
-
-            // Log the airlines and their alliances
-            majorCarrierFlights.forEach((flight: { airline: string; price: number }) => {
-              const alliance = getAirlineAlliance(flight.airline);
-              console.log(`  - ${flight.airline}: ${alliance} - $${flight.price}`);
-            });
-          } else {
-            console.log("No major carrier flights found, using all flights");
-          }
-        }
-
-        // Calculate average price
-        const sum = flightsToUse.reduce((total: number, flight: { price: number }) => total + flight.price, 0);
-        const avgPrice = Math.round(sum / flightsToUse.length);
-
-        // Store in cache
-        console.log(`Storing result in cache with key: ${cacheKey}`);
-        this._cache.set(cacheKey, {
-          price: avgPrice,
-          timestamp: new Date().toISOString(),
-          source: sourceDescription,
-        });
-        // Save cache to disk
-        (this._cache as PersistentCache<{ price: number; timestamp: string; source: string }>).saveToDisk();
-        console.log("Cache entry created and saved to disk");
-
-        return {
-          success: true,
-          price: avgPrice,
-          source: sourceDescription,
-          rawData: data,
-          prices: flightsToUse,
-          allPrices: prices,
-          filteredForMajorCarriers: this._filterMajorCarriersOnly,
-        };
-      }
-
-      console.log("No flight prices found from Amadeus API");
-      return { success: false, price: null, source: "Amadeus API - No results" };
-    } catch (error) {
-      console.error("Error searching flights with Amadeus API:", error);
-      return { success: false, price: null, source: "Amadeus API error" };
-    }
-  }
 }
 
 
@@ -239,7 +49,8 @@ async function getDistanceInfo(origin: string, destination: string): Promise<{ d
     console.log("Calculating distance between cities...");
     const { loadCoordinatesData } = await import("../src/utils/coordinates");
     const coordinates = loadCoordinatesData("fixtures/coordinates.csv");
-    const distance = getDistanceKmFromCities(origin, destination, coordinates);
+    const airportCoordinates = loadAirportCoordinatesData("fixtures/airport-codes.csv");
+    const distance = getDistanceKmFromCities(origin, destination, coordinates, airportCoordinates);
     console.log(`Distance: ${distance.toFixed(2)} km`);
     return { distanceKm: distance };
   } catch (error) {
@@ -264,27 +75,37 @@ async function getDistanceBasedPrice(distanceKm: number | null, origin: string, 
   }
 }
 
+async function retryGoogleFlightsScraping(
+  origin: string,
+  destination: string,
+  dates: { departureDate: string; returnDate: string },
+  maxRetries: number
+): Promise<{ price: number | null; source: string }> {
+  let result = { price: null as number | null, source: "Not initialized" };
+
+  for (let retryCount = 0; retryCount <= maxRetries; retryCount++) {
+    if (retryCount > 0) {
+      console.log(`Retry attempt ${retryCount} for Google Flights scraping...`);
+    }
+
+    result = await scrapeFlightPrice(origin, destination, {
+      outbound: dates.departureDate,
+      return: dates.returnDate,
+    });
+
+    if (result.price !== null || retryCount === maxRetries) break;
+
+    console.log(`Scraping failed. Will retry (${retryCount}/${maxRetries})...`);
+    await new Promise(resolve => setTimeout(resolve, 3000));
+  }
+
+  return result;
+}
+
 async function getGoogleFlightsPrice(origin: string, destination: string, dates: { departureDate: string; returnDate: string }): Promise<{ price: number | null; source: string }> {
   try {
     console.log("Getting Google Flights price...");
-    let result = { price: null as number | null, source: "Not initialized" };
-    const maxRetries = 2;
-
-    for (let retryCount = 0; retryCount <= maxRetries; retryCount++) {
-      if (retryCount > 0) {
-        console.log(`Retry attempt ${retryCount} for Google Flights scraping...`);
-      }
-
-      result = await scrapeFlightPrice(origin, destination, {
-        outbound: dates.departureDate,
-        return: dates.returnDate,
-      });
-
-      if (result.price !== null || retryCount === maxRetries) break;
-
-      console.log(`Scraping failed. Will retry (${retryCount}/${maxRetries})...`);
-      await new Promise(resolve => setTimeout(resolve, 3000));
-    }
+    const result = await retryGoogleFlightsScraping(origin, destination, dates, 2);
 
     console.log(`Google Flights price: ${result.price ? "$" + result.price : "Not available"}`);
     console.log(`Source: ${result.source}`);
@@ -306,8 +127,8 @@ async function getAmadeusPrice(origin: string, destination: string, dates: { dep
       return { price: null, source: "Invalid airport codes" };
     }
 
-    const apiKey = process.env.AMADEUS_API_KEY;
-    const apiSecret =process.env.AMADEUS_API_SECRET;
+    const apiKey = process.env.AMADEUS_API_KEY as string;
+    const apiSecret = process.env.AMADEUS_API_SECRET as string;
     const amadeus = new AmadeusApi(apiKey, apiSecret, true);
 
     console.log("Searching with major carriers only (alliance members)...");
@@ -340,12 +161,7 @@ async function compareFlightPriceStrategies(
 ): Promise<ComparisonResult> {
   console.log(`\n=== Comparing flight price strategies for ${origin} to ${destination} ===`);
 
-  // Format city names
-  origin = !origin.includes(",") ? origin.replace(" ", ", ") : origin;
-  destination = !destination.includes(",") ? destination.replace(" ", ", ") : destination;
-  console.log(`Dates: ${departureDate} to ${returnDate}\n`);
-
-  // Initialize result
+  // Initialize result (using original values without reformatting)
   const result: ComparisonResult = {
     origin,
     destination,
@@ -381,10 +197,34 @@ async function compareFlightPriceStrategies(
 }
 
 
+interface PriceDifference {
+  name: string;
+  difference: number;
+  percentDifference: string;
+  isHigher: boolean;
+}
+
+function calculatePriceDifference(comparePrice: number | null, basePrice: number): PriceDifference | null {
+  if (!comparePrice) return null;
+
+  const difference = comparePrice - basePrice;
+  const percentDifference = ((difference / basePrice) * 100).toFixed(2);
+
+  return {
+    name: "",  // Set by caller
+    difference,
+    percentDifference,
+    isHigher: difference >= 0
+  };
+}
+
+function formatPriceDifference(diff: PriceDifference): string {
+  return `${diff.name}: ${diff.isHigher ? "+" : ""}$${diff.difference} (${diff.percentDifference}% ${diff.isHigher ? "higher" : "lower"})`;
+}
+
 function displayComparisonResults(results: ComparisonResult[]): void {
   console.log("\n=== Flight Price Strategy Comparison Results ===\n");
 
-  // Display each result
   results.forEach((result, index) => {
     console.log(`\nComparison #${index + 1}: ${result.origin} to ${result.destination}`);
     console.log(`Dates: ${result.departureDate} to ${result.returnDate}`);
@@ -394,24 +234,15 @@ function displayComparisonResults(results: ComparisonResult[]): void {
     console.log(`2. Google Flights: ${result.googleFlightsPrice ? "$" + result.googleFlightsPrice : "Not available"} (${result.googleFlightsSource})`);
     console.log(`3. Distance-based: ${result.distanceBasedPrice ? "$" + result.distanceBasedPrice : "Not available"} (${result.distanceBasedSource})`);
 
-    // Calculate differences if all prices are available
-    if (result.amadeusPrice && result.googleFlightsPrice && result.distanceBasedPrice) {
-      console.log("\nDifferences:");
+    if (result.googleFlightsPrice) {
+      console.log("\nDifferences (compared to Google Flights):");
 
-      // Amadeus vs Google Flights
-      const diffAmadeusGoogle = result.amadeusPrice - result.googleFlightsPrice;
-      const percentDiffAmadeusGoogle = ((diffAmadeusGoogle / result.googleFlightsPrice) * 100).toFixed(2);
-      console.log(`Amadeus vs Google Flights: $${diffAmadeusGoogle} (${percentDiffAmadeusGoogle}%)`);
+      const diffs = [
+        { ...calculatePriceDifference(result.distanceBasedPrice, result.googleFlightsPrice), name: "Distance-based" },
+        { ...calculatePriceDifference(result.amadeusPrice, result.googleFlightsPrice), name: "Amadeus API" }
+      ].filter((diff): diff is PriceDifference => diff != null);
 
-      // Amadeus vs Distance-based
-      const diffAmadeusDistance = result.amadeusPrice - result.distanceBasedPrice;
-      const percentDiffAmadeusDistance = ((diffAmadeusDistance / result.distanceBasedPrice) * 100).toFixed(2);
-      console.log(`Amadeus vs Distance-based: $${diffAmadeusDistance} (${percentDiffAmadeusDistance}%)`);
-
-      // Google Flights vs Distance-based
-      const diffGoogleDistance = result.googleFlightsPrice - result.distanceBasedPrice;
-      const percentDiffGoogleDistance = ((diffGoogleDistance / result.distanceBasedPrice) * 100).toFixed(2);
-      console.log(`Google Flights vs Distance-based: $${diffGoogleDistance} (${percentDiffGoogleDistance}%)`);
+      diffs.forEach(diff => console.log(formatPriceDifference(diff)));
     }
 
     console.log("\n" + "-".repeat(50));

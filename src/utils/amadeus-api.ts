@@ -1,5 +1,5 @@
-import { createHashKey, isWithinSixHours, PersistentCache } from "./cache";
 import { getAirlineAlliance, isMajorCarrier } from "./airline-alliances";
+import { createHashKey, isWithinSixHours, PersistentCache } from "./cache";
 
 // Response Types
 interface AmadeusFlightOffer {
@@ -228,7 +228,7 @@ export class AmadeusApi {
       // Only use major carrier flights if we found some
       if (majorCarrierFlights.length > 0) {
         flightsToUse = majorCarrierFlights;
-        sourceDescription = "Amadeus API (Major Carriers Only)";
+        sourceDescription = "Amadeus API";
         console.log(`Filtered to ${majorCarrierFlights.length} major carrier flights out of ${prices.length} total flights`);
 
         // Log the airlines and their alliances

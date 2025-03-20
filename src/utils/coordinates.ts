@@ -1,8 +1,25 @@
 import { parse } from "csv-parse/sync";
 import { readFileSync } from "fs";
-import { Coordinates } from "./types";
+import { AirportCode, Coordinates } from "./types";
 
-// Extended mapping class that includes fuzzy matching capabilities
+// Airport coordinates mapping class
+export class AirportCoordinatesMapping {
+  private _airportMap: { [code: string]: Coordinates } = {};
+
+  addAirport(code: string, coordinates: Coordinates): void {
+    this._airportMap[code] = coordinates;
+  }
+
+  getCoordinates(code: string): Coordinates | undefined {
+    return this._airportMap[code];
+  }
+
+  size(): number {
+    return Object.keys(this._airportMap).length;
+  }
+}
+
+// City coordinates mapping class with fuzzy matching capabilities
 export class CoordinatesMapping {
   private _cityMap: { [city: string]: Coordinates } = {};
   private _cityNames: string[] = [];
@@ -14,6 +31,7 @@ export class CoordinatesMapping {
   }
 
   addCityVariant(normalizedName: string, originalName: string): void {
+    if (!normalizedName || !originalName) return;
     this._cityVariants[normalizedName] = originalName;
   }
 
@@ -105,6 +123,34 @@ export function findBestMatch(query: string, candidates: string[]): { match: str
   }
 
   return { match: bestMatch, similarity: bestSimilarity };
+}
+
+export function loadAirportCoordinatesData(filePath: string): AirportCoordinatesMapping {
+  try {
+    const content = readFileSync(filePath, "utf-8");
+    const records = parse(content, {
+      columns: true,
+      skip_empty_lines: true,
+    }) as AirportCode[];
+
+    const mapping = new AirportCoordinatesMapping();
+
+    for (const rec of records) {
+      if (!rec.iata_code || !rec.coordinates) continue;
+
+      const [lat, lng] = rec.coordinates.split(",").map(coord => parseFloat(coord.trim()));
+      if (isNaN(lat) || isNaN(lng)) continue;
+
+      mapping.addAirport(rec.iata_code, { lat, lng });
+    }
+
+    console.log(`Loaded ${mapping.size()} airport coordinate entries`);
+    return mapping;
+  } catch (error) {
+    console.error(`Could not load ${filePath}, using default mapping.`, error);
+    const defaultMapping = new AirportCoordinatesMapping();
+    return defaultMapping;
+  }
 }
 
 export function loadCoordinatesData(filePath: string): CoordinatesMapping {

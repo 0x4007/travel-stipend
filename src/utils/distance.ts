@@ -1,5 +1,5 @@
 import { SIMILARITY_THRESHOLD } from "./constants";
-import { CoordinatesMapping, findBestMatch } from "./coordinates";
+import { AirportCoordinatesMapping, CoordinatesMapping, findBestMatch } from "./coordinates";
 import { Coordinates } from "./types";
 
 // Convert degrees to radians
@@ -51,8 +51,35 @@ function findCityCoordinates(cityName: string, coordinates: CoordinatesMapping):
 }
 
 // Get distance in kilometers between two cities
-export function getDistanceKmFromCities(originCity: string, destinationCity: string, coordinates: CoordinatesMapping): number {
-  const originCoords = findCityCoordinates(originCity, coordinates);
-  const destinationCoords = findCityCoordinates(destinationCity, coordinates);
+// Helper function to check if string is an airport code (3 uppercase letters)
+function isAirportCode(str: string): boolean {
+  return /^[A-Z]{3}$/.test(str);
+}
+
+// Get coordinates for either airport code or city name
+function getLocationCoordinates(location: string, coordinates: CoordinatesMapping, airportCoordinates: AirportCoordinatesMapping): Coordinates {
+  // Check if it's an airport code
+  if (isAirportCode(location)) {
+    const airportCoords = airportCoordinates.getCoordinates(location);
+    if (airportCoords) {
+      return airportCoords;
+    }
+    throw new Error(`No coordinates found for airport code: ${location}`);
+  }
+
+  // Otherwise try city matching
+  return findCityCoordinates(location, coordinates);
+}
+
+export function getDistanceKmFromCities(originLocation: string, destinationLocation: string, coordinates: CoordinatesMapping, airportCoordinates?: AirportCoordinatesMapping): number {
+  // If airportCoordinates is not provided, fallback to only city coordinates
+  if (!airportCoordinates) {
+    const originCoords = findCityCoordinates(originLocation, coordinates);
+    const destinationCoords = findCityCoordinates(destinationLocation, coordinates);
+    return haversineDistance(originCoords, destinationCoords);
+  }
+
+  const originCoords = getLocationCoordinates(originLocation, coordinates, airportCoordinates);
+  const destinationCoords = getLocationCoordinates(destinationLocation, coordinates, airportCoordinates);
   return haversineDistance(originCoords, destinationCoords);
 }
