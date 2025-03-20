@@ -26,7 +26,10 @@
     "test:watch": "bun test --watch",
     "rename-to-kebab": "bun rename-to-kebab-case.ts",
     "rename-to-kebab:dry-run": "bun rename-to-kebab-case.ts --dry-run --verbose",
-    "tsc:no-emit": "tsc --noEmit"
+    "tsc:no-emit": "tsc --noEmit",
+    "remove-jsdoc": "bun scripts/remove-jsdoc-direct.ts",
+    "remove-jsdoc:src": "bun scripts/remove-jsdoc-direct.ts src",
+    "remove-jsdoc:file": "bun scripts/remove-jsdoc-from-file.ts"
   },
   "keywords": [
     "typescript",
@@ -53,6 +56,7 @@
     "@mswjs/data": "0.16.1",
     "@octokit/rest": "^21.0.2",
     "@types/jest": "29.5.12",
+    "@types/jscodeshift": "^0.12.0",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^20.11.19",
     "bun-types": "^1.2.5",
@@ -62,6 +66,7 @@
     "eslint-plugin-check-file": "^2.8.0",
     "eslint-plugin-sonarjs": "^2.0.4",
     "husky": "^9.0.11",
+    "jscodeshift": "^17.1.2",
     "jsdom": "^26.0.0",
     "knip": "^5.0.1",
     "lint-staged": "^15.2.2",

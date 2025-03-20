@@ -2,9 +2,7 @@ import { Page } from "puppeteer";
 import { LOG_LEVEL } from "./config";
 import { log } from "./log";
 
-/**
- * Flight data structure containing detailed information about a flight
- */
+
 interface FlightData {
   price: number;
   airlines: string[]; // Changed from airline/airlineDetails to a single array property
@@ -98,10 +96,7 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
           /\d{1,2}:\d{2}/.test(text); // Skip times
       }
 
-      /**
-       * Splits concatenated airline names based on capitalization patterns
-       * For example: "China AirlinesKorean Air" -> ["China Airlines", "Korean Air"]
-       */
+      
       function splitConcatenatedNames(text: string): string[] {
         if (!text) return [];
 
@@ -328,11 +323,7 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
   }
 }
 
-/**
- * Extracts just the prices from flight data
- * @param flightData Array of flight data objects
- * @returns Array of prices
- */
+
 export function extractPricesFromFlightData(flightData: FlightData[]): number[] {
   return flightData.map((flight) => flight.price);
 }

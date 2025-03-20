@@ -2,9 +2,7 @@ import { ElementHandle, Page } from "puppeteer";
 import { LOG_LEVEL } from "./config";
 import { log } from "./log";
 
-/**
- * Find and click the search button to initiate the flight search
- */
+
 export async function clickSearchButton(page: Page): Promise<void> {
   if (!page) throw new Error("Page not initialized");
 
@@ -288,9 +286,7 @@ export async function clickSearchButton(page: Page): Promise<void> {
 
 }
 
-/**
- * Helper function to try JavaScript click when button element not found
- */
+
 async function tryJavaScriptClick(page: Page): Promise<boolean> {
   log(LOG_LEVEL.INFO, "Trying JavaScript click approach");
 

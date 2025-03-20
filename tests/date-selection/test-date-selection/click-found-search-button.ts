@@ -1,8 +1,6 @@
 import * as puppeteer from "puppeteer";
 
-/**
- * Try to click a found search button
- */
+
 
 export async function clickFoundSearchButton(page: puppeteer.Page, searchButton: puppeteer.ElementHandle<Element>): Promise<void> {
   console.log("Found search button, clicking it...");

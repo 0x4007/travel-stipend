@@ -6,16 +6,7 @@ import { GoogleFlightsScraper } from "./google-flights-scraper";
 const flightCache = new PersistentCache<{ price: number; timestamp: string; source: string }>("fixtures/cache/flight-cache.json");
 const flightCostCache = new PersistentCache<number>("fixtures/cache/flight-cost-cache.json");
 
-/**
- * Enhanced flight cost estimation model based on distance and regional factors.
- * This model uses a multi-tier approach with regional adjustments to better
- * approximate real-world flight pricing patterns.
- *
- * @param distanceKm - Distance in kilometers between origin and destination
- * @param destination - Destination city/country
- * @param origin - Origin city/country (defaults to ORIGIN constant)
- * @returns Estimated flight cost in USD
- */
+
 export function calculateFlightCost(distanceKm: number, destination: string, origin: string = ORIGIN): number {
   // Check cache first
   const cacheKey = createHashKey([origin, destination, distanceKm.toFixed(1), "v1"]);
@@ -126,11 +117,7 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
   return flightCost;
 }
 
-/**
- * Helper function to determine the region of a location
- * @param location - Location string in format "City, Country"
- * @returns Region name
- */
+
 function getRegion(location: string): string {
   const locationLower = location.toLowerCase();
 
@@ -264,13 +251,7 @@ function getRegion(location: string): string {
   return "Other";
 }
 
-/**
- * Scrape flight prices using Google Flights scraper
- * @param origin - Origin city/country
- * @param destination - Destination city/country
- * @param dates - Outbound and return dates
- * @returns Object containing price and source information
- */
+
 export async function scrapeFlightPrice(
   origin: string,
   destination: string,
@@ -310,12 +291,15 @@ export async function scrapeFlightPrice(
         const sum = topFlights.reduce((total, flight) => total + flight.price, 0);
         const avg = Math.round(sum / topFlights.length);
 
-        // Store in cache
-        flightCache.set(cacheKey, {
-          price: avg,
-          timestamp: new Date().toISOString(),
-          source: "Google Flights"
-        });
+        // Store in cache only if we have a valid price
+        if (avg > 0) {
+          flightCache.set(cacheKey, {
+            price: avg,
+            timestamp: new Date().toISOString(),
+            source: "Google Flights"
+          });
+          console.log(`Stored flight price in cache: $${avg} (from top flights)`);
+        }
 
         return { price: avg, source: "Google Flights" };
       } else {
@@ -323,12 +307,15 @@ export async function scrapeFlightPrice(
         const sum = results.prices.reduce((total, flight) => total + flight.price, 0);
         const avg = Math.round(sum / results.prices.length);
 
-        // Store in cache
-        flightCache.set(cacheKey, {
-          price: avg,
-          timestamp: new Date().toISOString(),
-          source: "Google Flights"
-        });
+        // Store in cache only if we have a valid price
+        if (avg > 0) {
+          flightCache.set(cacheKey, {
+            price: avg,
+            timestamp: new Date().toISOString(),
+            source: "Google Flights"
+          });
+          console.log(`Stored flight price in cache: $${avg} (from all flights)`);
+        }
 
         return { price: avg, source: "Google Flights" };
       }

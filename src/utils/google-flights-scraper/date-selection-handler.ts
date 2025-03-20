@@ -2,9 +2,7 @@ import { ElementHandle, Page } from "puppeteer";
 import { LOG_LEVEL } from "./config";
 import { log } from "./log";
 
-/**
- * Opens the date picker and selects the departure and return dates
- */
+
 export async function selectDates(page: Page, departureDate: string, returnDate?: string): Promise<void> {
   if (!page) throw new Error("Page not initialized");
 
@@ -124,9 +122,7 @@ export async function selectDates(page: Page, departureDate: string, returnDate?
   await clickDoneButton(page);
 }
 
-/**
- * Helper function to find and click a specific date in the calendar
- */
+
 async function selectDateInCalendar(page: Page, day: number, month: string): Promise<boolean> {
   log(LOG_LEVEL.INFO, `Looking for ${month} ${day} in calendar...`);
 
@@ -176,9 +172,7 @@ async function selectDateInCalendar(page: Page, day: number, month: string): Pro
   }
 }
 
-/**
- * Navigate to a specific month in the calendar
- */
+
 async function navigateToMonth(page: Page, targetMonth: string, targetYear: number): Promise<void> {
   log(LOG_LEVEL.INFO, `Navigating to ${targetMonth} ${targetYear} in calendar`);
 
@@ -257,9 +251,7 @@ async function navigateToMonth(page: Page, targetMonth: string, targetYear: numb
   }
 }
 
-/**
- * Click the Done button in the date picker
- */
+
 async function clickDoneButton(page: Page): Promise<void> {
   log(LOG_LEVEL.INFO, "Looking for Done button...");
 

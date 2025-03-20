@@ -16,9 +16,7 @@ class AmadeusApi {
     );
   }
 
-  /**
-   * Get an access token for the Amadeus API
-   */
+  
   private async _getAccessToken(): Promise<string> {
     // Check if we have a valid token
     const now = Date.now();
@@ -57,15 +55,7 @@ class AmadeusApi {
     }
   }
 
-  /**
-   * Search for flights using the Amadeus API
-   * @param originLocationCode IATA code for origin airport
-   * @param destinationLocationCode IATA code for destination airport
-   * @param departureDate Departure date in YYYY-MM-DD format
-   * @param returnDate Return date in YYYY-MM-DD format
-   * @param adults Number of adult passengers
-   * @returns Flight search results with prices
-   */
+  
   async searchFlights(
     originLocationCode: string,
     destinationLocationCode: string,
@@ -173,11 +163,7 @@ class AmadeusApi {
   }
 }
 
-/**
- * Convert city name to IATA airport code
- * This is a simplified version - in a real implementation, you would use a more comprehensive
- * lookup or an API to get the correct airport code
- */
+
 function cityToAirportCode(city: string): string {
   const cityMapping: Record<string, string> = {
     "Seoul": "ICN",

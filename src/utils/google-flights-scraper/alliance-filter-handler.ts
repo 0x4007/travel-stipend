@@ -2,10 +2,7 @@ import { Page } from "puppeteer";
 import { LOG_LEVEL } from "./config";
 import { log } from "./log";
 
-/**
- * Clicks the Airlines filter button and selects all alliance checkboxes
- * Returns true if alliance filters were applied, false if no alliance options were found
- */
+
 export async function applyAllianceFilters(page: Page): Promise<boolean> {
   if (!page) throw new Error("Page not initialized");
 
@@ -54,10 +51,7 @@ export async function applyAllianceFilters(page: Page): Promise<boolean> {
   }
 }
 
-/**
- * Clicks the Airlines filter button
- * Returns true if the button was found and clicked, false otherwise
- */
+
 async function clickAirlinesFilterButton(page: Page): Promise<boolean> {
   log(LOG_LEVEL.INFO, "Clicking Airlines filter button");
 
@@ -199,10 +193,7 @@ async function clickAirlinesFilterButton(page: Page): Promise<boolean> {
   }
 }
 
-/**
- * Waits for alliance options to appear
- * Returns true if alliance options were found, false otherwise
- */
+
 async function waitForAllianceOptions(page: Page): Promise<boolean> {
   log(LOG_LEVEL.INFO, "Waiting for alliance options to appear");
 
@@ -260,10 +251,7 @@ async function waitForAllianceOptions(page: Page): Promise<boolean> {
   }
 }
 
-/**
- * Checks all alliance checkboxes
- * Returns the number of checkboxes that were checked
- */
+
 async function checkAllAllianceCheckboxes(page: Page): Promise<number> {
   log(LOG_LEVEL.INFO, "Checking all alliance checkboxes");
 
@@ -339,9 +327,7 @@ async function checkAllAllianceCheckboxes(page: Page): Promise<number> {
   }
 }
 
-/**
- * Waits for results to update after applying filters
- */
+
 async function waitForResultsUpdate(page: Page): Promise<void> {
   log(LOG_LEVEL.INFO, "Waiting for results to update after applying filters");
 

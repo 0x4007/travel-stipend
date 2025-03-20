@@ -1,8 +1,6 @@
 import * as puppeteer from "puppeteer";
 
-/**
- * Enter destination
- */
+
 export async function enterDestination(page: puppeteer.Page, destination: string): Promise<void> {
   // Find and click on the destination input field
   console.log(`Looking for destination input field...`);

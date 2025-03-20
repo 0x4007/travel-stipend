@@ -1,8 +1,6 @@
 import * as puppeteer from "puppeteer";
 
-/**
- * Initialize browser and page
- */
+
 export async function initializeBrowser(): Promise<puppeteer.Browser> {
   console.log("Starting Google Flights date selection test...");
 

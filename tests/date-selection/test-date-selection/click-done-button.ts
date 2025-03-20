@@ -2,9 +2,7 @@ import * as puppeteer from "puppeteer";
 import { findButtonBySelectors } from "../find-button-by-selectors";
 import { tryMultipleClickApproaches } from "../try-multiple-click-approaches";
 
-/**
- * Click the Done button in the date picker
- */
+
 export async function clickDoneButton(page: puppeteer.Page): Promise<void> {
   // Find and click the "Done" button in the date picker
   console.log("Looking for Done button...");

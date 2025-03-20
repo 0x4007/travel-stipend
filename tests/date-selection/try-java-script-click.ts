@@ -1,8 +1,6 @@
 import * as puppeteer from "puppeteer";
 
-/**
- * Helper function to try JavaScript click
- */
+
 export function tryJavaScriptClick(page: puppeteer.Page, searchTexts: string[]): Promise<boolean> {
   return page
     .evaluate((searchTexts) => {

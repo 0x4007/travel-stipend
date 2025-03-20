@@ -1,6 +1,4 @@
-/**
- * Interface for clickable element info
- */
+
 
 export interface ClickableElementInfo {
   tag: string;

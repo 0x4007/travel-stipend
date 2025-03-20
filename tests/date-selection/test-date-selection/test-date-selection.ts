@@ -6,9 +6,7 @@ import { navigateToGoogleFlights } from "./navigate-to-google-flights";
 import { selectDates } from "./select-dates";
 import { takeResultScreenshot } from "./take-result-screenshot";
 
-/**
- * Main function to run the test
- */
+
 async function main(): Promise<void> {
   const browser = await initializeBrowser();
 
