@@ -282,6 +282,9 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
         });
       }
 
+      // Track processed flight IDs to avoid duplicates
+      const processedFlightIds = new Set<string>();
+
       // Find and process top flights
       const topFlightsHeader = Array.from(document.querySelectorAll("h3")).find((el) => el.textContent?.includes("Top departing flights"));
       if (topFlightsHeader) {
@@ -302,7 +305,23 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
         }
       }
 
-      return flightData;
+      // Remove duplicate flights by creating a unique ID for each flight and filtering
+      const uniqueFlights: FlightData[] = [];
+      const flightIdMap = new Map<string, FlightData>();
+
+      for (const flight of flightData) {
+        // Create a unique ID based on flight details
+        const flightId = `${flight.price}-${flight.departureTime}-${flight.arrivalTime}-${flight.duration}`;
+
+        // If this is a top flight or we haven't seen this flight before, keep it
+        if (flight.isTopFlight || !flightIdMap.has(flightId)) {
+          flightIdMap.set(flightId, flight);
+        }
+      }
+
+      // Return only unique flights
+      return Array.from(flightIdMap.values());
+
     });
 
     // Log results
@@ -319,7 +338,7 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
     log(LOG_LEVEL.WARN, "No flights found on the page");
     return [];
   } catch (error) {
-    log(LOG_LEVEL.ERROR, "Error scraping flight prices:", error);
+    log(LOG_LEVEL.ERROR, `Error scraping flight prices: ${error instanceof Error ? error.message : String(error)}`);
     return [];
   }
 }

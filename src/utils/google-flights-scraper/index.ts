@@ -13,15 +13,10 @@ export class GoogleFlightsScraper {
   private _page: Page | null = null;
   private _cache: PersistentCache<{ price: number; timestamp: string; source: string; url?: string; selectedDestination?: string }>;
 
-  async needsFreshData(searches: Array<{from: string, to: string, departureDate: string, returnDate?: string}>): Promise<boolean> {
+  async needsFreshData(searches: Array<{ from: string; to: string; departureDate: string; returnDate?: string }>): Promise<boolean> {
     for (const search of searches) {
-      const cacheKey = this._createCacheKey(
-        search.from,
-        search.to,
-        search.departureDate,
-        search.returnDate
-      );
-      const {shouldFetch} = this._checkCache(cacheKey);
+      const cacheKey = this._createCacheKey(search.from, search.to, search.departureDate, search.returnDate);
+      const { shouldFetch } = this._checkCache(cacheKey);
       if (shouldFetch) return true;
     }
     return false;
@@ -60,7 +55,7 @@ export class GoogleFlightsScraper {
           success: true,
           price: cachedData.price,
           source: cachedData.source,
-          searchUrl: cachedData.url
+          searchUrl: cachedData.url,
         },
       };
     }
@@ -98,8 +93,46 @@ export class GoogleFlightsScraper {
     const result = await searchFlights(this._page, from, to, departureDate, returnDate, takeScreenshots);
 
     if (result.success && result.prices.length > 0) {
-      // Calculate average price from all results
-      const avgPrice = Math.round(result.prices.reduce((sum, price) => sum + price.price, 0) / result.prices.length);
+      // Calculate average price from only top flights, excluding outliers
+      const topFlights = result.prices.filter((price) => price.isTopFlight);
+
+      if (topFlights.length === 0) {
+        // Fallback if no top flights
+        const avgPrice = result.prices.length > 0
+          ? Math.round(result.prices.reduce((sum, price) => sum + price.price, 0) / result.prices.length)
+          : 0;
+
+        // Store in cache with URL and destination verification
+        log(LOG_LEVEL.INFO, `Storing result in cache with key: ${cacheKey}`);
+        this._cache.set(cacheKey, {
+          price: avgPrice,
+          timestamp: new Date().toISOString(),
+          source: "Google Flights",
+          url: result.searchUrl,
+          selectedDestination: result.selectedDestination,
+        });
+        // Save cache to disk
+        this._cache.saveToDisk();
+        log(LOG_LEVEL.INFO, "Cache entry created and saved to disk");
+
+        return {
+          success: true,
+          price: avgPrice,
+          source: "Google Flights",
+          prices: result.prices,
+          searchUrl: result.searchUrl,
+          screenshotPath: result.screenshotPath,
+          selectedDestination: result.selectedDestination,
+          allianceFiltersApplied: result.allianceFiltersApplied,
+        };
+      }
+
+      // Use all top flights without filtering for outliers
+      const avgPrice = topFlights.length > 0
+        ? Math.round(topFlights.reduce((sum, flight) => sum + flight.price, 0) / topFlights.length)
+        : 0;
+
+      log(LOG_LEVEL.INFO, `Using average price of ${avgPrice} from ${topFlights.length} top flights`);
 
       // Store in cache with URL and destination verification
       log(LOG_LEVEL.INFO, `Storing result in cache with key: ${cacheKey}`);
@@ -108,7 +141,7 @@ export class GoogleFlightsScraper {
         timestamp: new Date().toISOString(),
         source: "Google Flights",
         url: result.searchUrl,
-        selectedDestination: result.selectedDestination
+        selectedDestination: result.selectedDestination,
       });
       // Save cache to disk
       this._cache.saveToDisk();
@@ -122,7 +155,7 @@ export class GoogleFlightsScraper {
         searchUrl: result.searchUrl,
         screenshotPath: result.screenshotPath,
         selectedDestination: result.selectedDestination,
-        allianceFiltersApplied: result.allianceFiltersApplied
+        allianceFiltersApplied: result.allianceFiltersApplied,
       };
     }
 

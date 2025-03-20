@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { createHashKey, PersistentCache } from '../src/utils/cache';
 import { CoordinatesMapping } from '../src/utils/coordinates';
@@ -6,13 +6,87 @@ import { getDistanceKmFromCities } from '../src/utils/distance';
 import { calculateFlightCost } from '../src/utils/flights';
 import { GoogleFlightsScraper } from '../src/utils/google-flights-scraper';
 
-// Test just the routes with highest error percentages
-const DESTINATIONS_TO_TEST = [
-  "Helsinki, Finland",    // ~61% error
-  "Abu Dhabi, UAE",      // ~55% error
-  "Berlin, Germany"      // ~34% error
-];
+// Find destinations with >25% error from latest results
+function getDestinationsToTest(): string[] {
+  try {
+    const testResultsDir = join(process.cwd(), 'test-results');
+    if (!existsSync(testResultsDir)) {
+      console.log("Creating test-results directory");
+      mkdirSync(testResultsDir, { recursive: true });
 
+      // Return default destinations if directory was just created
+      return [
+        "Helsinki, Finland",
+        "Abu Dhabi, UAE",
+        "Berlin, Germany"
+      ];
+    }
+
+    const csvFiles = readdirSync(testResultsDir).filter(f => f.endsWith('.csv'));
+    if (csvFiles.length === 0) {
+      console.log("No CSV files found, using default destinations");
+      return [
+        "Helsinki, Finland",
+        "Abu Dhabi, UAE",
+        "Berlin, Germany"
+      ];
+    }
+
+    // Get the latest CSV file
+    const latestCsv = csvFiles.sort().reverse()[0];
+    console.log(`Using data from CSV file: ${latestCsv}`);
+
+    const csvContent = readFileSync(join(testResultsDir, latestCsv), 'utf-8');
+    const rows = csvContent.split('\n').slice(1); // Skip header
+
+    // Find destinations with >25% error
+    const destinations = rows
+      .map(row => {
+        try {
+          // Handle CSV parsing properly
+          const parts = row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
+          if (parts.length < 6) return null;
+
+          // Extract destination (remove outer quotes if present)
+          const destination = parts[1].trim().replace(/^"(.*)"$/, '$1');
+          const error = Math.abs(parseFloat(parts[5]));
+
+          return { destination, error };
+        } catch (e) {
+          console.error('Error parsing row:', row);
+          return null;
+        }
+      })
+      .filter((entry): entry is { destination: string; error: number } =>
+        entry !== null &&
+        !isNaN(entry.error) &&
+        entry.error > 25 &&
+        entry.destination !== ""
+      )
+      .map(({ destination }) => destination);
+
+    console.log(`Found ${destinations.length} destinations with >25% error`);
+
+    if (destinations.length === 0) {
+      return [
+        "Helsinki, Finland",
+        "Abu Dhabi, UAE",
+        "Berlin, Germany"
+      ];
+    }
+
+    return destinations;
+  } catch (error) {
+    console.error('Error getting destinations from CSV:', error);
+    return [
+      "Helsinki, Finland",
+      "Abu Dhabi, UAE",
+      "Berlin, Germany"
+    ];
+  }
+}
+
+const DESTINATIONS_TO_TEST = getDestinationsToTest();
 const ORIGIN = "Seoul, South Korea";
 
 // Add coordinates for testing
@@ -251,8 +325,8 @@ describe('Comprehensive Distance-Based Price Analysis', () => {
     const estimatedPrice = calculateFlightCost(distanceKm, destination, ORIGIN);
 
     // Get actual price from Google Flights
-    const departureDate = '2024-05-25';
-    const returnDate = '2024-06-01';
+    const departureDate = '2025-05-25';
+    const returnDate = '2025-06-01';
     console.log(`Searching flights for dates: ${departureDate} - ${returnDate}`);
 
     try {
