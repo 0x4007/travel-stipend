@@ -6,7 +6,6 @@ import { navigateToGoogleFlights } from "./navigate-to-google-flights";
 import { selectDates } from "./select-dates";
 import { takeResultScreenshot } from "./take-result-screenshot";
 
-
 async function main(): Promise<void> {
   const browser = await initializeBrowser();
 

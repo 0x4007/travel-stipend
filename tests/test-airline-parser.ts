@@ -13,9 +13,10 @@ function splitConcatenatedNames(text: string): string[] {
 
   // First handle comma-separated parts
   if (text.includes(",")) {
-    return text.split(",")
-      .map(part => part.trim())
-      .flatMap(part => splitConcatenatedNames(part))
+    return text
+      .split(",")
+      .map((part) => part.trim())
+      .flatMap((part) => splitConcatenatedNames(part))
       .filter(Boolean);
   }
 
@@ -23,7 +24,7 @@ function splitConcatenatedNames(text: string): string[] {
   const splitPoints: number[] = [];
   for (let i = 0; i < text.length - 1; i++) {
     // Check if current char is lowercase and next char is uppercase
-    if (/[a-z]/.test(text[i]) && /[A-Z]/.test(text[i+1])) {
+    if (/[a-z]/.test(text[i]) && /[A-Z]/.test(text[i + 1])) {
       splitPoints.push(i + 1);
     }
   }
@@ -77,7 +78,7 @@ const testCases = [
   null,
   "",
   "China Airlines, Korean Air",
-  "EVA Air, Asiana Airlines"
+  "EVA Air, Asiana Airlines",
 ];
 
 // Log the test cases to debug
@@ -144,13 +145,13 @@ const sampleFlights = [
     origin: "ICN",
     destination: "TPE",
     isTopFlight: true,
-  }
+  },
 ];
 
 // Process the sample flights
-const processedFlights = sampleFlights.map(flight => ({
+const processedFlights = sampleFlights.map((flight) => ({
   ...flight,
-  airlineDetails: processAirlineDetails(flight.airlineDetails)
+  airlineDetails: processAirlineDetails(flight.airlineDetails),
 }));
 
 // Display the results

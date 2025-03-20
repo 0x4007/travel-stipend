@@ -7,7 +7,6 @@ export async function findAndClickCurrencyButton(page: Page): Promise<boolean> {
 
   // Take a screenshot before looking for the currency button
 
-
   // Try multiple approaches to find and click the currency button
   // Approach 1: Look for menu items or buttons with currency-related text
   const isCurrencyButtonFound = await page.evaluate((): boolean => {

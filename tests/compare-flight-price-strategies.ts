@@ -18,31 +18,34 @@ interface ComparisonResult {
   distanceKm: number | null;
 }
 
+function cityToAirportCode(input: string): string {
+  // Check if input is already an IATA code (3 uppercase letters)
+  if (/^[A-Z]{3}$/.test(input)) {
+    return input;
+  }
 
-function cityToAirportCode(city: string): string {
   const cityMapping: Record<string, string> = {
-    "Seoul": "ICN",
-    "Tokyo": "HND",
-    "Taipei": "TPE",
+    Seoul: "ICN",
+    Tokyo: "HND",
+    Taipei: "TPE",
     "Hong Kong": "HKG",
-    "Singapore": "SIN",
-    "Bangkok": "BKK",
+    Singapore: "SIN",
+    Bangkok: "BKK",
     "San Francisco": "SFO",
     "Los Angeles": "LAX",
     "New York": "JFK",
-    "London": "LHR",
-    "Paris": "CDG",
-    "Sydney": "SYD",
-    "Beijing": "PEK",
-    "Shanghai": "PVG",
+    London: "LHR",
+    Paris: "CDG",
+    Sydney: "SYD",
+    Beijing: "PEK",
+    Shanghai: "PVG",
   };
 
   // Extract city name from "City, Country" format
-  const cityName = city.split(",")[0].trim();
+  const cityName = input.split(",")[0].trim();
 
   return cityMapping[cityName] || "Unknown";
 }
-
 
 async function getDistanceInfo(origin: string, destination: string): Promise<{ distanceKm: number | null }> {
   try {
@@ -96,13 +99,17 @@ async function retryGoogleFlightsScraping(
     if (result.price !== null || retryCount === maxRetries) break;
 
     console.log(`Scraping failed. Will retry (${retryCount}/${maxRetries})...`);
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
   }
 
   return result;
 }
 
-async function getGoogleFlightsPrice(origin: string, destination: string, dates: { departureDate: string; returnDate: string }): Promise<{ price: number | null; source: string }> {
+async function getGoogleFlightsPrice(
+  origin: string,
+  destination: string,
+  dates: { departureDate: string; returnDate: string }
+): Promise<{ price: number | null; source: string }> {
   try {
     console.log("Getting Google Flights price...");
     const result = await retryGoogleFlightsScraping(origin, destination, dates, 2);
@@ -116,7 +123,11 @@ async function getGoogleFlightsPrice(origin: string, destination: string, dates:
   }
 }
 
-async function getAmadeusPrice(origin: string, destination: string, dates: { departureDate: string; returnDate: string }): Promise<{ price: number | null; source: string }> {
+async function getAmadeusPrice(
+  origin: string,
+  destination: string,
+  dates: { departureDate: string; returnDate: string }
+): Promise<{ price: number | null; source: string }> {
   try {
     console.log("Getting Amadeus API price...");
     const originCode = cityToAirportCode(origin);
@@ -132,12 +143,7 @@ async function getAmadeusPrice(origin: string, destination: string, dates: { dep
     const amadeus = new AmadeusApi(apiKey, apiSecret, true);
 
     console.log("Searching with major carriers only (alliance members)...");
-    const result = await amadeus.searchFlights(
-      originCode,
-      destinationCode,
-      dates.departureDate,
-      dates.returnDate
-    );
+    const result = await amadeus.searchFlights(originCode, destinationCode, dates.departureDate, dates.returnDate);
 
     if (result.success) {
       console.log(`Amadeus API price: $${result.price}`);
@@ -153,12 +159,7 @@ async function getAmadeusPrice(origin: string, destination: string, dates: { dep
   }
 }
 
-async function compareFlightPriceStrategies(
-  origin: string,
-  destination: string,
-  departureDate: string,
-  returnDate: string
-): Promise<ComparisonResult> {
+async function compareFlightPriceStrategies(origin: string, destination: string, departureDate: string, returnDate: string): Promise<ComparisonResult> {
   console.log(`\n=== Comparing flight price strategies for ${origin} to ${destination} ===`);
 
   // Initialize result (using original values without reformatting)
@@ -196,7 +197,6 @@ async function compareFlightPriceStrategies(
   return result;
 }
 
-
 interface PriceDifference {
   name: string;
   difference: number;
@@ -211,10 +211,10 @@ function calculatePriceDifference(comparePrice: number | null, basePrice: number
   const percentDifference = ((difference / basePrice) * 100).toFixed(2);
 
   return {
-    name: "",  // Set by caller
+    name: "", // Set by caller
     difference,
     percentDifference,
-    isHigher: difference >= 0
+    isHigher: difference >= 0,
   };
 }
 
@@ -239,16 +239,15 @@ function displayComparisonResults(results: ComparisonResult[]): void {
 
       const diffs = [
         { ...calculatePriceDifference(result.distanceBasedPrice, result.googleFlightsPrice), name: "Distance-based" },
-        { ...calculatePriceDifference(result.amadeusPrice, result.googleFlightsPrice), name: "Amadeus API" }
+        { ...calculatePriceDifference(result.amadeusPrice, result.googleFlightsPrice), name: "Amadeus API" },
       ].filter((diff): diff is PriceDifference => diff != null);
 
-      diffs.forEach(diff => console.log(formatPriceDifference(diff)));
+      diffs.forEach((diff) => console.log(formatPriceDifference(diff)));
     }
 
     console.log("\n" + "-".repeat(50));
   });
 }
-
 
 async function main() {
   console.log("Starting flight price strategy comparison...");
@@ -259,16 +258,12 @@ async function main() {
   nextWeek.setDate(today.getDate() + 7);
 
   // Format departure date (next week)
-  const departureDate = `${nextWeek.getFullYear()}-${String(nextWeek.getMonth() + 1).padStart(2, "0")}-${String(
-    nextWeek.getDate()
-  ).padStart(2, "0")}`;
+  const departureDate = `${nextWeek.getFullYear()}-${String(nextWeek.getMonth() + 1).padStart(2, "0")}-${String(nextWeek.getDate()).padStart(2, "0")}`;
 
   // Format return date (departure + 7 days)
   const returnDay = new Date(nextWeek);
   returnDay.setDate(returnDay.getDate() + 7);
-  const returnDate = `${returnDay.getFullYear()}-${String(returnDay.getMonth() + 1).padStart(2, "0")}-${String(
-    returnDay.getDate()
-  ).padStart(2, "0")}`;
+  const returnDate = `${returnDay.getFullYear()}-${String(returnDay.getMonth() + 1).padStart(2, "0")}-${String(returnDay.getDate()).padStart(2, "0")}`;
 
   // Define test cases with different characteristics
   const testCases = [
@@ -298,12 +293,7 @@ async function main() {
   // Run comparisons for all test cases
   const results: ComparisonResult[] = [];
   for (const testCase of testCases) {
-    const result = await compareFlightPriceStrategies(
-      testCase.origin,
-      testCase.destination,
-      testCase.departureDate,
-      testCase.returnDate
-    );
+    const result = await compareFlightPriceStrategies(testCase.origin, testCase.destination, testCase.departureDate, testCase.returnDate);
     results.push(result);
   }
 

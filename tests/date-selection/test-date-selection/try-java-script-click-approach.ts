@@ -1,8 +1,6 @@
 import * as puppeteer from "puppeteer";
 import { tryJavaScriptClick } from "../try-java-script-click";
 
-
-
 export async function tryJavaScriptClickApproach(page: puppeteer.Page): Promise<void> {
   console.log("Could not find search button with previous approaches, trying JavaScript click...");
 

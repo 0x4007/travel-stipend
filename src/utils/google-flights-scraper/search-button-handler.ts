@@ -59,8 +59,8 @@ async function findButtonByText(page: Page): Promise<ElementHandle<Element> | nu
 
     for (const button of buttons) {
       try {
-        const textContent = await button.evaluate(el => el.textContent?.toLowerCase() ?? "");
-        const ariaLabel = await button.evaluate(el => el.getAttribute("aria-label")?.toLowerCase() ?? "");
+        const textContent = await button.evaluate((el) => el.textContent?.toLowerCase() ?? "");
+        const ariaLabel = await button.evaluate((el) => el.getAttribute("aria-label")?.toLowerCase() ?? "");
 
         if (textContent.includes("search") || ariaLabel.includes("search")) {
           log(LOG_LEVEL.INFO, `Found search button by text content: ${textContent}`);
@@ -91,15 +91,13 @@ async function findButtonByPosition(page: Page): Promise<ElementHandle<Element> 
         const boundingBox = await element.boundingBox();
         return {
           element,
-          boundingBox: boundingBox ? { x: boundingBox.x, y: boundingBox.y } : null
+          boundingBox: boundingBox ? { x: boundingBox.x, y: boundingBox.y } : null,
         };
       })
     );
 
     const visibleElements = elementInfos
-      .filter((info): info is ButtonInfo & { boundingBox: NonNullable<ButtonInfo["boundingBox"]> } =>
-        info.boundingBox !== null
-      )
+      .filter((info): info is ButtonInfo & { boundingBox: NonNullable<ButtonInfo["boundingBox"]> } => info.boundingBox !== null)
       .sort((a, b) => {
         const aBox = a.boundingBox;
         const bBox = b.boundingBox;
@@ -138,22 +136,23 @@ async function tryJavaScriptClick(page: Page, button: ElementHandle<Element>): P
     await page.evaluate((element: Element) => {
       if (!(element instanceof HTMLElement)) return;
 
-      const clickElement = (el: HTMLElement) => {
+      function clickElement(el: HTMLElement) {
         el.click();
-        el.dispatchEvent(new MouseEvent("click", {
-          view: window,
-          bubbles: true,
-          cancelable: true,
-        }));
-      };
+        el.dispatchEvent(
+          new MouseEvent("click", {
+            view: window,
+            bubbles: true,
+            cancelable: true,
+          })
+        );
+      }
 
       // Try clicking the element itself
       clickElement(element);
 
       // Try parent button elements
       for (let parent = element.parentElement; parent; parent = parent.parentElement) {
-        if (parent instanceof HTMLElement &&
-            (parent.tagName === 'BUTTON' || parent.getAttribute('role') === 'button')) {
+        if (parent instanceof HTMLElement && (parent.tagName === "BUTTON" || parent.getAttribute("role") === "button")) {
           clickElement(parent);
           break;
         }
@@ -188,7 +187,7 @@ async function waitForSearchResults(page: Page): Promise<void> {
     await Promise.race([
       page.waitForNavigation({ waitUntil: "networkidle2", timeout: 30000 }),
       page.waitForSelector('[role="main"]', { timeout: 30000 }),
-      page.waitForSelector('.gws-flights-results__results-container', { timeout: 30000 }),
+      page.waitForSelector(".gws-flights-results__results-container", { timeout: 30000 }),
       page.waitForSelector('[data-test-id="price-column"]', { timeout: 30000 }),
       page.waitForFunction(
         () => {
@@ -197,11 +196,11 @@ async function waitForSearchResults(page: Page): Promise<void> {
         },
         { timeout: 30000 }
       ),
-      new Promise(resolve => setTimeout(resolve, 30000))
+      new Promise((resolve) => setTimeout(resolve, 30000)),
     ]);
 
     log(LOG_LEVEL.INFO, "Search results loaded or timeout occurred");
-    const url = await page.url();
+    const url = page.url();
     log(LOG_LEVEL.INFO, `Current URL: ${url}`);
   } catch (error) {
     if (error instanceof Error) {
@@ -238,16 +237,14 @@ export async function clickSearchButton(page: Page): Promise<void> {
   log(LOG_LEVEL.INFO, "STEP 4: Finding and clicking search button");
 
   // Try different methods to find the search button
-  const searchButton = await findButtonBySelectors(page) ||
-                      await findButtonByText(page) ||
-                      await findButtonByPosition(page);
+  const searchButton = (await findButtonBySelectors(page)) || (await findButtonByText(page)) || (await findButtonByPosition(page));
 
   if (searchButton) {
     // Log button details
-    const buttonInfo = await searchButton.evaluate(el => ({
+    const buttonInfo = await searchButton.evaluate((el) => ({
       text: el.textContent?.trim() ?? "",
       className: el.className ?? "",
-      type: el.tagName ?? ""
+      type: el.tagName ?? "",
     }));
     log(LOG_LEVEL.INFO, `Button details - Text: "${buttonInfo.text}", Class: "${buttonInfo.className}", Type: ${buttonInfo.type}`);
 
@@ -265,13 +262,13 @@ export async function clickSearchButton(page: Page): Promise<void> {
   }
 
   // Wait for initial click processing
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 
   // Check for additional submit buttons
   await checkForSubmitButtons(page);
 
   // Wait for results
-  await waitForSearchResults(page).catch(error => {
+  await waitForSearchResults(page).catch((error) => {
     if (error instanceof Error) {
       log(LOG_LEVEL.ERROR, `Error in waitForSearchResults: ${error.message}`);
     }
@@ -279,5 +276,5 @@ export async function clickSearchButton(page: Page): Promise<void> {
 
   // Final wait for animations
   // Explicitly mark this Promise as intentionally not awaited
-  void new Promise(resolve => setTimeout(resolve, 3000));
+  void new Promise((resolve) => setTimeout(resolve, 3000));
 }

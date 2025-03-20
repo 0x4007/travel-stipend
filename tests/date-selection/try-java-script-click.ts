@@ -1,6 +1,5 @@
 import * as puppeteer from "puppeteer";
 
-
 export function tryJavaScriptClick(page: puppeteer.Page, searchTexts: string[]): Promise<boolean> {
   return page
     .evaluate((searchTexts) => {

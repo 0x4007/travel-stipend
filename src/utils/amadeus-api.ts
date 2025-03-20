@@ -211,7 +211,7 @@ export class AmadeusApi {
 
     // Filter for major carriers only (default behavior)
     let flightsToUse = prices;
-    let sourceDescription = "Amadeus API";
+    const sourceDescription = "Amadeus API";
 
     if (this._filterMajorCarriersOnly) {
       // Filter for major carriers only, checking all segments
@@ -228,7 +228,6 @@ export class AmadeusApi {
       // Only use major carrier flights if we found some
       if (majorCarrierFlights.length > 0) {
         flightsToUse = majorCarrierFlights;
-        sourceDescription = "Amadeus API";
         console.log(`Filtered to ${majorCarrierFlights.length} major carrier flights out of ${prices.length} total flights`);
 
         // Log the airlines and their alliances

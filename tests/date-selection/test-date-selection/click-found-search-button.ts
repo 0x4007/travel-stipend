@@ -1,7 +1,5 @@
 import * as puppeteer from "puppeteer";
 
-
-
 export async function clickFoundSearchButton(page: puppeteer.Page, searchButton: puppeteer.ElementHandle<Element>): Promise<void> {
   console.log("Found search button, clicking it...");
 

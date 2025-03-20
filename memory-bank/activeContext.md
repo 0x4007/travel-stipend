@@ -103,6 +103,7 @@ Current known issues that need attention:
    - Need for strategies to handle price fluctuations
 
 3. **Currency Conversion**:
+
    - All calculations currently in USD
    - Need for handling multiple currencies
 

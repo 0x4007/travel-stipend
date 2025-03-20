@@ -14,7 +14,7 @@ interface MonthYear {
 }
 
 function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function parseDateString(dateString: string): DateInfo {
@@ -22,7 +22,7 @@ function parseDateString(dateString: string): DateInfo {
   return {
     day: dateObj.getDate(),
     month: dateObj.toLocaleString("en-US", { month: "long" }),
-    year: dateObj.getFullYear()
+    year: dateObj.getFullYear(),
   };
 }
 
@@ -130,7 +130,7 @@ async function getCurrentMonthYear(page: Page): Promise<MonthYear | null> {
     }
     return {
       month: monthYearMatch[1],
-      year: parseInt(monthYearMatch[2], 10)
+      year: parseInt(monthYearMatch[2], 10),
     };
   } catch (error) {
     if (error instanceof Error) {
@@ -164,7 +164,7 @@ async function navigateMonths(page: Page, button: ElementHandle<Element>, target
   }
 }
 
-async function getMonthNavigationButtons(page: Page): Promise<{ prevButton: ElementHandle<Element>; nextButton: ElementHandle<Element>; } | null> {
+async function getMonthNavigationButtons(page: Page): Promise<{ prevButton: ElementHandle<Element>; nextButton: ElementHandle<Element> } | null> {
   const prevButton = await page.$('div[aria-label="Previous month"]');
   const nextButton = await page.$('div[aria-label="Next month"]');
 

@@ -1,4 +1,4 @@
-import { Transform } from 'jscodeshift';
+import { Transform } from "jscodeshift";
 
 /**
  * This transform removes JSDoc style comments from TypeScript files.
@@ -13,7 +13,7 @@ function transform(file: { source: string }, /* eslint-disable-line @typescript-
   const jsdocRegex = /\/\*\*[\s\S]*?\*\//g;
 
   // Replace JSDoc comments with empty string
-  source = source.replace(jsdocRegex, '');
+  source = source.replace(jsdocRegex, "");
 
   // Return the modified source
   return source;

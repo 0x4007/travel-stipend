@@ -41,8 +41,8 @@ async function main() {
     const returnDate = new Date(today);
     returnDate.setDate(today.getDate() + 14); // Two weeks in advance
 
-    const departureDateString = departureDate.toISOString().split('T')[0];
-    const returnDateString = returnDate.toISOString().split('T')[0];
+    const departureDateString = departureDate.toISOString().split("T")[0];
+    const returnDateString = returnDate.toISOString().split("T")[0];
 
     console.log(`Searching flights from ${from} to ${to}`);
     console.log(`Departure: ${departureDateString}, Return: ${returnDateString}`);
@@ -58,7 +58,7 @@ async function main() {
 
     if (result.prices.length > 0) {
       result.prices.forEach((flight, index) => {
-        console.log(`Price ${index + 1}: $${typeof flight.price === 'number' ? flight.price.toFixed(2) : 'N/A'}`);
+        console.log(`Price ${index + 1}: $${typeof flight.price === "number" ? flight.price.toFixed(2) : "N/A"}`);
       });
     } else {
       console.log("No prices found. Check the screenshots for debugging.");

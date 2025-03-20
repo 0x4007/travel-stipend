@@ -1,5 +1,3 @@
-
-
 export function calculateTravelDates(): {
   departureDayOfMonth: number;
   departureMonth: string;

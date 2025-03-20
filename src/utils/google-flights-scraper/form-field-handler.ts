@@ -102,7 +102,6 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
 
     // Take a screenshot of all input fields
 
-
     if (inputFields.length > 0) {
       // Use the first input field as the origin field
       originField = inputFields[0];
@@ -118,7 +117,6 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
   await originField.click();
   log(LOG_LEVEL.INFO, "Clicked on origin input field");
 
-
   // Clear the origin field using our robust clearing function
   await clearInputField(page, originField);
   log(LOG_LEVEL.INFO, "Attempted to clear origin field using multiple methods");
@@ -128,7 +126,6 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
   const sanitizedFrom = from.replace(/,/g, "");
   log(LOG_LEVEL.INFO, `Typing origin with slower delay (sanitized): ${sanitizedFrom}`);
   await page.keyboard.type(sanitizedFrom, { delay: 200 });
-
 
   // Wait longer for suggestions to appear and stabilize
   // log(LOG_LEVEL.INFO, "Waiting for suggestions to appear and stabilize");
@@ -144,7 +141,6 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
 
   // Take a screenshot of the suggestions
 
-
   // Wait a moment before selecting to ensure suggestions are fully loaded
   // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
 
@@ -155,7 +151,6 @@ export async function fillOriginField(page: Page, from: string): Promise<void> {
   // Wait after selection to ensure it's processed
   // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
   log(LOG_LEVEL.INFO, "Selected origin");
-
 }
 
 export async function fillDestinationField(page: Page, to: string): Promise<void> {
@@ -174,7 +169,6 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   ];
 
   // Take a screenshot before finding destination field
-
 
   // Try to find the destination field
   let destinationField = null;
@@ -202,7 +196,6 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
 
     // Take a screenshot of all input fields
 
-
     if (inputFields.length > 1) {
       // Use the second input field as the destination field
       destinationField = inputFields[1];
@@ -218,7 +211,6 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   await destinationField.click();
   log(LOG_LEVEL.INFO, "Clicked on destination input field");
 
-
   // Clear the destination field using our robust clearing function
   await clearInputField(page, destinationField);
   log(LOG_LEVEL.INFO, "Attempted to clear destination field using multiple methods");
@@ -228,7 +220,6 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   const sanitizedTo = to.replace(/,/g, "");
   log(LOG_LEVEL.INFO, `Typing destination with slower delay (sanitized): ${sanitizedTo}`);
   await page.keyboard.type(sanitizedTo, { delay: 200 });
-
 
   // Wait longer for suggestions to appear and stabilize
   // log(LOG_LEVEL.INFO, "Waiting for suggestions to appear and stabilize");
@@ -244,7 +235,6 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
 
   // Take a screenshot of the suggestions
 
-
   // Wait a moment before selecting to ensure suggestions are fully loaded
   // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
 
@@ -255,5 +245,4 @@ export async function fillDestinationField(page: Page, to: string): Promise<void
   // Wait after selection to ensure it's processed
   // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
   log(LOG_LEVEL.INFO, "Selected destination");
-
 }

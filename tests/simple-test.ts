@@ -1,7 +1,7 @@
 // Simple test for the airline parser
 
 // Make this a module to avoid global scope conflicts
-export { };
+export {};
 
 // Test function
 function testAirlineParser() {
@@ -10,7 +10,7 @@ function testAirlineParser() {
     "China Airlines, Korean Air, China AirlinesKorean Air",
     "Asiana Airlines, Asiana AirlinesEVA Air",
     "Korean Air, China Airlines, Korean AirChina Airlines",
-    "Jin Air, Korean Air, Jin AirKorean Air"
+    "Jin Air, Korean Air, Jin AirKorean Air",
   ];
 
   // Process each test case
@@ -33,9 +33,10 @@ function splitConcatenatedNames(text: string): string[] {
 
   // First handle comma-separated parts
   if (text.includes(",")) {
-    return text.split(",")
-      .map(part => part.trim())
-      .flatMap(part => splitConcatenatedNames(part))
+    return text
+      .split(",")
+      .map((part) => part.trim())
+      .flatMap((part) => splitConcatenatedNames(part))
       .filter(Boolean);
   }
 
@@ -43,7 +44,7 @@ function splitConcatenatedNames(text: string): string[] {
   const splitPoints: number[] = [];
   for (let i = 0; i < text.length - 1; i++) {
     // Check if current char is lowercase and next char is uppercase
-    if (/[a-z]/.test(text[i]) && /[A-Z]/.test(text[i+1])) {
+    if (/[a-z]/.test(text[i]) && /[A-Z]/.test(text[i + 1])) {
       splitPoints.push(i + 1);
     }
   }
@@ -104,7 +105,7 @@ const sampleFlights = [
     duration: "2 hr 50 min.",
     stops: 0,
     origin: "ICN",
-    destination: "TPE"
+    destination: "TPE",
   },
   {
     price: 262,
@@ -114,7 +115,7 @@ const sampleFlights = [
     duration: "2 hr 50 min.",
     stops: 0,
     origin: "ICN",
-    destination: "TPE"
+    destination: "TPE",
   },
   {
     price: 310,
@@ -124,8 +125,8 @@ const sampleFlights = [
     duration: "2 hr 45 min.",
     stops: 0,
     origin: "ICN",
-    destination: "TPE"
-  }
+    destination: "TPE",
+  },
 ];
 
 sampleFlights.forEach((flight, index) => {

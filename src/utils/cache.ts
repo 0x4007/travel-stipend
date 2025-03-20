@@ -111,7 +111,7 @@ export function isWithinSixHours(timestamp: string): boolean {
   const cachedTime = new Date(timestamp).getTime();
   const currentTime = Date.now();
   const sixHoursInMs = 6 * 60 * 60 * 1000;
-  return (currentTime - cachedTime) < sixHoursInMs;
+  return currentTime - cachedTime < sixHoursInMs;
 }
 
 export function createHashKey(args: unknown[]): string {

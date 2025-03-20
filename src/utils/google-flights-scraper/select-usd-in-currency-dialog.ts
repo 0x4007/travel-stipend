@@ -89,7 +89,6 @@ export async function selectUsdInCurrencyDialog(page: Page): Promise<boolean> {
 
     // Take a screenshot before selection attempt
 
-
     // Wait a moment for the dialog to fully render
     await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 1000)));
 
@@ -106,7 +105,6 @@ export async function selectUsdInCurrencyDialog(page: Page): Promise<boolean> {
     const isUsdSelected = await canSelectUsingDomManipulation(page);
 
     // Take a screenshot after the selection attempt
-
 
     if (isUsdSelected) {
       log(LOG_LEVEL.INFO, "Successfully selected USD in currency dialog");

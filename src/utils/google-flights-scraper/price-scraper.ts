@@ -2,7 +2,6 @@ import { Page } from "puppeteer";
 import { LOG_LEVEL } from "./config";
 import { log } from "./log";
 
-
 interface FlightData {
   price: number;
   airlines: string[]; // Changed from airline/airlineDetails to a single array property
@@ -71,7 +70,8 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
       }
 
       function isNonAirlineText(text: string): boolean {
-        return text.includes("Nonstop") ||
+        return (
+          text.includes("Nonstop") ||
           text.includes("stop") ||
           text.includes("hr") ||
           text.includes("min") ||
@@ -93,18 +93,19 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
           text.includes("Mon,") ||
           text.includes("Tue,") ||
           /\d{4}/.test(text) || // Skip years
-          /\d{1,2}:\d{2}/.test(text); // Skip times
+          /\d{1,2}:\d{2}/.test(text)
+        ); // Skip times
       }
 
-      
       function splitConcatenatedNames(text: string): string[] {
         if (!text) return [];
 
         // First handle comma-separated parts
         if (text.includes(",")) {
-          return text.split(",")
-            .map(part => part.trim())
-            .flatMap(part => splitConcatenatedNames(part))
+          return text
+            .split(",")
+            .map((part) => part.trim())
+            .flatMap((part) => splitConcatenatedNames(part))
             .filter(Boolean);
         }
 
@@ -112,7 +113,7 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
         const splitPoints: number[] = [];
         for (let i = 0; i < text.length - 1; i++) {
           // Check if current char is lowercase and next char is uppercase
-          if (/[a-z]/.test(text[i]) && /[A-Z]/.test(text[i+1])) {
+          if (/[a-z]/.test(text[i]) && /[A-Z]/.test(text[i + 1])) {
             splitPoints.push(i + 1);
           }
         }
@@ -179,7 +180,7 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
 
         return {
           airlines: uniqueAirlines.length > 0 ? uniqueAirlines : [],
-          bookingCaution
+          bookingCaution,
         };
       }
 
@@ -322,7 +323,6 @@ export async function scrapeFlightPrices(page: Page): Promise<FlightData[]> {
     return [];
   }
 }
-
 
 export function extractPricesFromFlightData(flightData: FlightData[]): number[] {
   return flightData.map((flight) => flight.price);

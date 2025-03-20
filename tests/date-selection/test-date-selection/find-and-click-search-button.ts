@@ -6,7 +6,6 @@ import { clickFoundSearchButton } from "./click-found-search-button";
 import { logClickableElements } from "./log-clickable-elements";
 import { tryJavaScriptClickApproach } from "./try-java-script-click-approach";
 
-
 export async function findAndClickSearchButton(page: puppeteer.Page): Promise<void> {
   console.log("Looking for search button...");
 

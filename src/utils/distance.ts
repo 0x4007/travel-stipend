@@ -71,7 +71,12 @@ function getLocationCoordinates(location: string, coordinates: CoordinatesMappin
   return findCityCoordinates(location, coordinates);
 }
 
-export function getDistanceKmFromCities(originLocation: string, destinationLocation: string, coordinates: CoordinatesMapping, airportCoordinates?: AirportCoordinatesMapping): number {
+export function getDistanceKmFromCities(
+  originLocation: string,
+  destinationLocation: string,
+  coordinates: CoordinatesMapping,
+  airportCoordinates?: AirportCoordinatesMapping
+): number {
   // If airportCoordinates is not provided, fallback to only city coordinates
   if (!airportCoordinates) {
     const originCoords = findCityCoordinates(originLocation, coordinates);

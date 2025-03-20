@@ -1,8 +1,6 @@
 import * as puppeteer from "puppeteer";
 import { ClickableElementInfo } from "./clickable-element-info";
 
-
-
 export async function logClickableElements(page: puppeteer.Page): Promise<ClickableElementInfo[]> {
   console.log("Logging all buttons and clickable elements on the page...");
   const allElements = await page.$$eval('button, [role="button"], a, [tabindex="0"]', (elements: Element[]) => {

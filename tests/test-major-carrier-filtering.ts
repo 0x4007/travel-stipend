@@ -42,13 +42,11 @@ console.log("Airline Code | Alliance      | Major Carrier");
 console.log("-------------|---------------|-------------");
 
 // Test each airline code
-airlineCodes.forEach(code => {
+airlineCodes.forEach((code) => {
   const alliance = getAirlineAlliance(code);
   const isMajor = isMajorCarrier(code);
 
-  console.log(
-    `${code.padEnd(12)}| ${(alliance ?? "Not in alliance").padEnd(15)}| ${isMajor ? "Yes" : "No"}`
-  );
+  console.log(`${code.padEnd(12)}| ${(alliance ?? "Not in alliance").padEnd(15)}| ${isMajor ? "Yes" : "No"}`);
 });
 
 console.log("\nSummary:");

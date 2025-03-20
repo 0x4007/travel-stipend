@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
 // Function to remove JSDoc comments from a string
 function removeJsDocComments(content: string): string {
@@ -9,7 +9,7 @@ function removeJsDocComments(content: string): string {
   const jsdocRegex = /\/\*\*[\s\S]*?\*\//g;
 
   // Replace JSDoc comments with empty string
-  return content.replace(jsdocRegex, '');
+  return content.replace(jsdocRegex, "");
 }
 
 // Function to process a single file
@@ -18,7 +18,7 @@ function processFile(filePath: string): void {
 
   try {
     // Read the file content
-    const content = fs.readFileSync(filePath, 'utf-8');
+    const content = fs.readFileSync(filePath, "utf-8");
 
     // Remove JSDoc comments
     const processedContent = removeJsDocComments(content);
@@ -58,12 +58,12 @@ function processDirectory(dirPath: string, extensions: string[]): void {
 }
 
 // Default directories to process
-const defaultDirs = ['src', 'tests', 'build'];
+const defaultDirs = ["src", "tests", "build"];
 
 // Parse command line arguments
 const args = process.argv.slice(2);
 const dirs = args.length > 0 ? args : defaultDirs;
-const extensions = ['.ts', '.tsx'];
+const extensions = [".ts", ".tsx"];
 
 // Process each directory
 for (const dir of dirs) {
@@ -79,4 +79,4 @@ for (const dir of dirs) {
   processDirectory(dirPath, extensions);
 }
 
-console.log('\nJSDoc comment removal complete!');
+console.log("\nJSDoc comment removal complete!");

@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
 // Function to remove JSDoc comments from a string
 function removeJsDocComments(content: string): string {
@@ -9,15 +9,15 @@ function removeJsDocComments(content: string): string {
   const jsdocRegex = /\/\*\*[\s\S]*?\*\//g;
 
   // Replace JSDoc comments with empty string
-  return content.replace(jsdocRegex, '');
+  return content.replace(jsdocRegex, "");
 }
 
 // Get the file path from command line arguments
 const args = process.argv.slice(2);
 
 if (args.length === 0) {
-  console.error('Error: Please provide a file path');
-  console.error('Usage: bun scripts/remove-jsdoc-from-file.ts <file-path>');
+  console.error("Error: Please provide a file path");
+  console.error("Usage: bun scripts/remove-jsdoc-from-file.ts <file-path>");
   process.exit(1);
 }
 
@@ -32,13 +32,13 @@ if (!fs.existsSync(filePath)) {
 // Check if it's a file (not a directory)
 if (!fs.statSync(filePath).isFile()) {
   console.error(`Error: ${filePath} is not a file`);
-  console.error('To process a directory, use: bun scripts/remove-jsdoc-direct.ts <directory-path>');
+  console.error("To process a directory, use: bun scripts/remove-jsdoc-direct.ts <directory-path>");
   process.exit(1);
 }
 
 // Check if it's a TypeScript file
 const ext = path.extname(filePath).toLowerCase();
-if (ext !== '.ts' && ext !== '.tsx') {
+if (ext !== ".ts" && ext !== ".tsx") {
   console.error(`Error: ${filePath} is not a TypeScript file (.ts or .tsx)`);
   process.exit(1);
 }
@@ -47,7 +47,7 @@ console.log(`Processing file: ${filePath}`);
 
 try {
   // Read the file content
-  const content = fs.readFileSync(filePath, 'utf-8');
+  const content = fs.readFileSync(filePath, "utf-8");
 
   // Remove JSDoc comments
   const processedContent = removeJsDocComments(content);

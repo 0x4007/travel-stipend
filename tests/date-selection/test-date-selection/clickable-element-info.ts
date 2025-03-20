@@ -1,5 +1,3 @@
-
-
 export interface ClickableElementInfo {
   tag: string;
   text: string;

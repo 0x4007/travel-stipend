@@ -1,6 +1,5 @@
 import * as puppeteer from "puppeteer";
 
-
 async function tryStandardClick(element: puppeteer.ElementHandle<Element>): Promise<boolean> {
   console.log("Trying standard Puppeteer click...");
   try {
@@ -12,7 +11,6 @@ async function tryStandardClick(element: puppeteer.ElementHandle<Element>): Prom
     return false;
   }
 }
-
 
 async function tryJavaScriptClick(page: puppeteer.Page, element: puppeteer.ElementHandle<Element>): Promise<boolean> {
   console.log("Trying JavaScript click...");
@@ -27,7 +25,6 @@ async function tryJavaScriptClick(page: puppeteer.Page, element: puppeteer.Eleme
     return false;
   }
 }
-
 
 async function tryCoordinateClick(page: puppeteer.Page, element: puppeteer.ElementHandle<Element>): Promise<boolean> {
   console.log("Trying click by coordinates...");
@@ -46,7 +43,6 @@ async function tryCoordinateClick(page: puppeteer.Page, element: puppeteer.Eleme
     return false;
   }
 }
-
 
 export async function tryMultipleClickApproaches(page: puppeteer.Page, element: puppeteer.ElementHandle<Element>): Promise<boolean> {
   // Try each approach in sequence

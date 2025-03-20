@@ -2,7 +2,6 @@ import * as puppeteer from "puppeteer";
 import { selectDateInCalendar } from "../select-date-in-calendar";
 import { calculateTravelDates } from "./calculate-travel-dates";
 
-
 export async function selectDates(page: puppeteer.Page): Promise<void> {
   const { departureDayOfMonth, departureMonth, returnDayOfMonth, returnMonth } = calculateTravelDates();
 

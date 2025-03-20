@@ -11,8 +11,8 @@ const AIRLINES_FILTER_SELECTORS = [
   'button span.m1GHmf:contains("Airlines")',
   'button:contains("Airlines")',
   '[role="button"]:contains("Airlines")',
-  '.wpMGDb.Vz4hIc.cwYgqc button',
-  '.VfPpkd-LgbsSe.VfPpkd-LgbsSe-OWXEXe-INsAgc',
+  ".wpMGDb.Vz4hIc.cwYgqc button",
+  ".VfPpkd-LgbsSe.VfPpkd-LgbsSe-OWXEXe-INsAgc",
 ];
 
 const ALLIANCE_NAMES = ["Oneworld", "SkyTeam", "Star Alliance"];
@@ -23,7 +23,7 @@ interface FilterResult {
 }
 
 function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export async function applyAllianceFilters(page: Page): Promise<boolean> {
@@ -82,13 +82,10 @@ async function findButtonByContains(page: Page, selector: string): Promise<Eleme
   if (!containsMatch) return null;
 
   const buttonText = containsMatch[1];
-  const button = await page.evaluateHandle(
-    (text: string): Element | null => {
-      const buttons = Array.from(document.querySelectorAll<HTMLElement>('button, [role="button"]'));
-      return buttons.find(element => element.textContent?.includes(text)) ?? null;
-    },
-    buttonText
-  );
+  const button = await page.evaluateHandle((text: string): Element | null => {
+    const buttons = Array.from(document.querySelectorAll<HTMLElement>('button, [role="button"]'));
+    return buttons.find((element) => element.textContent?.includes(text)) ?? null;
+  }, buttonText);
 
   const isNull = await page.evaluate((element: Element | null) => element === null, button);
   if (!isNull) {
@@ -110,9 +107,7 @@ async function findButtonByDirectSelector(page: Page, selector: string): Promise
 async function findButtonBySelector(page: Page): Promise<ElementHandleOrNull> {
   for (const selector of AIRLINES_FILTER_SELECTORS) {
     try {
-      const button = selector.includes(":contains")
-        ? await findButtonByContains(page, selector)
-        : await findButtonByDirectSelector(page, selector);
+      const button = selector.includes(":contains") ? await findButtonByContains(page, selector) : await findButtonByDirectSelector(page, selector);
 
       if (button) return button;
     } catch (error) {
@@ -163,11 +158,13 @@ async function fallbackJavaScriptClick(button: ElementHandle<Element>, page: Pag
     await page.evaluate((element: Element) => {
       if (element instanceof HTMLElement) {
         element.click();
-        element.dispatchEvent(new MouseEvent("click", {
-          view: window,
-          bubbles: true,
-          cancelable: true,
-        }));
+        element.dispatchEvent(
+          new MouseEvent("click", {
+            view: window,
+            bubbles: true,
+            cancelable: true,
+          })
+        );
       }
     }, button);
     log(LOG_LEVEL.INFO, "Clicked Airlines filter button with JavaScript");
@@ -184,7 +181,7 @@ async function fallbackJavaScriptClick(button: ElementHandle<Element>, page: Pag
 async function clickAirlinesFilterButton(page: Page): Promise<boolean> {
   log(LOG_LEVEL.INFO, "Clicking Airlines filter button");
 
-  const button = await findButtonBySelector(page) || await findButtonByText(page);
+  const button = (await findButtonBySelector(page)) || (await findButtonByText(page));
 
   if (!button) {
     log(LOG_LEVEL.WARN, "Could not find Airlines filter button");
@@ -202,18 +199,13 @@ interface AllianceElements {
 
 async function findAllianceElements(page: Page): Promise<boolean> {
   const elements = await page.evaluate((): AllianceElements => {
-    const elements = Array.from(document.querySelectorAll('div, span, h3, h4, label'));
+    const elements = Array.from(document.querySelectorAll("div, span, h3, h4, label"));
     const allianceNames = ["Oneworld", "SkyTeam", "Star Alliance"];
 
     return {
-      hasHeader: elements.some(el =>
-        el.textContent?.includes("Alliances") &&
-        el.textContent?.trim() === "Alliances"
-      ),
-      hasAllianceNames: allianceNames.some(name =>
-        elements.some(el => el.textContent?.includes(name))
-      ),
-      hasCheckboxes: document.querySelectorAll('input[type="checkbox"]').length > 0
+      hasHeader: elements.some((el) => el.textContent?.includes("Alliances") && el.textContent?.trim() === "Alliances"),
+      hasAllianceNames: allianceNames.some((name) => elements.some((el) => el.textContent?.includes(name))),
+      hasCheckboxes: document.querySelectorAll('input[type="checkbox"]').length > 0,
     };
   });
 
@@ -251,21 +243,21 @@ async function waitForAllianceOptions(page: Page): Promise<boolean> {
 }
 
 function findCheckboxForLabel(label: HTMLLabelElement): HTMLInputElement | null {
-  const forId = label.getAttribute('for');
+  const forId = label.getAttribute("for");
   if (forId) {
     const checkbox = document.getElementById(forId) as HTMLInputElement | null;
-    if (checkbox?.type === 'checkbox') return checkbox;
+    if (checkbox?.type === "checkbox") return checkbox;
   }
   return label.querySelector('input[type="checkbox"]');
 }
 
 async function checkAllianceSpecificCheckboxes(page: Page): Promise<number> {
   return await page.evaluate((allianceNames: string[]) => {
-    const labels = Array.from(document.querySelectorAll<HTMLLabelElement>('label'));
+    const labels = Array.from(document.querySelectorAll<HTMLLabelElement>("label"));
     let count = 0;
 
-    labels.forEach(label => {
-      if (allianceNames.some(alliance => label.textContent?.includes(alliance))) {
+    labels.forEach((label) => {
+      if (allianceNames.some((alliance) => label.textContent?.includes(alliance))) {
         const checkbox = findCheckboxForLabel(label);
         if (checkbox && !checkbox.checked) {
           checkbox.click();
@@ -281,7 +273,7 @@ async function checkAllianceSpecificCheckboxes(page: Page): Promise<number> {
 async function checkRemainingCheckboxes(page: Page): Promise<number> {
   return await page.evaluate(() => {
     let count = 0;
-    document.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach(checkbox => {
+    document.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach((checkbox) => {
       if (!checkbox.checked) {
         checkbox.click();
         count++;

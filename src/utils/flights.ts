@@ -11,7 +11,6 @@ config();
 const flightCache = new PersistentCache<{ price: number; timestamp: string; source: string }>("fixtures/cache/flight-cache.json");
 const flightCostCache = new PersistentCache<number>("fixtures/cache/flight-cost-cache.json");
 
-
 export function calculateFlightCost(distanceKm: number, destination: string, origin: string = ORIGIN): number {
   // Check cache first
   const cacheKey = createHashKey([origin, destination, distanceKm.toFixed(1), "v1"]);
@@ -121,7 +120,6 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
 
   return flightCost;
 }
-
 
 function getRegion(location: string): string {
   const locationLower = location.toLowerCase();
@@ -256,7 +254,6 @@ function getRegion(location: string): string {
   return "Other";
 }
 
-
 async function getAmadeusPrice(
   origin: string,
   destination: string,
@@ -342,7 +339,7 @@ export async function scrapeFlightPrice(
 
     if (results.success && results.prices.length > 0) {
       // Filter top flights
-      const topFlights = results.prices.filter(flight => flight.isTopFlight);
+      const topFlights = results.prices.filter((flight) => flight.isTopFlight);
 
       if (topFlights.length > 0) {
         // Calculate average of top flights
@@ -354,7 +351,7 @@ export async function scrapeFlightPrice(
           flightCache.set(cacheKey, {
             price: avg,
             timestamp: new Date().toISOString(),
-            source: "Google Flights"
+            source: "Google Flights",
           });
           console.log(`Stored flight price in cache: $${avg} (from top flights)`);
         }
@@ -370,7 +367,7 @@ export async function scrapeFlightPrice(
           flightCache.set(cacheKey, {
             price: avg,
             timestamp: new Date().toISOString(),
-            source: "Google Flights"
+            source: "Google Flights",
           });
           console.log(`Stored flight price in cache: $${avg} (from all flights)`);
         }

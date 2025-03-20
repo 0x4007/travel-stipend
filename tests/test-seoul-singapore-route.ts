@@ -1,6 +1,5 @@
 import { GoogleFlightsScraper } from "../src/utils/google-flights-scraper";
 
-
 async function main() {
   console.log("Starting Google Flights scraper test for Seoul to Singapore route...");
 
@@ -25,7 +24,7 @@ async function main() {
       { from: "Seoul, South Korea", to: "Singapore" },
       { from: "Seoul", to: "Singapore" },
       { from: "ICN", to: "SIN" }, // Try airport codes
-      { from: "Incheon International Airport", to: "Singapore Changi Airport" } // Try full airport names
+      { from: "Incheon International Airport", to: "Singapore Changi Airport" }, // Try full airport names
     ];
 
     // Use specific dates that are known to work for other routes
@@ -51,22 +50,22 @@ async function main() {
           if (flightData.prices.length > 0) {
             console.log("\nPrices:");
             flightData.prices.forEach((flight, index) => {
-              console.log(`  ${index + 1}. $${flight.price} (${flight.isTopFlight ? 'Top Flight' : 'Regular Flight'})`);
+              console.log(`  ${index + 1}. $${flight.price} (${flight.isTopFlight ? "Top Flight" : "Regular Flight"})`);
 
               // Handle airline property (might be string or array depending on implementation)
-              if (typeof flight.airline === 'string') {
+              if (typeof flight.airline === "string") {
                 console.log(`     Airline: ${flight.airline}`);
               } else if (Array.isArray(flight.airline)) {
-                console.log(`     Airlines: ${(flight.airline as string[]).join(', ')}`);
+                console.log(`     Airlines: ${(flight.airline as string[]).join(", ")}`);
               } else {
                 console.log(`     Airline: Unknown`);
               }
 
-              console.log(`     Duration: ${flight.duration ?? 'Unknown'}`);
+              console.log(`     Duration: ${flight.duration ?? "Unknown"}`);
               console.log(`     Stops: ${flight.stops}`);
-              console.log(`     Route: ${flight.origin ?? 'Unknown'} -> ${flight.destination ?? 'Unknown'}`);
-              console.log(`     Times: ${flight.departureTime ?? 'Unknown'} - ${flight.arrivalTime ?? 'Unknown'}`);
-              console.log('');
+              console.log(`     Route: ${flight.origin ?? "Unknown"} -> ${flight.destination ?? "Unknown"}`);
+              console.log(`     Times: ${flight.departureTime ?? "Unknown"} - ${flight.arrivalTime ?? "Unknown"}`);
+              console.log("");
             });
 
             console.log("\nThis variation worked successfully!");
@@ -83,7 +82,7 @@ async function main() {
       }
 
       // Wait a bit before trying the next variation
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
     }
 
     // Pause to allow manual inspection

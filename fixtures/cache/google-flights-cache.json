@@ -1,0 +1,23 @@
+{
+  "5fec99f9df7c21d065cc69728ba08f8eb03226b2acb0a7b689a1c0fb3185b898": {
+    "value": {
+      "price": 317,
+      "timestamp": "2025-03-20T07:08:58.713Z",
+      "source": "Google Flights"
+    }
+  },
+  "71e091914fe8828abd62f49ab182abad186cf211b1d188bc1b51c929198badef": {
+    "value": {
+      "price": 378,
+      "timestamp": "2025-03-20T07:09:25.898Z",
+      "source": "Google Flights"
+    }
+  },
+  "c929744c01478a4bb7631321fa26576469a9e0939101ba40183caad2d86b1b79": {
+    "value": {
+      "price": 1259,
+      "timestamp": "2025-03-20T07:09:59.095Z",
+      "source": "Google Flights"
+    }
+  }
+}

@@ -138,7 +138,7 @@ export function loadAirportCoordinatesData(filePath: string): AirportCoordinates
     for (const rec of records) {
       if (!rec.iata_code || !rec.coordinates) continue;
 
-      const [lat, lng] = rec.coordinates.split(",").map(coord => parseFloat(coord.trim()));
+      const [lat, lng] = rec.coordinates.split(",").map((coord) => parseFloat(coord.trim()));
       if (isNaN(lat) || isNaN(lng)) continue;
 
       mapping.addAirport(rec.iata_code, { lat, lng });

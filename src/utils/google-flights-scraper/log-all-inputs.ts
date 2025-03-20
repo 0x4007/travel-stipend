@@ -13,12 +13,10 @@ export async function logAllInputs(page: Page): Promise<void> {
 
     const inputElements = await page.evaluate(() => {
       // Find all input elements
-      const elements = Array.from(document.querySelectorAll(
-        'input, textarea, select, [role="textbox"], [role="combobox"], [contenteditable="true"]'
-      ));
+      const elements = Array.from(document.querySelectorAll('input, textarea, select, [role="textbox"], [role="combobox"], [contenteditable="true"]'));
 
       // Extract information about each element
-      return elements.map(el => {
+      return elements.map((el) => {
         const rect = el.getBoundingClientRect();
         const isVisible = rect.width > 0 && rect.height > 0 && window.getComputedStyle(el).display !== "none";
 
@@ -31,8 +29,10 @@ export async function logAllInputs(page: Page): Promise<void> {
           value: (el as HTMLInputElement).value ?? "",
           classes: (el as HTMLElement).className ?? "",
           isVisible,
-          attributes: Array.from(el.attributes).map(attr => `${attr.name}="${attr.value}"`).join(", "),
-          position: `x: ${Math.round(rect.left)}, y: ${Math.round(rect.top)}, width: ${Math.round(rect.width)}, height: ${Math.round(rect.height)}`
+          attributes: Array.from(el.attributes)
+            .map((attr) => `${attr.name}="${attr.value}"`)
+            .join(", "),
+          position: `x: ${Math.round(rect.left)}, y: ${Math.round(rect.top)}, width: ${Math.round(rect.width)}, height: ${Math.round(rect.height)}`,
         };
       });
     });
@@ -49,7 +49,7 @@ export async function logAllInputs(page: Page): Promise<void> {
           placeholder: el.placeholder,
           classes: el.classes,
           attributes: el.attributes,
-          position: el.position
+          position: el.position,
         });
       }
     });
