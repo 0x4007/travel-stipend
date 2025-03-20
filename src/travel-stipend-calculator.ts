@@ -20,7 +20,7 @@ import { loadCoordinatesData } from "./utils/coordinates";
 import { getCostOfLivingFactor, loadCostOfLivingData } from "./utils/cost-of-living";
 import { calculateDateDiff, generateFlightDates } from "./utils/dates";
 import { getDistanceKmFromCities } from "./utils/distance";
-import { calculateFlightCost, lookupFlightPrice } from "./utils/flights";
+import { calculateFlightCost, scrapeFlightPrice } from "./utils/flights";
 import { calculateLocalTransportCost } from "./utils/taxi-fares";
 import { Conference, Coordinates, StipendBreakdown } from "./utils/types";
 
@@ -44,31 +44,26 @@ async function calculateFlightCostForConference(
   flightDates: { outbound: string; return: string },
   distanceKm: number,
   isOriginCity: boolean
-): Promise<number> {
+): Promise<{ cost: number; source: string }> {
   // If destination is the same as origin, no flight cost
   if (isOriginCity) {
     console.log(`No flight cost for ${destination} (same as origin)`);
-    return 0;
+    return { cost: 0, source: "No flight needed" };
   }
 
-  // Try to get flight cost from API first
-  let apiFlightPrice: number | null = null;
-  if (process.env.SERPAPI_API_KEY) {
-    apiFlightPrice = await lookupFlightPrice(destination, flightDates);
-  } else {
-    console.warn("SERPAPI_API_KEY is not set. Using the enhanced flight cost calculation model.");
-  }
+  // Try to get flight cost from Google Flights scraper
+  const scrapedResult = await scrapeFlightPrice(ORIGIN, destination, flightDates);
 
-  if (apiFlightPrice) {
-    // If we have API flight price, use it
-    console.log(`Flight cost for ${destination}: ${apiFlightPrice} (from API)`);
+  if (scrapedResult.price !== null) {
+    // If we have scraped flight price, use it
+    console.log(`Flight cost for ${destination}: ${scrapedResult.price} (from ${scrapedResult.source})`);
     console.log(`Last flight lookup time: ${new Date().toLocaleString()}`);
-    return apiFlightPrice;
+    return { cost: scrapedResult.price, source: scrapedResult.source };
   } else {
-    // Use the enhanced flight cost calculation model
+    // Use the enhanced flight cost calculation model as fallback
     const calculatedCost = calculateFlightCost(distanceKm, destination, ORIGIN);
     console.log(`Flight cost for ${destination}: ${calculatedCost} (calculated with enhanced model)`);
-    return calculatedCost;
+    return { cost: calculatedCost, source: "Distance-based calculation" };
   }
 }
 
@@ -84,7 +79,7 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     BASE_LODGING_PER_NIGHT,
     BASE_MEALS_PER_DAY,
     record["Ticket Price"] ?? DEFAULT_TICKET_PRICE,
-    "v8", // Increment version to force recalculation with origin city special rules
+    "v9", // Increment version to force recalculation with Google Flights scraper
   ]);
 
   // Force recalculation for all conferences to use the new flight cost algorithm
@@ -104,7 +99,9 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
 
   // Generate flight dates and calculate flight cost
   const flightDates = generateFlightDates(record, isOriginCity);
-  const flightCost = await calculateFlightCostForConference(destination, flightDates, distanceKm, isOriginCity);
+  const flightResult = await calculateFlightCostForConference(destination, flightDates, distanceKm, isOriginCity);
+  const flightCost = flightResult.cost;
+  const flightPriceSource = flightResult.source;
 
   // Get cost-of-living multiplier for the destination
   const colFactor = getCostOfLivingFactor(destination, costOfLivingMapping);
@@ -179,7 +176,7 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     return date.getDate() + " " + date.toLocaleString("en-US", { month: "long" });
   }
 
-  const result = {
+  const result: StipendBreakdown = {
     conference: record["Conference"],
     location: destination,
     conference_start: record["Start"],
@@ -188,6 +185,7 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     flight_return: formatDateToConferenceStyle(flightDates.return),
     distance_km: distanceKm,
     flight_cost: parseFloat(flightCost.toFixed(2)),
+    flight_price_source: flightPriceSource,
     lodging_cost: parseFloat(lodgingCost.toFixed(2)),
     basic_meals_cost: parseFloat(basicMealsCost.toFixed(2)),
     business_entertainment_cost: parseFloat(businessEntertainmentCost.toFixed(2)),
@@ -218,6 +216,7 @@ function parseArgs(): { sortBy?: keyof StipendBreakdown; reverse: boolean } {
     "flight_departure",
     "flight_return",
     "flight_cost",
+    "flight_price_source",
     "lodging_cost",
     "basic_meals_cost",
     "business_entertainment_cost",
@@ -335,6 +334,7 @@ async function main() {
     "flight_departure",
     "flight_return",
     "flight_cost",
+    "flight_price_source",
     "lodging_cost",
     "basic_meals_cost",
     "business_entertainment_cost",
@@ -354,6 +354,7 @@ async function main() {
       `"${r.flight_departure}"`,
       `"${r.flight_return}"`,
       r.flight_cost,
+      `"${r.flight_price_source}"`,
       r.lodging_cost,
       r.basic_meals_cost,
       r.business_entertainment_cost,
@@ -379,6 +380,7 @@ async function main() {
       flight_departure: r.flight_departure,
       flight_return: r.flight_return,
       flight_cost: r.flight_cost,
+      flight_price_source: r.flight_price_source,
       lodging_cost: r.lodging_cost,
       basic_meals_cost: r.basic_meals_cost,
       business_entertainment_cost: r.business_entertainment_cost,

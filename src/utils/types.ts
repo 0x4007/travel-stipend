@@ -85,6 +85,7 @@ export interface StipendBreakdown {
   flight_return: string;
   distance_km?: number; // Added for test compatibility
   flight_cost: number;
+  flight_price_source: string; // Source of flight price data
   lodging_cost: number;
   basic_meals_cost: number;
   business_entertainment_cost: number;

@@ -1,103 +1,9 @@
-import { parse } from "csv-parse/sync";
-import { readFileSync } from "fs";
-import { getJson } from "serpapi";
 import { createHashKey, PersistentCache } from "./cache";
-import { DEFAULT_DEPARTURE_AIRPORT, ORIGIN } from "./constants";
-import { haversineDistance } from "./distance";
-import { AirportCode, FlightResults } from "./types";
-
-// Extract airport code from location string
-function extractAirportCode(location: string): string {
-  try {
-    // Read and parse the airport codes CSV
-    const csvContent = readFileSync("fixtures/airport-codes.csv", "utf-8");
-    const airports = parse(csvContent, {
-      columns: true,
-      skip_empty_lines: true,
-    }) as AirportCode[];
-
-    // Extract city name from location (e.g., "New York, USA" -> "New York")
-    const city = location.split(",")[0].trim();
-
-    // Filter for large airports in the target city
-    let cityAirports = airports.filter((a) => a.type === "large_airport" && a.iata_code && a.municipality?.toLowerCase().includes(city.toLowerCase()));
-
-    // If no airports found by city name, try a broader search
-    if (cityAirports.length === 0) {
-      console.log(`No exact match for city: ${city}, trying broader search...`);
-
-      // Try partial matching (any part of municipality name)
-      cityAirports = airports.filter(
-        (a) =>
-          a.type === "large_airport" &&
-          a.iata_code &&
-          a.municipality &&
-          (a.municipality.toLowerCase().includes(city.toLowerCase()) || city.toLowerCase().includes(a.municipality.toLowerCase()))
-      );
-
-      // If still no matches, get all large airports in the country if country is specified
-      if (cityAirports.length === 0 && location.includes(",")) {
-        const country = location.split(",")[1].trim();
-        console.log(`Trying to find airports in country: ${country}`);
-
-        // Get all large airports in the country
-        cityAirports = airports.filter((a) => a.type === "large_airport" && a.iata_code && a.name.toLowerCase().includes(country.toLowerCase()));
-      }
-
-      // If still no matches, just get the first few large airports with IATA codes
-      if (cityAirports.length === 0) {
-        console.log(`Falling back to any large airport with IATA code`);
-        cityAirports = airports.filter((a) => a.type === "large_airport" && a.iata_code).slice(0, 5);
-      }
-
-      if (cityAirports.length === 0) {
-        throw new Error(`No airports found for location: ${location}`);
-      }
-    }
-
-    // If only one airport, return it
-    if (cityAirports.length === 1) {
-      console.log(`Found airport: ${cityAirports[0].name} (${cityAirports[0].iata_code}) for ${location}`);
-      return cityAirports[0].iata_code;
-    }
-
-    // For multiple airports, find the closest one to city center or just pick the first one
-    let closestAirport = cityAirports[0];
-
-    try {
-      const cityCenter = {
-        lat: parseFloat(cityAirports[0].coordinates.split(",")[0]),
-        lng: parseFloat(cityAirports[0].coordinates.split(",")[1]),
-      };
-
-      let shortestDistance = Number.MAX_VALUE;
-
-      for (const airport of cityAirports) {
-        const airportCoords = {
-          lat: parseFloat(airport.coordinates.split(",")[0]),
-          lng: parseFloat(airport.coordinates.split(",")[1]),
-        };
-        const distance = haversineDistance(cityCenter, airportCoords);
-        if (distance < shortestDistance) {
-          shortestDistance = distance;
-          closestAirport = airport;
-        }
-      }
-    } catch (coordError) {
-      console.error("Error calculating closest airport:", coordError);
-      // Just use the first airport if there's an error with coordinates
-    }
-
-    console.log(`Selected airport: ${closestAirport.name} (${closestAirport.iata_code}) for ${location}`);
-    return closestAirport.iata_code;
-  } catch (error) {
-    console.error("Error extracting airport code:", error);
-    return "Unknown";
-  }
-}
+import { ORIGIN } from "./constants";
+import { GoogleFlightsScraper } from "./google-flights-scraper";
 
 // Initialize flight cache
-const flightCache = new PersistentCache<{ price: number; timestamp: string }>("fixtures/cache/flight-cache.json");
+const flightCache = new PersistentCache<{ price: number; timestamp: string; source: string }>("fixtures/cache/flight-cache.json");
 const flightCostCache = new PersistentCache<number>("fixtures/cache/flight-cost-cache.json");
 
 /**
@@ -358,74 +264,80 @@ function getRegion(location: string): string {
   return "Other";
 }
 
-// Look up flight prices using SerpAPI
-export async function lookupFlightPrice(destination: string, dates: { outbound: string; return: string }): Promise<number | null> {
-  const cacheKey = createHashKey([destination, dates.outbound, dates.return]);
+/**
+ * Scrape flight prices using Google Flights scraper
+ * @param origin - Origin city/country
+ * @param destination - Destination city/country
+ * @param dates - Outbound and return dates
+ * @returns Object containing price and source information
+ */
+export async function scrapeFlightPrice(
+  origin: string,
+  destination: string,
+  dates: { outbound: string; return: string }
+): Promise<{ price: number | null; source: string }> {
+  const cacheKey = createHashKey([origin, destination, dates.outbound, dates.return, "scraper-v1"]);
 
   // Check cache first
   const cachedData = flightCache.get(cacheKey);
   if (cachedData) {
-    console.log(`Using cached flight price from ${cachedData.timestamp}`);
-    return cachedData.price;
+    console.log(`Using cached flight price from ${cachedData.timestamp} (${cachedData.source})`);
+    return { price: cachedData.price, source: cachedData.source };
   }
+
   try {
-    const arrivalCode = extractAirportCode(destination);
-    if (arrivalCode === "Unknown") {
-      console.error(`Could not find airport code for ${destination}`);
-      return null;
+    console.log(`Scraping flight prices from ${origin} to ${destination}`);
+    console.log(`Dates: ${dates.outbound} to ${dates.return}`);
+
+    // Initialize scraper
+    const scraper = new GoogleFlightsScraper();
+    await scraper.initialize({ headless: true });
+
+    // Navigate and search
+    await scraper.navigateToGoogleFlights();
+    await scraper.changeCurrencyToUsd();
+    const results = await scraper.searchFlights(origin, destination, dates.outbound, dates.return);
+
+    // Clean up
+    await scraper.close();
+
+    if (results.success && results.prices.length > 0) {
+      // Filter top flights
+      const topFlights = results.prices.filter(flight => flight.isTopFlight);
+
+      if (topFlights.length > 0) {
+        // Calculate average of top flights
+        const sum = topFlights.reduce((total, flight) => total + flight.price, 0);
+        const avg = Math.round(sum / topFlights.length);
+
+        // Store in cache
+        flightCache.set(cacheKey, {
+          price: avg,
+          timestamp: new Date().toISOString(),
+          source: "Google Flights"
+        });
+
+        return { price: avg, source: "Google Flights" };
+      } else {
+        // Calculate average of all flights
+        const sum = results.prices.reduce((total, flight) => total + flight.price, 0);
+        const avg = Math.round(sum / results.prices.length);
+
+        // Store in cache
+        flightCache.set(cacheKey, {
+          price: avg,
+          timestamp: new Date().toISOString(),
+          source: "Google Flights"
+        });
+
+        return { price: avg, source: "Google Flights" };
+      }
     }
 
-    const searchParams = {
-      api_key: process.env.SERPAPI_API_KEY,
-      engine: "google_flights",
-      hl: "en",
-      gl: "us",
-      departure_id: DEFAULT_DEPARTURE_AIRPORT,
-      arrival_id: arrivalCode,
-      outbound_date: dates.outbound,
-      return_date: dates.return,
-      currency: "USD",
-      type: "1",
-      travel_class: "1",
-      deep_search: "true",
-      adults: "1",
-      sort_by: "1",
-      stops: "0",
-    };
-
-    const result = (await getJson(searchParams)) as FlightResults;
-
-    // Handle case where best_flights is undefined or empty
-    if (!result.best_flights || result.best_flights.length === 0) {
-      console.error(`No flights found for ${destination}`);
-      return null;
-    }
-
-    // Get the lowest price from best_flights
-    const lowestPrice = result.best_flights.reduce(
-      (min, flight) => {
-        if (flight.price && (min === null || flight.price < min)) {
-          return flight.price;
-        }
-        return min;
-      },
-      null as number | null
-    );
-
-    if (lowestPrice !== null) {
-      // Store price and timestamp in cache
-      flightCache.set(cacheKey, {
-        price: lowestPrice,
-        timestamp: new Date().toISOString(),
-      });
-      return lowestPrice;
-    }
-
-    return null;
+    console.log("No flight prices found from scraper");
+    return { price: null, source: "Scraping failed" };
   } catch (error) {
-    console.error("Error looking up flight price:", error);
-    return null;
+    console.error("Error scraping flight price:", error);
+    return { price: null, source: "Scraping error" };
   }
 }
-
-// Find upcoming conferences from CSV file - removed as unused
