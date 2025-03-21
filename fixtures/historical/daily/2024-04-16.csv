@@ -1,8 +1,0 @@
-date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
-2024-04-16,Amex Blue Sky,(JOO)TIMEONI        SEOUL,-5.52,Transportation-Taxis & Coach,(JOO)TIMEONI        SEOUL,TAXICAB & LIMOUSINE | (JOO)TIMEONI | SEOUL | TAXICAB & LIMOUSINE,7700.00 KOREAN (SOUTH) WON,'320241080131768535',"KOREA, REPUBLIC OF"
-2024-04-16,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.14,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,(JOO)TIMEONI | $5.52 | FOREIGN TRANSACTION FEE,,'820241080131768535',
-2024-04-16,Amex Blue Sky,FOREIGN TRANSACTION FEE,-1.68,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,fresh brothers | $62.36 | FOREIGN TRANSACTION FEE,,'820241080131517573',
-2024-04-16,Amex Blue Sky,fresh brothers      SEOUL,-62.36,Restaurant-Restaurant,fresh brothers      SEOUL,RESTAURANT | fresh brothers | SEOUL | RESTAURANT,87000.00 KOREAN (SOUTH) WON,'320241080131517573',"KOREA, REPUBLIC OF"
-2024-04-16,Chase Ink,ALP*xinjiushangyefazha,-5.81,Food & Drink,,,,,
-2024-04-16,Chase Ink,ALP*shenghui,-5.25,Miscellaneous,,,,,
-2024-04-16,Chase Ink,ALIPAY,-6.5,Merchandise & Inventory,,,,,

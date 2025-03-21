@@ -94,20 +94,28 @@ function levenshteinDistance(a: string, b: string): number {
   return matrix[b.length][a.length];
 }
 
-function calculateSimilarity(a: string, b: string): number {
-  // Normalize strings for comparison
-  const normalizedA = a.toLowerCase().trim();
-  const normalizedB = b.toLowerCase().trim();
+function calculateSimilarity(query: string, candidate: string): number {
+  // Split into city and country parts
+  const [queryCity = "", queryCountry = ""] = query.toLowerCase().trim().split(/,\s*/);
+  const [candidateCity = "", candidateCountry = ""] = candidate.toLowerCase().trim().split(/,\s*/);
 
-  // Calculate Levenshtein distance
-  const distance = levenshteinDistance(normalizedA, normalizedB);
+  // Calculate city similarity
+  const cityDistance = levenshteinDistance(queryCity, candidateCity);
+  const cityMaxLength = Math.max(queryCity.length, candidateCity.length);
+  const citySimilarity = cityMaxLength === 0 ? 1.0 : 1 - cityDistance / cityMaxLength;
 
-  // Calculate similarity as a percentage (0-1)
-  // The max possible distance is the length of the longer string
-  const maxLength = Math.max(normalizedA.length, normalizedB.length);
-  if (maxLength === 0) return 1.0; // Both strings are empty
+  // Calculate country similarity if both have country parts
+  if (queryCountry && candidateCountry) {
+    const countryDistance = levenshteinDistance(queryCountry, candidateCountry);
+    const countryMaxLength = Math.max(queryCountry.length, candidateCountry.length);
+    const countrySimilarity = countryMaxLength === 0 ? 1.0 : 1 - countryDistance / countryMaxLength;
 
-  return 1 - distance / maxLength;
+    // Weight city similarity more heavily than country similarity
+    return citySimilarity * 0.7 + countrySimilarity * 0.3;
+  }
+
+  // If no country parts, just use city similarity
+  return citySimilarity;
 }
 
 export function findBestMatch(query: string, candidates: string[]): { match: string; similarity: number } {
@@ -156,33 +164,40 @@ export function loadAirportCoordinatesData(filePath: string): AirportCoordinates
 export function loadCoordinatesData(filePath: string): CoordinatesMapping {
   try {
     const content = readFileSync(filePath, "utf-8");
-    const records: CoordinateRecord[] = parse(content, {
+    const records = parse(content, {
       columns: true,
       skip_empty_lines: true,
-    });
+      delimiter: ",",
+      quote: '"',
+      relax_quotes: true,
+      trim: true
+    }) as CoordinateRecord[];
 
     const mapping = new CoordinatesMapping();
 
     for (const rec of records) {
-      // Create standard city format: "City, Country"
-      const cityName = `${rec.city}, ${rec.country}`;
       const coords = {
         lat: parseFloat(rec.lat),
         lng: parseFloat(rec.lng),
       };
 
-      // Add entry with full country name
-      mapping.addCity(cityName, coords);
-      mapping.addCityVariant(cityName.toLowerCase(), cityName);
-
-      // Also add entry with ISO code for countries commonly referenced with abbreviations
-      if (rec.iso2 && ["US", "UK", "UAE"].includes(rec.iso2)) {
-        const cityWithCode = `${rec.city}, ${rec.iso2}${rec.iso2 === "US" ? "A" : ""}`;
-        mapping.addCity(cityWithCode, coords);
-        mapping.addCityVariant(cityWithCode.toLowerCase(), cityWithCode);
+      if (isNaN(coords.lat) || isNaN(coords.lng)) {
+        continue;
       }
 
-      // Add entry without country for unique city names
+      // Add both formats for US cities
+      if (rec.iso2 === "US") {
+        const usaFormat = `${rec.city}, USA`;
+        mapping.addCity(usaFormat, coords);
+        mapping.addCityVariant(usaFormat.toLowerCase(), usaFormat);
+      }
+
+      // Add standard format with country
+      const standardFormat = `${rec.city}, ${rec.country}`;
+      mapping.addCity(standardFormat, coords);
+      mapping.addCityVariant(standardFormat.toLowerCase(), standardFormat);
+
+      // Add city name only for unique cities
       mapping.addCity(rec.city, coords);
       mapping.addCityVariant(rec.city.toLowerCase(), rec.city);
     }
@@ -191,18 +206,8 @@ export function loadCoordinatesData(filePath: string): CoordinatesMapping {
     return mapping;
   } catch (error) {
     console.error(`Could not load ${filePath}, using default mapping.`, error);
-    // Fallback to a minimal set of coordinates if file can't be loaded
+    // No default mapping - force use of database
     const defaultMapping = new CoordinatesMapping();
-
-    defaultMapping.addCity("Seoul, Korea", { lat: 37.5665, lng: 126.978 });
-    defaultMapping.addCityVariant("seoul, korea", "Seoul, Korea");
-
-    defaultMapping.addCity("Tokyo, Japan", { lat: 35.6895, lng: 139.6917 });
-    defaultMapping.addCityVariant("tokyo, japan", "Tokyo, Japan");
-
-    defaultMapping.addCity("Jakarta, Indonesia", { lat: -6.2088, lng: 106.8456 });
-    defaultMapping.addCityVariant("jakarta, indonesia", "Jakarta, Indonesia");
-
     return defaultMapping;
   }
 }

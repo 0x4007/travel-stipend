@@ -1,7 +1,0 @@
-date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
-2024-12-21,Amex Blue Sky,(JOO)TIMEONI        SEOUL,-27.56,Transportation-Taxis & Coach,(JOO)TIMEONI        SEOUL,TAXICAB & LIMOUSINE | (JOO)TIMEONI | SEOUL | TAXICAB & LIMOUSINE,40000.00 KOREAN (SOUTH) WON,'320243580717705395',"KOREA, REPUBLIC OF"
-2024-12-21,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.7,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,the viewsic bar | $26.18 | FOREIGN TRANSACTION FEE,,'820243570691629556',
-2024-12-21,Amex Blue Sky,FOREIGN TRANSACTION FEE,-0.74,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,(JOO)TIMEONI | $27.56 | FOREIGN TRANSACTION FEE,,'820243580717705395',
-2024-12-21,Amex Blue Sky,FOREIGN TRANSACTION FEE,-4.65,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,the viewsic bar | $172.25 | FOREIGN TRANSACTION FEE,,'820243570692033792',
-2024-12-21,Amex Blue Sky,the viewsic bar     SEOUL,-26.18,Restaurant-Restaurant,the viewsic bar     SEOUL,RESTAURANT | the viewsic bar | SEOUL | RESTAURANT,38000.00 KOREAN (SOUTH) WON,'320243570691629556',"KOREA, REPUBLIC OF"
-2024-12-21,Amex Blue Sky,the viewsic bar     SEOUL,-172.25,Restaurant-Restaurant,the viewsic bar     SEOUL,RESTAURANT | the viewsic bar | SEOUL | RESTAURANT,250000.00 KOREAN (SOUTH) WON,'320243570692033792',"KOREA, REPUBLIC OF"

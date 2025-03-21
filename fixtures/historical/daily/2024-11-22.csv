@@ -1,4 +1,0 @@
-date,source,description,amount,category,statementDescription,extendedDetails,foreignAmount,reference,country
-2024-11-22,Amex Blue Sky,BUTCHERS CUT        SEOUL,-164.07,Restaurant-Restaurant,BUTCHERS CUT        SEOUL,RESTAURANT | BUTCHERS CUT | SEOUL | RESTAURANT,230000.00 KOREAN (SOUTH) WON,'320243280863882262',"KOREA, REPUBLIC OF"
-2024-11-22,Amex Blue Sky,FOREIGN TRANSACTION FEE,-4.42,Fees & Adjustments-Fees & Adjustments,FOREIGN TRANSACTION FEE,BUTCHERS CUT | $164.07 | FOREIGN TRANSACTION FEE,,'820243280863882262',
-2024-11-22,Checking,PwP  REGERY* KGN Privacycom TN: 1429168     WEB ID:  626060084,-63.36,MISC_DEBIT,,,,,
