@@ -49,7 +49,7 @@ function findCityByFuzzyMatch(cityName: string, coordinates: CoordinatesMapping)
 }
 
 // Helper function to find city coordinates with fuzzy matching
-function findCityCoordinates(cityName: string, coordinates: CoordinatesMapping): Coordinates {
+async function findCityCoordinates(cityName: string, coordinates: CoordinatesMapping): Coordinates {
   // Try exact match first
   const exactMatch = findCityByExactMatch(cityName, coordinates);
   if (exactMatch) {
@@ -63,7 +63,7 @@ function findCityCoordinates(cityName: string, coordinates: CoordinatesMapping):
   }
 
   // Get best match info for error message
-  const { match, similarity } = findBestMatch(cityName, coordinates.getCityNames());
+  const { match, similarity } = await findBestMatch(cityName, coordinates.getCityNames());
   throw new Error(`No matching city found for: ${cityName} (best match: ${match}, similarity: ${(similarity * 100).toFixed(1)}%)`);
 }
 

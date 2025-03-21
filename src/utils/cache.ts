@@ -1,5 +1,13 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
+
+// Helper function to check if a timestamp is within six hours
+export function isWithinSixHours(timestamp: string): boolean {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const sixHoursInMs = 6 * 60 * 60 * 1000;
+  return now.getTime() - date.getTime() < sixHoursInMs;
+}
 
 interface MemoryCache<T> {
   [key: string]: {
