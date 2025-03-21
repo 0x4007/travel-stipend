@@ -10,6 +10,7 @@
     "bun": ">=1.0.0"
   },
   "scripts": {
+    "db": "sqlite3 travel_data.db",
     "start": "bun build/esbuild-server.ts",
     "build": "bun build/esbuild-build.ts",
     "calc": "bun src/travel-stipend-calculator.ts",
