@@ -1,4 +1,3 @@
-import { parse } from "csv-parse/sync";
 import fs from "fs";
 import path from "path";
 import { createHashKey, PersistentCache } from "./utils/cache";
@@ -16,27 +15,19 @@ import {
   PRE_CONFERENCE_DAYS,
   WEEKEND_RATE_MULTIPLIER,
 } from "./utils/constants";
-import { loadCoordinatesData } from "./utils/coordinates";
-import { getCostOfLivingFactor, loadCostOfLivingData } from "./utils/cost-of-living";
+import { getCostOfLivingFactor } from "./utils/cost-of-living";
+import { DatabaseService } from "./utils/database";
 import { calculateDateDiff, generateFlightDates } from "./utils/dates";
 import { getDistanceKmFromCities } from "./utils/distance";
 import { calculateFlightCost, scrapeFlightPrice } from "./utils/flights";
 import { calculateLocalTransportCost } from "./utils/taxi-fares";
-import { Conference, Coordinates, StipendBreakdown } from "./utils/types";
+import { Conference, Coordinates, MealCosts, StipendBreakdown } from "./utils/types";
 
 // Initialize caches
 const distanceCache = new PersistentCache<number>("fixtures/cache/distance-cache.json");
 const coordinatesCache = new PersistentCache<Coordinates>("fixtures/cache/coordinates-cache.json");
 const costOfLivingCache = new PersistentCache<number>("fixtures/cache/col-cache.json");
 const stipendCache = new PersistentCache<StipendBreakdown>("fixtures/cache/stipend-cache.json");
-
-// Load the city coordinates mapping
-console.log("Loading city coordinates data...");
-const cityCoordinates = loadCoordinatesData("fixtures/coordinates.csv");
-
-// Load the cost-of-living mapping
-console.log("Loading cost-of-living data...");
-const costOfLivingMapping = loadCostOfLivingData("fixtures/cost_of_living.csv");
 
 // Helper function to calculate flight cost
 async function calculateFlightCostForConference(
@@ -67,47 +58,121 @@ async function calculateFlightCostForConference(
   }
 }
 
-// Function to calculate stipend with caching
-export async function calculateStipend(record: Conference): Promise<StipendBreakdown> {
-  const cacheKey = createHashKey([
-    record.Conference,
-    record.Location,
-    record.Start,
-    record.End,
-    ORIGIN,
-    COST_PER_KM,
-    BASE_LODGING_PER_NIGHT,
-    BASE_MEALS_PER_DAY,
-    record["Ticket Price"] ?? DEFAULT_TICKET_PRICE,
-    "v9", // Increment version to force recalculation with Google Flights scraper
-  ]);
+// Helper functions to break down stipend calculations
+async function calculateFlightDetails(
+  destination: string,
+  isOriginCity: boolean,
+  record: Conference
+): Promise<{
+  distanceKm: number;
+  flightCost: number;
+  flightPriceSource: string;
+  flightDates: { outbound: string; return: string };
+}> {
+  // Get coordinates from DB and calculate distance
+  const originCoords = await DatabaseService.getInstance().getCityCoordinates(ORIGIN);
+  const destCoords = await DatabaseService.getInstance().getCityCoordinates(destination);
 
-  // Force recalculation for all conferences to use the new flight cost algorithm
-  // Skip cache completely
+  if (!originCoords.length || !destCoords.length) {
+    throw new Error(`Could not find coordinates for ${!originCoords.length ? ORIGIN : destination}`);
+  }
 
-  const destination = record["Location"];
-  const isPriority = record["❗️"] === "TRUE";
+  const distanceKm = getDistanceKmFromCities(ORIGIN, destination, {
+    getCoordinates: (city: string) => {
+      const coords = city === ORIGIN ? originCoords[0] : destCoords[0];
+      return coords;
+    },
+    size: () => 2,
+  });
 
-  console.log(`Processing conference: ${record["Conference"]} in ${destination} (Priority: ${isPriority})`);
-
-  // Check if conference is in origin city
-  const isOriginCity = ORIGIN === destination;
-
-  // Calculate distance (in km) using the haversine formula with our city coordinates
-  const distanceKm = getDistanceKmFromCities(ORIGIN, destination, cityCoordinates);
   console.log(`Distance from ${ORIGIN} to ${destination}: ${distanceKm.toFixed(1)} km`);
 
   // Generate flight dates and calculate flight cost
   const flightDates = generateFlightDates(record, isOriginCity);
   const flightResult = await calculateFlightCostForConference(destination, flightDates, distanceKm, isOriginCity);
-  const flightCost = flightResult.cost;
-  const flightPriceSource = flightResult.source;
+
+  return {
+    distanceKm,
+    flightCost: flightResult.cost,
+    flightPriceSource: flightResult.source,
+    flightDates,
+  };
+}
+
+function calculateNights(
+  startDate: string,
+  totalDays: number,
+  preConferenceDays: number
+): { weekdayNights: number; weekendNights: number } {
+  const start = new Date(startDate);
+  let weekendNights = 0;
+  const numberOfNights = totalDays - 1; // One less night than days
+
+  for (let i = 0; i < numberOfNights; i++) {
+    const currentDate = new Date(start);
+    currentDate.setDate(start.getDate() - preConferenceDays + i);
+    const dayOfWeek = currentDate.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      // Sunday = 0, Saturday = 6
+      weekendNights++;
+    }
+  }
+
+  return {
+    weekdayNights: numberOfNights - weekendNights,
+    weekendNights,
+  };
+}
+
+function calculateMealsCosts(
+  totalDays: number,
+  conferenceDays: number,
+  colFactor: number
+): MealCosts {
+  let basicMealsCost = 0;
+  for (let i = 0; i < totalDays; i++) {
+    // Apply duration-based scaling (100% for days 1-3, 85% for days 4+)
+    const dailyMealCost = i < 3 ? BASE_MEALS_PER_DAY * colFactor : BASE_MEALS_PER_DAY * colFactor * 0.85;
+    basicMealsCost += dailyMealCost;
+  }
+
+  const businessEntertainmentCost = BUSINESS_ENTERTAINMENT_PER_DAY * conferenceDays;
+  return {
+    basicMealsCost,
+    mealsCost: basicMealsCost + businessEntertainmentCost,
+    businessEntertainmentCost,
+  };
+}
+
+// Main function to calculate stipend with caching
+export async function calculateStipend(record: Conference): Promise<StipendBreakdown> {
+  const cacheKey = createHashKey([
+    record.conference,
+    record.location,
+    record.start_date,
+    record.end_date,
+    ORIGIN,
+    COST_PER_KM,
+    BASE_LODGING_PER_NIGHT,
+    BASE_MEALS_PER_DAY,
+    record.ticket_price ?? DEFAULT_TICKET_PRICE,
+    "v9", // Increment version to force recalculation with Google Flights scraper
+  ]);
+
+  const destination = record.location;
+  console.log(`Processing conference: ${record.conference} in ${destination}`);
+
+  // Check if conference is in origin city
+  const isOriginCity = ORIGIN === destination;
+
+  // Get flight details
+  const { distanceKm, flightCost, flightPriceSource, flightDates } = await calculateFlightDetails(destination, isOriginCity, record);
 
   // Get cost-of-living multiplier for the destination
-  const colFactor = getCostOfLivingFactor(destination, costOfLivingMapping);
+  const colFactor = await getCostOfLivingFactor(destination);
 
   // Calculate conference and travel days
-  const conferenceDays = calculateDateDiff(record["Start"], record["End"]) + 1; // +1 because end date is inclusive
+  const conferenceDays = calculateDateDiff(record.start_date, record.end_date) + 1; // +1 because end date is inclusive
 
   // For origin city conferences, don't include buffer days
   const preConferenceDays = isOriginCity ? 0 : PRE_CONFERENCE_DAYS;
@@ -120,19 +185,8 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     console.log(`No buffer days included for origin city conference`);
   }
 
-  // Calculate weekend vs weekday nights for lodging
-  const startDate = new Date(record["Start"]);
-  let weekendNights = 0;
-  for (let i = 0; i < numberOfNights; i++) {
-    const currentDate = new Date(startDate);
-    currentDate.setDate(startDate.getDate() - preConferenceDays + i);
-    const dayOfWeek = currentDate.getDay();
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      // Sunday = 0, Saturday = 6
-      weekendNights++;
-    }
-  }
-  const weekdayNights = numberOfNights - weekendNights;
+  // Calculate nights breakdown
+  const { weekdayNights, weekendNights } = calculateNights(record.start_date, totalDays, preConferenceDays);
 
   // Adjust lodging rates with cost of living factor and weekend discounts
   const baseWeekdayRate = BASE_LODGING_PER_NIGHT * colFactor;
@@ -141,22 +195,14 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   // Calculate costs (no lodging cost if conference is in origin city)
   const lodgingCost = isOriginCity ? 0 : weekdayNights * baseWeekdayRate + weekendNights * baseWeekendRate;
 
-  // Calculate meals with duration-based scaling
-  let basicMealsCost = 0;
-  for (let i = 0; i < totalDays; i++) {
-    // Apply duration-based scaling (100% for days 1-3, 85% for days 4+)
-    const dailyMealCost = i < 3 ? BASE_MEALS_PER_DAY * colFactor : BASE_MEALS_PER_DAY * colFactor * 0.85;
-    basicMealsCost += dailyMealCost;
-  }
-
-  const businessEntertainmentCost = BUSINESS_ENTERTAINMENT_PER_DAY * conferenceDays;
-  const mealsCost = basicMealsCost + businessEntertainmentCost;
+  // Calculate meals costs
+  const { basicMealsCost, mealsCost, businessEntertainmentCost } = calculateMealsCosts(totalDays, conferenceDays, colFactor);
 
   // Calculate local transport cost using taxi data
-  const localTransportCost = calculateLocalTransportCost(destination, totalDays, colFactor, BASE_LOCAL_TRANSPORT_PER_DAY);
+  const localTransportCost = await calculateLocalTransportCost(destination, totalDays, colFactor, BASE_LOCAL_TRANSPORT_PER_DAY);
 
-  // Use ticket price from CSV if available, otherwise use default
-  const ticketPrice = record["Ticket Price"] ? parseFloat(record["Ticket Price"].replace("$", "")) : DEFAULT_TICKET_PRICE;
+  // Get ticket price
+  const ticketPrice = record.ticket_price ? parseFloat(record.ticket_price.replace("$", "")) : DEFAULT_TICKET_PRICE;
 
   // Determine if international travel (and not in origin city)
   const isInternational = !isOriginCity && ORIGIN.toLowerCase().includes("korea") && !destination.toLowerCase().includes("korea");
@@ -167,8 +213,14 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   // Add incidentals allowance
   const incidentalsAllowance = totalDays * INCIDENTALS_PER_DAY;
 
-  // Total stipend is the sum of all expenses
-  const totalStipend = flightCost + lodgingCost + mealsCost + localTransportCost + ticketPrice + internetDataAllowance + incidentalsAllowance;
+  // Calculate total stipend
+  const totalStipend = flightCost +
+    lodgingCost +
+    mealsCost +
+    localTransportCost +
+    ticketPrice +
+    internetDataAllowance +
+    incidentalsAllowance;
 
   // Format date to match conference date format (DD Month)
   function formatDateToConferenceStyle(dateStr: string) {
@@ -177,10 +229,10 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   }
 
   const result: StipendBreakdown = {
-    conference: record["Conference"],
+    conference: record.conference,
     location: destination,
-    conference_start: record["Start"],
-    conference_end: record["End"],
+    conference_start: record.start_date,
+    conference_end: record.end_date,
     flight_departure: formatDateToConferenceStyle(flightDates.outbound),
     flight_return: formatDateToConferenceStyle(flightDates.return),
     distance_km: distanceKm,
@@ -252,19 +304,15 @@ async function main() {
   // Parse command line arguments
   const options = parseArgs();
 
-  // Read conference data from CSV file
-  console.log("Reading fixtures/conferences.csv...");
-  const fileContent = fs.readFileSync("fixtures/conferences.csv", "utf-8");
-  const records: Conference[] = parse(fileContent, {
-    columns: true,
-    skip_empty_lines: true,
-  });
+  // Get conference data from database
+  console.log("Reading conferences from database...");
+  const records = await DatabaseService.getInstance().getConferences();
   console.log(`Loaded ${records.length} conference records`);
 
   // Filter out past conferences
   const currentDate = new Date();
   const futureRecords = records.filter((record) => {
-    const endDate = record.End ? new Date(`${record.End} 2025`) : new Date(`${record.Start} 2025`);
+    const endDate = record.end_date ? new Date(`${record.end_date} 2025`) : new Date(`${record.start_date} 2025`);
     return endDate >= currentDate;
   });
   console.log(`Filtered to ${futureRecords.length} upcoming conferences`);
@@ -276,7 +324,7 @@ async function main() {
       const result = await calculateStipend(record);
       results.push(result);
     } catch (error) {
-      console.error(`Error processing conference "${record["Conference"]}":`, error);
+      console.error(`Error processing conference "${record.conference}":`, error);
     }
   }
 

@@ -1,73 +1,7 @@
-import { parse } from "csv-parse/sync";
-import { readFileSync } from "fs";
-import { AirportCode, Coordinates } from "./types";
+import { DatabaseService } from "./database";
+import { Coordinates } from "./types";
 
-// Airport coordinates mapping class
-export class AirportCoordinatesMapping {
-  private _airportMap: { [code: string]: Coordinates } = {};
-
-  addAirport(code: string, coordinates: Coordinates): void {
-    this._airportMap[code] = coordinates;
-  }
-
-  getCoordinates(code: string): Coordinates | undefined {
-    return this._airportMap[code];
-  }
-
-  size(): number {
-    return Object.keys(this._airportMap).length;
-  }
-}
-
-// City coordinates mapping class with fuzzy matching capabilities
-export class CoordinatesMapping {
-  private _cityMap: { [city: string]: Coordinates } = {};
-  private _cityNames: string[] = [];
-  private _cityVariants: { [normalizedName: string]: string } = {};
-
-  addCity(cityName: string, coordinates: Coordinates): void {
-    this._cityMap[cityName] = coordinates;
-    this._cityNames.push(cityName);
-  }
-
-  addCityVariant(normalizedName: string, originalName: string): void {
-    if (!normalizedName || !originalName) return;
-    this._cityVariants[normalizedName] = originalName;
-  }
-
-  getCoordinates(cityName: string): Coordinates | undefined {
-    return this._cityMap[cityName];
-  }
-
-  getCityNames(): string[] {
-    return this._cityNames;
-  }
-
-  getCityVariant(normalizedName: string): string | undefined {
-    return this._cityVariants[normalizedName];
-  }
-
-  size(): number {
-    return this._cityNames.length;
-  }
-}
-
-// Load coordinates from CSV file
-interface CoordinateRecord {
-  city: string;
-  city_ascii: string;
-  lat: string;
-  lng: string;
-  country: string;
-  iso2: string;
-  iso3: string;
-  admin_name: string;
-  capital: string;
-  population: string;
-  id: string;
-}
-
-// Fuzzy matching functions
+// Fuzzy matching function
 function levenshteinDistance(a: string, b: string): number {
   const matrix: number[][] = [];
 
@@ -118,7 +52,7 @@ function calculateSimilarity(query: string, candidate: string): number {
   return citySimilarity;
 }
 
-export function findBestMatch(query: string, candidates: string[]): { match: string; similarity: number } {
+export async function findBestMatch(query: string, candidates: string[]): Promise<{ match: string; similarity: number }> {
   let bestMatch = "";
   let bestSimilarity = 0;
 
@@ -133,81 +67,12 @@ export function findBestMatch(query: string, candidates: string[]): { match: str
   return { match: bestMatch, similarity: bestSimilarity };
 }
 
-export function loadAirportCoordinatesData(filePath: string): AirportCoordinatesMapping {
-  try {
-    const content = readFileSync(filePath, "utf-8");
-    const records = parse(content, {
-      columns: true,
-      skip_empty_lines: true,
-    }) as AirportCode[];
-
-    const mapping = new AirportCoordinatesMapping();
-
-    for (const rec of records) {
-      if (!rec.iata_code || !rec.coordinates) continue;
-
-      const [lat, lng] = rec.coordinates.split(",").map((coord) => parseFloat(coord.trim()));
-      if (isNaN(lat) || isNaN(lng)) continue;
-
-      mapping.addAirport(rec.iata_code, { lat, lng });
-    }
-
-    console.log(`Loaded ${mapping.size()} airport coordinate entries`);
-    return mapping;
-  } catch (error) {
-    console.error(`Could not load ${filePath}, using default mapping.`, error);
-    const defaultMapping = new AirportCoordinatesMapping();
-    return defaultMapping;
-  }
+export async function getAirportCoordinates(iataCode: string): Promise<Coordinates | undefined> {
+  const db = DatabaseService.getInstance();
+  return db.getAirportCoordinates(iataCode);
 }
 
-export function loadCoordinatesData(filePath: string): CoordinatesMapping {
-  try {
-    const content = readFileSync(filePath, "utf-8");
-    const records = parse(content, {
-      columns: true,
-      skip_empty_lines: true,
-      delimiter: ",",
-      quote: '"',
-      relax_quotes: true,
-      trim: true
-    }) as CoordinateRecord[];
-
-    const mapping = new CoordinatesMapping();
-
-    for (const rec of records) {
-      const coords = {
-        lat: parseFloat(rec.lat),
-        lng: parseFloat(rec.lng),
-      };
-
-      if (isNaN(coords.lat) || isNaN(coords.lng)) {
-        continue;
-      }
-
-      // Add both formats for US cities
-      if (rec.iso2 === "US") {
-        const usaFormat = `${rec.city}, USA`;
-        mapping.addCity(usaFormat, coords);
-        mapping.addCityVariant(usaFormat.toLowerCase(), usaFormat);
-      }
-
-      // Add standard format with country
-      const standardFormat = `${rec.city}, ${rec.country}`;
-      mapping.addCity(standardFormat, coords);
-      mapping.addCityVariant(standardFormat.toLowerCase(), standardFormat);
-
-      // Add city name only for unique cities
-      mapping.addCity(rec.city, coords);
-      mapping.addCityVariant(rec.city.toLowerCase(), rec.city);
-    }
-
-    console.log(`Loaded ${mapping.size()} coordinate entries`);
-    return mapping;
-  } catch (error) {
-    console.error(`Could not load ${filePath}, using default mapping.`, error);
-    // No default mapping - force use of database
-    const defaultMapping = new CoordinatesMapping();
-    return defaultMapping;
-  }
+export async function getCityCoordinates(cityName: string): Promise<Coordinates[]> {
+  const db = DatabaseService.getInstance();
+  return db.getCityCoordinates(cityName);
 }

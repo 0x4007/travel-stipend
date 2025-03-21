@@ -1,87 +1,73 @@
-import crypto from "crypto";
-import fs from "fs";
-import path from "path";
+import fs from 'fs';
+import path from 'path';
 
-// Cache interface definition
-// Define the structure of a cache entry
-interface CacheEntry<T> {
-  value: T;
-  timestamp?: string;
+interface MemoryCache<T> {
+  [key: string]: {
+    value: T;
+    timestamp: number;
+  };
 }
 
-interface Cache<T> {
-  get(key: string): T | undefined;
-  set(key: string, value: T, timestamp?: string): void;
-  has(key: string): boolean;
-  getTimestamp(key: string): string | undefined;
-}
+class CacheStore<T> {
+  private _entries: MemoryCache<T> = {};
 
-// In-memory cache implementation
-export class MemoryCache<T> implements Cache<T> {
-  private _cache: Map<string, CacheEntry<T>> = new Map();
-
-  get(key: string): T | undefined {
-    const entry = this._cache.get(key);
-    return entry?.value;
+  set(key: string, value: T): void {
+    this._entries[key] = {
+      value,
+      timestamp: Date.now(),
+    };
   }
 
-  set(key: string, value: T, timestamp?: string): void {
-    this._cache.set(key, { value, timestamp });
+  get(key: string): T | null {
+    const entry = this._entries[key];
+    return entry ? entry.value : null;
   }
 
-  getTimestamp(key: string): string | undefined {
-    return this._cache.get(key)?.timestamp;
-  }
-
-  has(key: string): boolean {
-    return this._cache.has(key);
-  }
-
-  // Add a method to get all entries as a Record
-  getAllEntries(): Record<string, CacheEntry<T>> {
-    const entries: Record<string, CacheEntry<T>> = {};
-    this._cache.forEach((value, key) => {
-      entries[key] = value;
-    });
-    return entries;
+  getAllEntries(): MemoryCache<T> {
+    return this._entries;
   }
 }
 
-// Persistent cache implementation that saves to disk
-export class PersistentCache<T> implements Cache<T> {
-  private _memoryCache: MemoryCache<T> = new MemoryCache<T>();
+export class PersistentCache<T> {
+  private _memoryCache: CacheStore<T>;
   private _filePath: string;
-  private _trainingMode: boolean;
 
-  constructor(cacheFileName: string, trainingMode = false) {
-    this._filePath = path.join(process.cwd(), cacheFileName);
-    this._trainingMode = trainingMode;
+  constructor(filePath: string) {
+    this._memoryCache = new CacheStore<T>();
+    this._filePath = filePath;
+    this._createCacheDir();
     this._loadFromDisk();
   }
 
-  isTrainingMode(): boolean {
-    return this._trainingMode;
-  }
-
-  setTrainingMode(enabled: boolean): void {
-    this._trainingMode = enabled;
+  private _createCacheDir(): void {
+    const dir = path.dirname(this._filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
   }
 
   private _loadFromDisk(): void {
     try {
       if (fs.existsSync(this._filePath)) {
-        const data = fs.readFileSync(this._filePath, "utf-8");
-        const cacheData = JSON.parse(data) as Record<string, CacheEntry<T>>;
+        const data = fs.readFileSync(this._filePath, 'utf-8');
+        const cache = JSON.parse(data) as MemoryCache<T>;
 
-        for (const [key, entry] of Object.entries(cacheData)) {
-          this._memoryCache.set(key, entry.value, entry.timestamp);
-        }
-
-        console.log(`Loaded ${Object.keys(cacheData).length} cached entries from ${this._filePath}`);
+        // Load entries into memory cache
+        Object.entries(cache).forEach(([key, entry]) => {
+          this._memoryCache.set(key, entry.value);
+        });
       }
     } catch (error) {
       console.error(`Error loading cache from ${this._filePath}:`, error);
     }
+  }
+
+  get(key: string): T | null {
+    return this._memoryCache.get(key);
+  }
+
+  set(key: string, value: T): void {
+    this._memoryCache.set(key, value);
   }
 
   saveToDisk(): void {
@@ -89,61 +75,17 @@ export class PersistentCache<T> implements Cache<T> {
       // Get all entries from the memory cache
       const cacheObject = this._memoryCache.getAllEntries();
 
+      // Create cache directory if it doesn't exist
+      this._createCacheDir();
+
+      // Write to disk
       fs.writeFileSync(this._filePath, JSON.stringify(cacheObject, null, 2));
-      console.log(`Saved cache to ${this._filePath}`);
     } catch (error) {
       console.error(`Error saving cache to ${this._filePath}:`, error);
     }
   }
-
-  get(key: string): T | undefined {
-    // In training mode, always return undefined to force fresh data
-    if (this._trainingMode) {
-      return undefined;
-    }
-    return this._memoryCache.get(key);
-  }
-
-  set(key: string, value: T, timestamp?: string): void {
-    this._memoryCache.set(key, value, timestamp);
-  }
-
-  getTimestamp(key: string): string | undefined {
-    return this._memoryCache.getTimestamp(key);
-  }
-
-  has(key: string): boolean {
-    return this._memoryCache.has(key);
-  }
-
-  // Add method to get all entries
-  getAllEntries(): Record<string, T> {
-    const entries = this._memoryCache.getAllEntries();
-    const result: Record<string, T> = {};
-
-    for (const [key, entry] of Object.entries(entries)) {
-      result[key] = entry.value;
-    }
-
-    return result;
-  }
 }
 
-// Helper function to create hash keys for caching
-/**
- * Check if a timestamp is within 6 hours of the current time
- */
-export function isWithinSixHours(timestamp: string): boolean {
-  const cachedTime = new Date(timestamp).getTime();
-  const currentTime = Date.now();
-  const sixHoursInMs = 6 * 60 * 60 * 1000;
-  return currentTime - cachedTime < sixHoursInMs;
+export function createHashKey(parts: (string | number | undefined)[]): string {
+  return parts.map(part => String(part ?? '')).join('|');
 }
-
-export function createHashKey(args: unknown[]): string {
-  const stringifiedArgs = JSON.stringify(args);
-  // Using SHA-256 instead of MD5 for better security
-  return crypto.createHash("sha256").update(stringifiedArgs).digest("hex");
-}
-
-// Function decorator for caching - removed as unused
