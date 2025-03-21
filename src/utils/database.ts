@@ -1,3 +1,4 @@
+import { parse } from 'csv-parse';
 import fs from 'fs';
 import path from 'path';
 import { Database, open } from 'sqlite';
@@ -8,7 +9,7 @@ interface AirportCode {
   code: string;
   city: string;
   country: string;
-  coordinates: string | null;
+  coordinates: string;
   elevation_ft: number | null;
   continent: string | null;
   region: string | null;
@@ -19,7 +20,7 @@ interface AirportCode {
 
 interface CostOfLiving {
   city: string;
-  cost_index: number;
+  cost_index: number | null;
 }
 
 interface TaxiRates {
@@ -27,6 +28,10 @@ interface TaxiRates {
   base_fare: number;
   per_km_rate: number;
   typical_trip_km: number;
+}
+
+interface CsvRow {
+  [key: string]: string;
 }
 
 export class DatabaseService {
@@ -45,7 +50,7 @@ export class DatabaseService {
     return DatabaseService._instance;
   }
 
-  private async _init() {
+  private async _init(): Promise<void> {
     if (this._initialized) return;
 
     try {
@@ -85,7 +90,7 @@ export class DatabaseService {
     }
   }
 
-  private async _createTables() {
+  private async _createTables(): Promise<void> {
     if (!this._db) throw new Error('Database not initialized');
 
     try {
@@ -94,7 +99,7 @@ export class DatabaseService {
           code TEXT PRIMARY KEY,
           city TEXT NOT NULL,
           country TEXT NOT NULL,
-          coordinates TEXT,
+          coordinates TEXT NOT NULL,
           elevation_ft INTEGER,
           continent TEXT,
           region TEXT,
@@ -106,12 +111,8 @@ export class DatabaseService {
         CREATE TABLE IF NOT EXISTS conferences (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           category TEXT NOT NULL,
-          start_date TEXT NOT NULL,
-          end_date TEXT,
           conference TEXT NOT NULL,
-          location TEXT NOT NULL,
-          ticket_price TEXT,
-          description TEXT
+          location TEXT NOT NULL
         );
 
         CREATE TABLE IF NOT EXISTS coordinates (
@@ -122,7 +123,7 @@ export class DatabaseService {
 
         CREATE TABLE IF NOT EXISTS cost_of_living (
           city TEXT PRIMARY KEY,
-          cost_index REAL NOT NULL
+          cost_index REAL
         );
 
         CREATE TABLE IF NOT EXISTS taxis (
@@ -139,123 +140,211 @@ export class DatabaseService {
     }
   }
 
-  private async _importCsvToTable(table: string) {
+  private _parseCsv(filePath: string): Promise<CsvRow[]> {
+    return new Promise((resolve, reject) => {
+      const results: CsvRow[] = [];
+      fs.createReadStream(filePath)
+        .pipe(parse({
+          columns: true,
+          skip_empty_lines: true,
+          trim: true
+        }))
+        .on('data', (data) => {
+          results.push(data);
+        })
+        .on('end', () => {
+          console.log(`Imported ${results.length} rows`);
+          resolve(results);
+        })
+        .on('error', (error) => reject(error));
+    });
+  }
+
+  private async _importAirportCodes(rows: CsvRow[]): Promise<void> {
+    if (!this._db) throw new Error('Database not initialized');
+
+    const values = rows.map(row => {
+      const code = row.iata_code || row.ident || '';
+      const city = row.municipality || '';
+      const country = row.iso_country || '';
+      const coordinates = row.coordinates || '';
+
+      return {
+        code,
+        city,
+        country,
+        coordinates,
+        elevation_ft: row.elevation_ft ? parseInt(row.elevation_ft) : null,
+        continent: row.continent || null,
+        region: row.iso_region || null,
+        municipality: row.municipality || null,
+        icao: row.icao_code || null,
+        local_code: row.local_code || null
+      };
+    }).filter(v => v.code && v.city && v.country && v.coordinates);
+
+    try {
+      console.log('Importing airport codes, filtered values:', values.length);
+      await this._db.run('BEGIN TRANSACTION');
+      for (const value of values) {
+        try {
+          await this._db.run(
+            `INSERT OR REPLACE INTO airport_codes
+             (code, city, country, coordinates, elevation_ft, continent, region, municipality, icao, local_code)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              value.code, value.city, value.country, value.coordinates,
+              value.elevation_ft, value.continent, value.region,
+              value.municipality, value.icao, value.local_code
+            ]
+          );
+        } catch (error) {
+          console.error('Error inserting airport code:', error);
+          console.error('Value:', value);
+        }
+      }
+      await this._db.run('COMMIT');
+      console.log('Airport codes import completed');
+    } catch (error) {
+      await this._db.run('ROLLBACK');
+      throw error;
+    }
+  }
+
+  private async _importConferences(rows: CsvRow[]): Promise<void> {
+    if (!this._db) throw new Error('Database not initialized');
+
+    const values = rows.map(row => ({
+      category: row.Category || row.category || '',
+      conference: row.Name || row.name || row.Conference || row.conference || '',
+      location: row.Location || row.location || ''
+    })).filter(v => v.category && v.conference && v.location);
+
+    try {
+      await this._db.run('BEGIN TRANSACTION');
+      for (const value of values) {
+        await this._db.run(
+          `INSERT OR REPLACE INTO conferences (category, conference, location)
+           VALUES (?, ?, ?)`,
+          [value.category, value.conference, value.location]
+        );
+      }
+      await this._db.run('COMMIT');
+    } catch (error) {
+      await this._db.run('ROLLBACK');
+      throw error;
+    }
+  }
+
+  private async _importCostOfLiving(rows: CsvRow[]): Promise<void> {
+    if (!this._db) throw new Error('Database not initialized');
+
+    const values = rows.map(row => {
+      const location = row.Location || '';
+      const city = location.split(',')[0].trim();
+      const costIndex = row.Index || '';
+
+      return {
+        city,
+        cost_index: costIndex && !isNaN(parseFloat(costIndex))
+          ? parseFloat(costIndex)
+          : null
+      };
+    }).filter(v => v.city);
+
+    try {
+      console.log('Importing cost of living, filtered values:', values.length);
+      await this._db.run('BEGIN TRANSACTION');
+      for (const value of values) {
+        try {
+          await this._db.run(
+            `INSERT OR REPLACE INTO cost_of_living (city, cost_index)
+             VALUES (?, ?)`,
+            [value.city, value.cost_index]
+          );
+        } catch (error) {
+          console.error('Error inserting cost of living:', error);
+          console.error('Value:', value);
+        }
+      }
+      await this._db.run('COMMIT');
+      console.log('Cost of living import completed');
+    } catch (error) {
+      await this._db.run('ROLLBACK');
+      throw error;
+    }
+  }
+
+  private async _importTaxis(rows: CsvRow[]): Promise<void> {
+    if (!this._db) throw new Error('Database not initialized');
+
+    const values = rows.map(row => {
+      const country = row.Country || '';
+      const baseFare = parseFloat(row['Start Price (USD)'] || '0');
+      const perKmRate = parseFloat(row['Price per km (USD)'] || '0');
+
+      return {
+        city: country, // Using country as city for now
+        base_fare: baseFare,
+        per_km_rate: perKmRate,
+        typical_trip_km: 10 // Default value
+      };
+    }).filter(v => v.city && !isNaN(v.base_fare) && !isNaN(v.per_km_rate));
+
+    try {
+      console.log('Importing taxi rates, filtered values:', values.length);
+      await this._db.run('BEGIN TRANSACTION');
+      for (const value of values) {
+        try {
+          await this._db.run(
+            `INSERT OR REPLACE INTO taxis
+             (city, base_fare, per_km_rate, typical_trip_km)
+             VALUES (?, ?, ?, ?)`,
+            [value.city, value.base_fare, value.per_km_rate, value.typical_trip_km]
+          );
+        } catch (error) {
+          console.error('Error inserting taxi rates:', error);
+          console.error('Value:', value);
+        }
+      }
+      await this._db.run('COMMIT');
+      console.log('Taxi rates import completed');
+    } catch (error) {
+      await this._db.run('ROLLBACK');
+      throw error;
+    }
+  }
+
+  private async _importCsvToTable(table: string): Promise<void> {
     if (!this._db) throw new Error('Database not initialized');
 
     try {
-      // Handle special case for cost_of_living
       const filename = table === 'cost_of_living' ? 'cost_of_living.csv' : `${table.replace('_', '-')}.csv`;
       const csvPath = path.join(process.cwd(), 'fixtures', filename);
-      console.log(`Processing ${csvPath}`);
 
       if (!fs.existsSync(csvPath)) {
         console.log(`CSV file not found: ${csvPath}`);
         return;
       }
 
-      const data = fs.readFileSync(csvPath, 'utf-8');
-      const lines = data.split('\n').filter(line => line.trim());
+      console.log(`Processing ${csvPath}`);
+      const rows = await this._parseCsv(csvPath);
 
-      // Define column mappings for each table
-      const columnMappings: { [key: string]: { [key: string]: number } } = {
-        airport_codes: {
-          code: 9, // iata_code
-          city: 2, // name (since municipality might be empty)
-          country: 5, // iso_country
-          coordinates: 12, // coordinates
-          elevation_ft: 3, // elevation_ft
-          continent: 4, // continent
-          region: 6, // iso_region
-          municipality: 7, // municipality
-          icao: 8, // icao_code
-          local_code: 11 // local_code
-        },
-        conferences: {
-          category: 0, // Category
-          start_date: 1, // Start
-          end_date: 2, // End
-          conference: 3, // Conference
-          location: 4, // Location
-          ticket_price: 5, // Ticket Price
-          description: 6 // Description
-        },
-        cost_of_living: {
-          city: 0, // Location (will be cleaned to remove country)
-          cost_index: 1 // Index
-        },
-        taxis: {
-          city: 0, // Country (used as city for now)
-          base_fare: 1, // Start Price (USD)
-          per_km_rate: 2 // Price per km (USD)
-        }
-      };
-
-      const mapping = columnMappings[table];
-      if (!mapping) {
-        throw new Error(`No column mapping defined for table ${table}`);
-      }
-
-      const headers = Object.keys(mapping);
-      console.log(`Using headers for ${table}: ${headers.join(', ')}`);
-
-      // Skip header row
-      for (let i = 1; i < lines.length; i++) {
-        // Safely remove quotes by checking start and end characters directly
-        const row = lines[i].split(',').map(v => {
-          const trimmed = v.trim();
-          return trimmed.startsWith('"') && trimmed.endsWith('"')
-            ? trimmed.slice(1, -1)
-            : trimmed;
-        });
-
-        const processValue = (header: string, rawValue: string): string => {
-          // Always return string, handle type conversion separately during insert
-          if (!rawValue) return '';
-
-          switch (header) {
-            case 'coordinates':
-              return rawValue.split('').filter(c => c !== '(' && c !== ')').join('');
-            case 'city':
-              for (const country of ['Korea', 'China', 'USA', 'UK']) {
-                if (rawValue.endsWith(` ${country}`)) {
-                  return rawValue.slice(0, -country.length - 1);
-                }
-              }
-              return rawValue;
-            case 'ticket_price':
-              return rawValue.split('').filter(c => c !== '$' && c !== ',').join('');
-            default:
-              return rawValue;
-          }
-        };
-
-        const values = headers.map(header => processValue(header, row[mapping[header]]));
-
-        if (values.every(v => v != null)) {
-          const placeholders = values.map(() => '?').join(',');
-
-          // Handle taxis table special case to add typical_trip_km
-          if (table === 'taxis') {
-            const defaultTripKm = 10; // Set a reasonable default trip distance
-            const allHeaders = [...headers, 'typical_trip_km'];
-            const allValues = [...values, defaultTripKm];
-            const allPlaceholders = allValues.map(() => '?').join(',');
-
-            console.log(`Inserting taxi row ${i} with default trip km: ${values.join(', ')}, ${defaultTripKm}`);
-            await this._db.run(
-              `INSERT OR REPLACE INTO ${table} (${allHeaders.join(',')}) VALUES (${allPlaceholders})`,
-              allValues
-            );
-          } else {
-            console.log(`Inserting row ${i}: ${values.join(', ')}`);
-            await this._db.run(
-              `INSERT OR REPLACE INTO ${table} (${headers.join(',')}) VALUES (${placeholders})`,
-              values
-            );
-          }
-        } else {
-          console.log(`Skipping row ${i} due to missing required values`);
-        }
+      switch (table) {
+        case 'airport_codes':
+          await this._importAirportCodes(rows);
+          break;
+        case 'conferences':
+          await this._importConferences(rows);
+          break;
+        case 'cost_of_living':
+          await this._importCostOfLiving(rows);
+          break;
+        case 'taxis':
+          await this._importTaxis(rows);
+          break;
+        default:
+          console.log(`No import handler for table: ${table}`);
       }
     } catch (error) {
       console.error(`Error importing data for table ${table}:`, error);
@@ -263,10 +352,10 @@ export class DatabaseService {
     }
   }
 
-  private async _importDataIfNeeded() {
+  private async _importDataIfNeeded(): Promise<void> {
     if (!this._db) throw new Error('Database not initialized');
 
-    const tables = ['airport_codes', 'conferences', 'coordinates', 'cost_of_living', 'taxis'];
+    const tables = ['airport_codes', 'conferences', 'cost_of_living', 'taxis'];
 
     for (const table of tables) {
       try {
