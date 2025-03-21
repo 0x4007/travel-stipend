@@ -403,6 +403,48 @@ export class DatabaseService {
     );
   }
 
+  public async validateCityAndCountry(city: string, country?: string): Promise<{ isValid: boolean; validCountry?: string; suggestions?: string[] }> {
+    await this._init();
+    if (!this._db) throw new Error('Database not initialized');
+
+    const cityMatches = await this._db.all<{ city: string; country: string }[]>(
+      'SELECT DISTINCT city, country FROM airport_codes WHERE city LIKE ?',
+      [city]
+    );
+
+    if (cityMatches.length === 0) {
+      // No matches found at all
+      return { isValid: false };
+    }
+
+    if (!country) {
+      // If no country specified, return true but include the valid country for reference
+      return {
+        isValid: true,
+        validCountry: cityMatches[0].country,
+        suggestions: cityMatches.map(m => `${m.city}, ${m.country}`)
+      };
+    }
+
+    // Check if the city exists with the specified country
+    const exactMatch = cityMatches.find(m =>
+      m.country.toLowerCase() === country.toLowerCase()
+    );
+
+    if (exactMatch) {
+      return {
+        isValid: true,
+        validCountry: exactMatch.country
+      };
+    }
+
+    // No exact match, but we have other countries with this city name
+    return {
+      isValid: false,
+      suggestions: cityMatches.map(m => `${m.city}, ${m.country}`)
+    };
+  }
+
   public async getCostOfLiving(city: string): Promise<CostOfLiving | undefined> {
     await this._init();
     if (!this._db) throw new Error('Database not initialized');
