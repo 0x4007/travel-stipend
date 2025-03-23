@@ -22,12 +22,13 @@ interface FilterResult {
   checkboxesChecked: number;
 }
 
-function delay(ms: number): Promise<void> {
+// Helper function to create a delay
+function createDelay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const MAX_RETRIES = 5;  // Increased from 3
-const INITIAL_RETRY_DELAY = 1500;  // Decreased from 2000 to be more responsive
+const MAX_RETRIES = 5; // Increased from 3
+const INITIAL_RETRY_DELAY = 1500; // Decreased from 2000 to be more responsive
 const MAX_RETRY_DELAY = 8000;
 
 export async function applyAllianceFilters(page: Page): Promise<boolean> {
@@ -40,17 +41,14 @@ export async function applyAllianceFilters(page: Page): Promise<boolean> {
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
       if (attempt > 0) {
-        const delay = Math.min(
-          INITIAL_RETRY_DELAY * Math.pow(1.5, attempt - 1),
-          MAX_RETRY_DELAY
-        );
-        log(LOG_LEVEL.INFO, `Retry attempt ${attempt + 1}, waiting ${delay}ms`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        const waitTime = Math.min(INITIAL_RETRY_DELAY * Math.pow(1.5, attempt - 1), MAX_RETRY_DELAY);
+        log(LOG_LEVEL.INFO, `Retry attempt ${attempt + 1}, waiting ${waitTime}ms`);
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
 
         // If we failed verification before, try refreshing the page
         if (attempt > 1) {
           await page.reload();
-          await delay(2000); // Wait for page load
+          await createDelay(2000); // Wait for page load
         }
       }
 
@@ -62,12 +60,12 @@ export async function applyAllianceFilters(page: Page): Promise<boolean> {
         const currentUrl = page.url();
         if (currentUrl !== initialUrl) {
           log(LOG_LEVEL.INFO, "URL changed after filter application, waiting for stabilization");
-          await delay(2000);
+          await createDelay(2000);
         }
 
         // Verify filters were actually applied
-        const verified = await verifyFiltersApplied(page);
-        if (verified) {
+        const isFiltersVerified = await verifyFiltersApplied(page);
+        if (isFiltersVerified) {
           log(LOG_LEVEL.INFO, "Alliance filters successfully applied and verified");
           return true;
         }
@@ -98,7 +96,7 @@ async function runFilterProcess(page: Page): Promise<FilterResult> {
   }
 
   // Wait for filter panel to appear
-  await delay(2000);
+  await createDelay(2000);
 
   // Step 2: Wait for alliance options
   const hasAllianceOptions = await waitForAllianceOptions(page);
@@ -129,19 +127,15 @@ async function findButtonByContains(page: Page, selector: string): Promise<Eleme
   const buttonText = containsMatch[1];
 
   // Wait for any button containing the text
-  try {
-    await page.waitForFunction(
-      (text) => {
-        const buttons = Array.from(document.querySelectorAll<HTMLElement>('button, [role="button"]'));
-        return buttons.some(element => element.textContent?.includes(text));
-      },
-      { timeout: 5000 },
-      buttonText
-    );
-  } catch (error) {
-    log(LOG_LEVEL.DEBUG, `No button found containing text "${buttonText}" after waiting`);
-    return null;
-  }
+
+  await page.waitForFunction(
+    (text) => {
+      const buttons = Array.from(document.querySelectorAll<HTMLElement>('button, [role="button"]'));
+      return buttons.some((element) => element.textContent?.includes(text));
+    },
+    { timeout: 5000 },
+    buttonText
+  );
 
   const button = await page.evaluateHandle((text: string): Element | null => {
     const buttons = Array.from(document.querySelectorAll<HTMLElement>('button, [role="button"]'));
@@ -204,7 +198,7 @@ async function clickButton(button: ElementHandle<Element>, page: Page): Promise<
   try {
     await button.click({ delay: 100 });
     log(LOG_LEVEL.INFO, "Clicked Airlines filter button with standard click");
-    await delay(1000);
+    await createDelay(1000);
     return true;
   } catch (error) {
     if (error instanceof Error) {
@@ -229,7 +223,7 @@ async function fallbackJavaScriptClick(button: ElementHandle<Element>, page: Pag
       }
     }, button);
     log(LOG_LEVEL.INFO, "Clicked Airlines filter button with JavaScript");
-    await delay(1000);
+    await createDelay(1000);
     return true;
   } catch (error) {
     if (error instanceof Error) {
@@ -292,7 +286,7 @@ async function waitForAllianceOptions(page: Page): Promise<boolean> {
     }
 
     log(LOG_LEVEL.WARN, "Could not find alliance options with JavaScript, waiting additional time");
-    await delay(3000);
+    await createDelay(3000);
 
     return await checkForCheckboxes(page);
   } catch (error) {
@@ -353,7 +347,7 @@ async function checkAllAllianceCheckboxes(page: Page): Promise<number> {
     await page.waitForFunction(
       () => {
         const elements = Array.from(document.querySelectorAll("div, span, h3, h4, label"));
-        return elements.some(el => el.textContent?.includes("Alliances"));
+        return elements.some((el) => el.textContent?.includes("Alliances"));
       },
       { timeout: 5000 }
     );
@@ -369,7 +363,7 @@ async function checkAllAllianceCheckboxes(page: Page): Promise<number> {
     if (checkboxCount > 0) {
       log(LOG_LEVEL.INFO, `Checked ${checkboxCount} checkboxes with JavaScript approach`);
       // Increased delay to ensure changes are registered
-      await delay(2000);
+      await createDelay(2000);
     } else {
       log(LOG_LEVEL.INFO, "No checkboxes were checked (they might already be checked)");
     }
@@ -407,7 +401,7 @@ async function waitForResultsUpdate(page: Page): Promise<void> {
     }
 
     // Additional delay to ensure results are fully rendered
-    await delay(2000);
+    await createDelay(2000);
 
     log(LOG_LEVEL.INFO, "Results should be updated now");
   } catch (error) {
@@ -436,37 +430,32 @@ async function verifyFiltersApplied(page: Page): Promise<boolean> {
         hasActiveFilters: false,
         hasAllianceText: false,
         hasDataAttributes: false,
-        hasAllianceLabels: false
+        hasAllianceLabels: false,
       };
 
       // Check for checked checkboxes (expanded selector)
-      const checkboxes = Array.from(document.querySelectorAll<HTMLInputElement>(
-        'input[type="checkbox"], [role="checkbox"], [aria-checked="true"]'
-      ));
-      results.hasCheckedBoxes = checkboxes.some(checkbox =>
-        checkbox.checked ||
-        checkbox.getAttribute('aria-checked') === 'true'
-      );
+      const checkboxes = Array.from(document.querySelectorAll<HTMLInputElement>('input[type="checkbox"], [role="checkbox"], [aria-checked="true"]'));
+      results.hasCheckedBoxes = checkboxes.some((checkbox) => checkbox.checked || checkbox.getAttribute("aria-checked") === "true");
 
       // Check for active filter indicators (expanded)
       const activeFilters = document.querySelectorAll(
         '[aria-selected="true"], .active-filter, .selected-filter, ' +
-        '[data-selected="true"], [data-active="true"], ' +
-        '[aria-pressed="true"], .VfPpkd-LgbsSe-OWXEXe-INsAgc'
+          '[data-selected="true"], [data-active="true"], ' +
+          '[aria-pressed="true"], .VfPpkd-LgbsSe-OWXEXe-INsAgc'
       );
       results.hasActiveFilters = activeFilters.length > 0;
 
       // Check for alliance names in active elements
-      const allianceKeywords = ['Oneworld', 'SkyTeam', 'Star Alliance', 'ONEWORLD', 'SKYTEAM', 'STAR ALLIANCE'];
-      const allText = document.body.textContent || '';
-      results.hasAllianceText = allianceKeywords.some(keyword => allText.includes(keyword));
+      const allianceKeywords = ["Oneworld", "SkyTeam", "Star Alliance", "ONEWORLD", "SKYTEAM", "STAR ALLIANCE"];
+      const allText = document.body.textContent ?? "";
+      results.hasAllianceText = allianceKeywords.some((keyword) => allText.includes(keyword));
 
       // Check for alliance-related data attributes
       results.hasDataAttributes = Array.from(document.querySelectorAll('[data-filtertype="6"]')).length > 0;
 
       // Check for alliance labels
-      results.hasAllianceLabels = Array.from(document.querySelectorAll('label, span, div')).some(el =>
-        allianceKeywords.some(keyword => el.textContent?.includes(keyword))
+      results.hasAllianceLabels = Array.from(document.querySelectorAll("label, span, div")).some((el) =>
+        allianceKeywords.some((keyword) => el.textContent?.includes(keyword))
       );
 
       return results;
@@ -484,9 +473,9 @@ async function verifyFiltersApplied(page: Page): Promise<boolean> {
     if (uiState.hasAllianceText) {
       log(LOG_LEVEL.INFO, "Found alliance text, attempting to refresh filters");
       await clickAirlinesFilterButton(page);
-      await delay(2000);
+      await createDelay(2000);
       await clickAirlinesFilterButton(page); // Close it again
-      await delay(1000);
+      await createDelay(1000);
 
       // Re-check URL
       const updatedUrl = page.url();
@@ -497,7 +486,7 @@ async function verifyFiltersApplied(page: Page): Promise<boolean> {
     }
 
     // If still not verified, try force-applying filters again
-    if (!await applyAllianceFilters(page)) {
+    if (!(await applyAllianceFilters(page))) {
       log(LOG_LEVEL.WARN, "Could not verify or reapply filters");
       return false;
     }

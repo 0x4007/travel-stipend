@@ -156,8 +156,8 @@ function saveResultsToCsv(results: TestResult[]) {
     const success = r.foundCoordinates ? "Yes" : "No";
     const lat = r.coordinates ? r.coordinates.lat : "";
     const lng = r.coordinates ? r.coordinates.lng : "";
-    const strategy = r.strategy || "";
-    const error = r.error || "";
+    const strategy = r.strategy ?? "";
+    const error = r.error ?? "";
 
     return `"${r.destination}",${success},${lat},${lng},"${strategy}","${error}"`;
   });

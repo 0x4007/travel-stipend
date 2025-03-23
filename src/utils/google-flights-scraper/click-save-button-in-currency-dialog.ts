@@ -42,7 +42,7 @@ export async function clickSaveButtonInCurrencyDialog(page: Page): Promise<boole
       // Find buttons with Save, Done, or Apply text
       const buttons = Array.from(document.querySelectorAll("button"));
       for (const button of buttons) {
-        const text = button.textContent?.trim().toLowerCase() || "";
+        const text = button.textContent?.trim().toLowerCase() ?? "";
         if (text.includes("save") || text.includes("done") || text.includes("apply") || text.includes("ok")) {
           button.click();
           return true;

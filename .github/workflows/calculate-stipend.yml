@@ -36,6 +36,13 @@ on:
 jobs:
   calculate:
     runs-on: ubuntu-latest
+    env:
+      DEBUG_GOOGLE_FLIGHTS: true
+      CAPTURE_SCREENSHOTS: true
+      SCREENSHOT_QUALITY: high
+      PUPPETEER_TIMEOUT: 60000
+      DETAILED_LOGGING: true
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome
     steps:
       - uses: actions/checkout@v4
 
@@ -45,6 +52,14 @@ jobs:
 
       - name: Install dependencies
         run: bun install
+
+      - name: Setup debugging environment
+        run: |
+          mkdir -p debug-screenshots
+          mkdir -p debug-logs
+          echo "Creating debug directories for artifact collection"
+          echo "Current working directory: $(pwd)"
+          echo "Chrome version: $(google-chrome --version)"
 
       - name: Run travel stipend calculator
         id: stipend-calculator
@@ -56,4 +71,39 @@ jobs:
           INPUT_DAYS_BEFORE: ${{ github.event.inputs.days_before }}
           INPUT_DAYS_AFTER: ${{ github.event.inputs.days_after }}
           INPUT_TICKET_PRICE: ${{ github.event.inputs.ticket_price }}
-        run: bun src/github-action-handler.ts
+          # Pass through GitHub secrets to the script
+          AMADEUS_API_KEY: ${{ secrets.AMADEUS_API_KEY }}
+          AMADEUS_API_SECRET: ${{ secrets.AMADEUS_API_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Enable more verbose logging for debugging
+          export DEBUG=puppeteer:*
+          export NODE_DEBUG=puppeteer
+
+          # Run the script with increased timeout
+          bun --inspect src/github-action-handler.ts
+        timeout-minutes: 10
+
+      - name: Upload debug screenshots
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: google-flights-debug-screenshots
+          path: debug-screenshots/
+          retention-days: 5
+
+      - name: Upload debug logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: google-flights-debug-logs
+          path: debug-logs/
+          retention-days: 5
+
+      - name: Upload test screenshots
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-screenshots
+          path: test-screenshots/
+          retention-days: 5

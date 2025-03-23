@@ -4,12 +4,13 @@ import { Conference } from './utils/types';
 import { calculateStipend } from './travel-stipend-calculator';
 import { DatabaseService } from './utils/database';
 import { GoogleFlightsStrategy } from './strategies/google-flights-strategy';
+// Note: We keep the distance strategy available in case we need to fallback if Google Flights fails
 import { FlightPricingContextImpl } from './strategies/flight-pricing-context';
 import { findBestMatchingConference } from './utils/conference-matcher';
 import { appendFileSync } from 'fs';
 
 // Allow script to run both as GitHub Action and directly via workflow
-const getInput = (name: string, options?: { required: boolean }): string => {
+function getInput(name: string, options?: { required: boolean; }): string {
   // When run directly via workflow, inputs are passed via environment variables
   const envName = `INPUT_${name.replace(/ /g, '_').toUpperCase()}`;
   if (process.env[envName]) {
@@ -17,9 +18,9 @@ const getInput = (name: string, options?: { required: boolean }): string => {
   }
   // When run as a GitHub Action, inputs are accessed via @actions/core
   return core.getInput(name, options);
-};
+}
 
-const setOutput = (name: string, value: Record<string, unknown>): void => {
+function setOutput(name: string, value: Record<string, unknown>): void {
   if (process.env.GITHUB_OUTPUT) {
     // When run as GitHub Action via workflow
     const output = JSON.stringify(value);
@@ -30,30 +31,30 @@ const setOutput = (name: string, value: Record<string, unknown>): void => {
     // When run as GitHub Action module
     core.setOutput(name, value);
   }
-};
+}
 
-const logInfo = (message: string): void => {
+function logInfo(message: string): void {
   console.log(message);
   if (core.info) {
     core.info(message);
   }
-};
+}
 
-const logWarning = (message: string): void => {
+function logWarning(message: string): void {
   console.warn(message);
   if (core.warning) {
     core.warning(message);
   }
-};
+}
 
-const setFailed = (message: string): void => {
+function setFailed(message: string): void {
   console.error(message);
   if (core.setFailed) {
     core.setFailed(message);
   } else {
     process.exit(1);
   }
-};
+}
 
 // Split into smaller functions to reduce cognitive complexity
 async function getConferenceDetails(
@@ -132,8 +133,28 @@ async function run(): Promise<void> {
       buffer_days_after: Math.max(1, daysAfter)
     };
 
-    // Use Google Flights strategy for accurate pricing
-    const strategy = new GoogleFlightsStrategy();
+    // Detect GitHub Actions environment and enable debugging if set
+    const isGitHubActions = !!process.env.GITHUB_ACTIONS;
+    const isDebugMode = process.env.DEBUG_GOOGLE_FLIGHTS === "true";
+
+    // Instead of skipping, we'll attempt to use Google Flights in GitHub Actions too
+    // but with extensive debugging enabled to diagnose issues
+    let strategy;
+
+    if (isDebugMode || isGitHubActions) {
+      logInfo("Running with Google Flights strategy in debug mode");
+      // Set environment variables for the scraper
+      process.env.DEBUG_GOOGLE_FLIGHTS = "true";
+      process.env.PUPPETEER_TIMEOUT = process.env.PUPPETEER_TIMEOUT ?? "60000";
+      strategy = new GoogleFlightsStrategy();
+    } else {
+      logInfo("Running with standard Google Flights strategy");
+      strategy = new GoogleFlightsStrategy();
+    }
+
+    // Log strategy choice and environment
+    logInfo(`Flight pricing strategy: Google Flights (Debug mode: ${isDebugMode || isGitHubActions ? 'Enabled' : 'Disabled'})`);
+    logInfo(`Environment: ${isGitHubActions ? 'GitHub Actions' : 'Local'}`);
     flightContext = new FlightPricingContextImpl(strategy);
 
     // Calculate stipend

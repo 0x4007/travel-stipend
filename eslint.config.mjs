@@ -9,7 +9,11 @@ export default tsEslint.config({
     "@typescript-eslint": tsEslint.plugin,
     "check-file": checkFile,
   },
-  ignores: ["**/*.js", ".github/**.ts"],
+  ignores: ["**/*.js", ".github/**.ts",
+
+"tests/*.ts",
+".github/actions/calculate-stipend/index.js"
+  ],
   extends: [eslint.configs.recommended, ...tsEslint.configs.recommended, sonarjs.configs.recommended],
   languageOptions: {
     parser: tsEslint.parser,

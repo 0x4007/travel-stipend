@@ -80,7 +80,7 @@ export class GoogleFlightsScraper {
     await changeCurrencyToUsd(this._page);
   }
 
-  async searchFlights(from: string, to: string, departureDate: string, returnDate?: string, takeScreenshots = false) {
+  async searchFlights(from: string, to: string, departureDate: string, returnDate?: string, debugMode = false) {
     const cacheKey = this._createCacheKey(from, to, departureDate, returnDate);
     const { shouldFetch, cachedResult } = this._checkCache(cacheKey);
 
@@ -90,7 +90,15 @@ export class GoogleFlightsScraper {
     }
 
     if (!this._page) throw new Error("Page not initialized");
-    const result = await searchFlights(this._page, from, to, departureDate, returnDate, takeScreenshots);
+
+    // Enable debug mode if environment variable is set
+    const isDebugMode = process.env.DEBUG_GOOGLE_FLIGHTS === "true" || debugMode;
+
+    if (isDebugMode) {
+      log(LOG_LEVEL.INFO, `Running search in debug mode: ${from} to ${to}`);
+    }
+
+    const result = await searchFlights(this._page, from, to, departureDate, returnDate, isDebugMode);
 
     if (result.success && result.prices.length > 0) {
       // Calculate average price from only top flights, excluding outliers

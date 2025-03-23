@@ -1,9 +1,31 @@
 #!/usr/bin/env bun
+/**
+ * DEPRECATED: This script is no longer used.
+ *
+ * The travel stipend program now runs directly from GitHub Actions workflow
+ * without needing to build and bundle a custom action.
+ *
+ * See .github/workflows/calculate-stipend.yml for the current implementation.
+ *
+ * This file is kept for reference purposes only.
+ */
+
 import { build } from 'esbuild';
 import { resolve } from 'path';
 import { mkdir } from 'fs/promises';
 
 async function buildAction() {
+  console.warn('WARNING: This script is deprecated. The travel stipend calculator now runs directly via GitHub workflows.');
+  console.warn('See .github/workflows/calculate-stipend.yml for the current implementation.');
+  console.warn('Running this script is not necessary and may create confusion with duplicate implementations.');
+
+  // Ask for confirmation before proceeding
+  if (process.env.FORCE_BUILD !== 'true') {
+    console.error('Aborting build. Set FORCE_BUILD=true to override if you really need to build this.');
+    process.exit(1);
+  }
+
+  console.log('Proceeding with build as FORCE_BUILD=true...');
   try {
     // First ensure the output directory exists
     const outputDir = resolve(process.cwd(), '.github/actions/calculate-stipend');

@@ -387,6 +387,12 @@ export async function scrapeFlightPrice(
     return cachedResult;
   }
 
+  // Check if running in GitHub Actions - we don't need to skip anymore
+  const isGitHubActions = !!process.env.GITHUB_ACTIONS;
+  if (isGitHubActions) {
+    console.log("Running in GitHub Actions environment - attempting to use Google Flights");
+  }
+
   try {
     const googlePrice = await searchGoogleFlights(origin, destination, dates);
     if (googlePrice.price !== null) {

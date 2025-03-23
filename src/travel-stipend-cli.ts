@@ -100,8 +100,8 @@ async function processSingleConference(options: SingleConferenceOptions): Promis
   } = options;
 
   // Use the new parameters if provided, fall back to legacy parameters
-  const actualStartDate = conferenceStart || startDate;
-  const actualEndDate = conferenceEnd || endDate || actualStartDate; // Default to start date if not specified
+  const actualStartDate = conferenceStart ?? startDate;
+  const actualEndDate = conferenceEnd ?? endDate ?? actualStartDate; // Default to start date if not specified
 
   // Check for required parameters with detailed error messages
   if (!location) {
