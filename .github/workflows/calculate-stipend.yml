@@ -70,6 +70,10 @@ jobs:
           mkdir -p debug-screenshots
           mkdir -p debug-logs
           mkdir -p test-screenshots
+          # Create placeholder files to ensure directories are not empty
+          touch debug-screenshots/.placeholder
+          touch debug-logs/.placeholder
+          touch test-screenshots/.placeholder
           echo "Creating debug directories for artifact collection"
           echo "Current working directory: $(pwd)"
           echo "Chrome version: $(google-chrome --version)"
