@@ -5,12 +5,17 @@
   "main": "build/index.ts",
   "author": "Ubiquity DAO",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ubiquity/travel-stipend-action.git"
+  },
   "engines": {
     "node": ">=20.10.0",
     "bun": ">=1.0.0"
   },
   "scripts": {
     "create-release": "bun scripts/create-release.ts",
+    "create-stipend-action": "bun scripts/create-stipend-action.ts",
     "db": "sqlite3 travel_data.db",
     "start": "bun build/esbuild-server.ts",
     "build": "bun build/esbuild-build.ts",
@@ -76,6 +81,7 @@
     "bun-types": "^1.2.5",
     "cspell": "^8.4.0",
     "esbuild": "^0.20.1",
+    "enquirer": "^2.4.1",
     "eslint": "9.14.0",
     "eslint-plugin-check-file": "^2.8.0",
     "eslint-plugin-sonarjs": "^2.0.4",
