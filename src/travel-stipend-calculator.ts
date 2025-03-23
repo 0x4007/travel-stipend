@@ -18,7 +18,7 @@ import {
 import { getCostOfLivingFactor } from "./utils/cost-of-living";
 import { DatabaseService } from "./utils/database";
 import { calculateDateDiff, generateFlightDates } from "./utils/dates";
-import { getDistanceKmFromCities } from "./utils/distance";
+import { haversineDistance } from "./utils/distance";
 import { calculateFlightCost, scrapeFlightPrice } from "./utils/flights";
 import { calculateLocalTransportCost } from "./utils/taxi-fares";
 import { Conference, Coordinates, MealCosts, StipendBreakdown } from "./utils/types";
@@ -77,13 +77,10 @@ async function calculateFlightDetails(
     throw new Error(`Could not find coordinates for ${!originCoords.length ? ORIGIN : destination}`);
   }
 
-  const distanceKm = getDistanceKmFromCities(ORIGIN, destination, {
-    getCoordinates: (city: string) => {
-      const coords = city === ORIGIN ? originCoords[0] : destCoords[0];
-      return coords;
-    },
-    size: () => 2,
-  });
+  // Calculate distance directly using the coordinates we already have
+  const originCoord = originCoords[0];
+  const destCoord = destCoords[0];
+  const distanceKm = haversineDistance(originCoord, destCoord);
 
   console.log(`Distance from ${ORIGIN} to ${destination}: ${distanceKm.toFixed(1)} km`);
 

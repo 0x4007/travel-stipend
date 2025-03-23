@@ -50,12 +50,12 @@ export function calculateDateDiff(startDateStr: string, endDateStr: string): num
 
 // Generate flight dates for a conference (one day before and after, or same day for origin city)
 export function generateFlightDates(conference: Conference, isOriginCity = false): { outbound: string; return: string } {
-  const startDate = parseDate(conference.Start);
+  const startDate = parseDate(conference.start_date);
   if (!startDate) {
     throw new Error("Invalid start date");
   }
 
-  const endDate = conference.End ? parseDate(conference.End) : new Date(startDate);
+  const endDate = conference.end_date ? parseDate(conference.end_date) : new Date(startDate);
   if (!endDate) {
     throw new Error("Invalid conference dates");
   }
