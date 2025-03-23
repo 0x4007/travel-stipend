@@ -1,12 +1,21 @@
 #!/usr/bin/env bun
 import { build } from 'esbuild';
 import { resolve } from 'path';
+import { mkdir } from 'fs/promises';
 
 async function buildAction() {
   try {
     // First ensure the output directory exists
     const outputDir = resolve(process.cwd(), '.github/actions/calculate-stipend');
-    await Bun.write(outputDir, ''); // This will create the directory if it doesn't exist
+
+    // Create directory structure recursively
+    try {
+      await mkdir(outputDir, { recursive: true });
+      console.log(`Created directory: ${outputDir}`);
+    } catch (err) {
+      console.error(`Failed to create directory: ${err}`);
+      throw err;
+    }
 
     // Build the action
     await build({
