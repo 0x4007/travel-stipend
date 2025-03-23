@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { createHashKey, PersistentCache } from "../src/utils/cache";
-import { CoordinatesMapping } from "../src/utils/coordinates";
+import { CoordinatesMapping, getCityCoordinates } from "../src/utils/coordinates";
 import { getDistanceKmFromCities } from "../src/utils/distance";
 import { calculateFlightCost } from "../src/utils/flights";
 import { GoogleFlightsScraper } from "../src/utils/google-flights-scraper";
@@ -61,20 +61,12 @@ function getDestinationsToTest(): string[] {
     return destinations;
   } catch (error) {
     console.error("Error getting destinations from CSV:", error);
-    return ["Helsinki, Finland", "Abu Dhabi, UAE", "Berlin, Germany"];
+    return [];
   }
 }
 
 const DESTINATIONS_TO_TEST = getDestinationsToTest();
 const ORIGIN = "Seoul, South Korea";
-
-// Add coordinates for testing
-const COORDINATES: Record<string, { lat: number; lng: number }> = {
-  "Seoul, South Korea": { lat: 37.5665, lng: 126.978 },
-  "Helsinki, Finland": { lat: 60.1699, lng: 24.9384 },
-  "Abu Dhabi, UAE": { lat: 24.4539, lng: 54.3773 },
-  "Berlin, Germany": { lat: 52.52, lng: 13.405 },
-};
 
 interface FlightCostCacheEntry {
   cost: number;
@@ -177,12 +169,24 @@ describe("Comprehensive Distance-Based Price Analysis", () => {
     // Add delay after currency change
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Initialize coordinates
+    // Initialize coordinates mapping with data from database
     coordinates = new CoordinatesMapping();
-    Object.entries(COORDINATES).forEach(([city, coords]) => {
-      coordinates.addCity(city, coords);
-    });
-    console.log("Coordinates initialized");
+    console.log("Initializing coordinates mapping...");
+
+    const allDestinations = [ORIGIN, ...DESTINATIONS_TO_TEST];
+    for (const city of allDestinations) {
+      try {
+        const cityCoords = await getCityCoordinates(city);
+        if (cityCoords.length > 0) {
+          coordinates.addCity(city, cityCoords[0]);
+          console.log(`Added coordinates for ${city}`);
+        } else {
+          console.warn(`No coordinates found for ${city}`);
+        }
+      } catch (error) {
+        console.error(`Error getting coordinates for ${city}:`, error);
+      }
+    }
   });
 
   afterAll(async () => {

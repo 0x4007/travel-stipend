@@ -5,7 +5,7 @@ import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { Conference, Coordinates } from './types';
 
-interface AirportCode {
+export interface AirportCode {
   code: string;
   city: string;
   country: string;
@@ -163,6 +163,18 @@ export class DatabaseService {
   private async _importAirportCodes(rows: CsvRow[]): Promise<void> {
     if (!this._db) throw new Error('Database not initialized');
 
+    // Create city-coordinates mapping first
+    const cityCoords = new Map<string, string>();
+    rows.forEach(row => {
+      if (row.municipality && row.coordinates) {
+        const cityKey = this._formatCityKey(row.municipality, row.iso_country);
+        // Only update if we don't have coordinates for this city yet
+        if (!cityCoords.has(cityKey)) {
+          cityCoords.set(cityKey, row.coordinates);
+        }
+      }
+    });
+
     const values = rows.map(row => {
       const code = row.iata_code || row.ident || '';
       const city = row.municipality || '';
@@ -182,6 +194,30 @@ export class DatabaseService {
         local_code: row.local_code || null
       };
     }).filter(v => v.code && v.city && v.country && v.coordinates);
+
+    // Add all city-coordinate pairs to coordinates table
+    try {
+      console.log('Importing city coordinates...');
+      await this._db.run('BEGIN TRANSACTION');
+      for (const [cityKey, coords] of cityCoords.entries()) {
+        const [lat, lng] = coords.split(',').map(x => x.trim());
+        try {
+          await this._db.run(
+            `INSERT OR REPLACE INTO coordinates (city, lat, lng)
+             VALUES (?, ?, ?)`,
+            [cityKey, parseFloat(lat), parseFloat(lng)]
+          );
+        } catch (error) {
+          console.error('Error inserting city coordinates:', error);
+          console.error('City:', cityKey, 'Coords:', coords);
+        }
+      }
+      await this._db.run('COMMIT');
+      console.log('Imported', cityCoords.size, 'city coordinates');
+    } catch (error) {
+      await this._db.run('ROLLBACK');
+      throw error;
+    }
 
     try {
       console.log('Importing airport codes, filtered values:', values.length);
@@ -383,14 +419,55 @@ export class DatabaseService {
     return this._db.all<Conference[]>('SELECT * FROM conferences');
   }
 
+  private _formatCityKey(city: string, country: string): string {
+    // Standardize the format to "City, CC" where CC is the country code
+    return `${city}, ${country}`;
+  }
+
   public async getCityCoordinates(city: string): Promise<Coordinates[]> {
     await this._init();
     if (!this._db) throw new Error('Database not initialized');
 
-    return this._db.all<Coordinates[]>(
+    // First try exact match
+    let results = await this._db.all<Coordinates[]>(
       'SELECT lat, lng FROM coordinates WHERE city = ?',
       [city]
     );
+
+    if (results.length === 0) {
+      // Try matching just the city part before the comma
+      const cityPart = city.split(',')[0].trim();
+      results = await this._db.all<Coordinates[]>(
+        'SELECT lat, lng FROM coordinates WHERE city LIKE ?',
+        [`${cityPart}%`]
+      );
+    }
+
+    return results;
+  }
+
+  /**
+   * Add coordinates for a city to the database
+   * @param city Full city name (e.g. "City, Country")
+   * @param lat Latitude
+   * @param lng Longitude
+   * @returns True if coordinates were added successfully
+   */
+  public async addCityCoordinates(city: string, lat: number, lng: number): Promise<boolean> {
+    await this._init();
+    if (!this._db) throw new Error('Database not initialized');
+
+    try {
+      await this._db.run(
+        'INSERT OR REPLACE INTO coordinates (city, lat, lng) VALUES (?, ?, ?)',
+        [city, lat, lng]
+      );
+      console.log(`Added/updated coordinates for ${city}: lat=${lat}, lng=${lng}`);
+      return true;
+    } catch (error) {
+      console.error('Error adding city coordinates:', error);
+      throw error;
+    }
   }
 
   public async getAirportCodes(city: string): Promise<AirportCode[]> {
@@ -401,6 +478,31 @@ export class DatabaseService {
       'SELECT code, city, country, coordinates, elevation_ft, continent, region, municipality, icao, local_code FROM airport_codes WHERE city = ?',
       [city]
     );
+  }
+
+  /**
+   * Get all airports from the database
+   * @returns Array of all airports
+   */
+  public async getAllAirports(): Promise<AirportCode[]> {
+    await this._init();
+    if (!this._db) throw new Error('Database not initialized');
+
+    return this._db.all<AirportCode[]>(
+      'SELECT code, city, country, coordinates, elevation_ft, continent, region, municipality, icao, local_code FROM airport_codes'
+    );
+  }
+
+  /**
+   * Get all city names from the coordinates table
+   * @returns Array of city names
+   */
+  public async getAllCityNames(): Promise<string[]> {
+    await this._init();
+    if (!this._db) throw new Error('Database not initialized');
+
+    const results = await this._db.all<{city: string}[]>('SELECT city FROM coordinates');
+    return results.map(row => row.city);
   }
 
   public async validateCityAndCountry(city: string, country?: string): Promise<{ isValid: boolean; validCountry?: string; suggestions?: string[] }> {

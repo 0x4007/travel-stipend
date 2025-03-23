@@ -1,5 +1,5 @@
 import { SIMILARITY_THRESHOLD } from "./constants";
-import { AirportCoordinatesMapping, CoordinatesMapping, findBestMatch } from "./coordinates";
+import { CoordinatesMapping, findBestMatch, getAirportCoordinates } from "./coordinates";
 import { Coordinates } from "./types";
 
 // Convert degrees to radians
@@ -36,9 +36,9 @@ function findCityByExactMatch(cityName: string, coordinates: CoordinatesMapping)
 }
 
 // Try to find city by fuzzy matching
-function findCityByFuzzyMatch(cityName: string, coordinates: CoordinatesMapping): Coordinates | undefined {
+async function findCityByFuzzyMatch(cityName: string, coordinates: CoordinatesMapping): Promise<Coordinates | undefined> {
   const cityNames = coordinates.getCityNames();
-  const { match, similarity } = findBestMatch(cityName, cityNames);
+  const { match, similarity } = await findBestMatch(cityName, cityNames);
 
   if (similarity >= SIMILARITY_THRESHOLD) {
     console.log(`Fuzzy match found for "${cityName}": "${match}" (similarity: ${(similarity * 100).toFixed(1)}%)`);
@@ -49,7 +49,7 @@ function findCityByFuzzyMatch(cityName: string, coordinates: CoordinatesMapping)
 }
 
 // Helper function to find city coordinates with fuzzy matching
-async function findCityCoordinates(cityName: string, coordinates: CoordinatesMapping): Coordinates {
+async function findCityCoordinates(cityName: string, coordinates: CoordinatesMapping): Promise<Coordinates> {
   // Try exact match first
   const exactMatch = findCityByExactMatch(cityName, coordinates);
   if (exactMatch) {
@@ -57,14 +57,20 @@ async function findCityCoordinates(cityName: string, coordinates: CoordinatesMap
   }
 
   // If no exact match found, try fuzzy matching
-  const fuzzyMatch = findCityByFuzzyMatch(cityName, coordinates);
+  const fuzzyMatch = await findCityByFuzzyMatch(cityName, coordinates);
   if (fuzzyMatch) {
     return fuzzyMatch;
   }
 
   // Get best match info for error message
-  const { match, similarity } = await findBestMatch(cityName, coordinates.getCityNames());
-  throw new Error(`No matching city found for: ${cityName} (best match: ${match}, similarity: ${(similarity * 100).toFixed(1)}%)`);
+  try {
+    const { match, similarity } = await findBestMatch(cityName, coordinates.getCityNames());
+    console.warn(`No matching city found for: ${cityName} (best match: ${match}, similarity: ${(similarity * 100).toFixed(1)}%)`);
+    return { lat: 0, lng: 0 }; // Return zeros instead of throwing
+  } catch (error) {
+    console.warn(`Error finding match for ${cityName}: ${error instanceof Error ? error.message : String(error)}`);
+    return { lat: 0, lng: 0 }; // Return zeros on any error
+  }
 }
 
 // Helper function to check if string is an airport code (3 uppercase letters)
@@ -73,36 +79,42 @@ function isAirportCode(str: string): boolean {
 }
 
 // Get coordinates for either airport code or city name
-function getLocationCoordinates(location: string, coordinates: CoordinatesMapping, airportCoordinates: AirportCoordinatesMapping): Coordinates {
+async function getLocationCoordinates(location: string, coordinates: CoordinatesMapping): Promise<Coordinates> {
   // Check if it's an airport code
   if (isAirportCode(location)) {
-    const airportCoords = airportCoordinates.getCoordinates(location);
+    const airportCoords = await getAirportCoordinates(location);
     if (airportCoords) {
       return airportCoords;
     }
-    throw new Error(`No coordinates found for airport code: ${location}`);
+    // If no coordinates for airport code, fall back to city matching
+    console.warn(`No coordinates found for airport code: ${location}, trying city matching`);
   }
 
-  // Otherwise try city matching
+  // Try city matching
   return findCityCoordinates(location, coordinates);
 }
 
-export function getDistanceKmFromCities(
+export async function getDistanceKmFromCities(
   originLocation: string,
   destinationLocation: string,
-  coordinates: CoordinatesMapping,
-  airportCoordinates?: AirportCoordinatesMapping
-): number {
-  // If airportCoordinates is not provided, fallback to only city coordinates
-  if (!airportCoordinates) {
-    const originCoords = findCityCoordinates(originLocation, coordinates);
-    const destinationCoords = findCityCoordinates(destinationLocation, coordinates);
-    return haversineDistance(originCoords, destinationCoords);
-  }
+  coordinates: CoordinatesMapping
+): Promise<number> {
+  try {
+    const originCoords = await findCityCoordinates(originLocation, coordinates);
+    const destinationCoords = await findCityCoordinates(destinationLocation, coordinates);
 
-  const originCoords = getLocationCoordinates(originLocation, coordinates, airportCoordinates);
-  const destinationCoords = getLocationCoordinates(destinationLocation, coordinates, airportCoordinates);
-  return haversineDistance(originCoords, destinationCoords);
+    // Check if either coordinate is invalid (zeros)
+    if ((originCoords.lat === 0 && originCoords.lng === 0) ||
+        (destinationCoords.lat === 0 && destinationCoords.lng === 0)) {
+      console.warn(`Cannot calculate distance: Invalid coordinates for ${originLocation} or ${destinationLocation}`);
+      return NaN;
+    }
+
+    return haversineDistance(originCoords, destinationCoords);
+  } catch (error) {
+    console.error(`Error calculating distance between ${originLocation} and ${destinationLocation}: ${error instanceof Error ? error.message : String(error)}`);
+    return NaN;
+  }
 }
 
 interface DistanceTier {

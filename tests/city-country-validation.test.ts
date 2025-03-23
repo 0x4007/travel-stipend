@@ -35,4 +35,21 @@ describe("City and Country Validation", () => {
     expect(result.isValid).toBe(true);
     expect(result.validatedDestination).toBe("Seoul, KR");
   });
+
+  test("should handle city-states correctly", async () => {
+    // Test Singapore
+    const singaporeResult = await validateDestination("Singapore");
+    expect(singaporeResult.isValid).toBe(true);
+    expect(singaporeResult.validatedDestination).toBe("Singapore, SG");
+
+    // Test Hong Kong
+    const hongKongResult = await validateDestination("Hong Kong");
+    expect(hongKongResult.isValid).toBe(true);
+    expect(hongKongResult.validatedDestination).toBe("Hong Kong, HK");
+
+    // Test with explicit country provided
+    const explicitResult = await validateDestination("Singapore, SG");
+    expect(explicitResult.isValid).toBe(true);
+    expect(explicitResult.validatedDestination).toBe("Singapore, SG");
+  });
 });

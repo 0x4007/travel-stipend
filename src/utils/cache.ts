@@ -78,6 +78,10 @@ export class PersistentCache<T> {
     this._memoryCache.set(key, value);
   }
 
+  getAllEntries(): MemoryCache<T> {
+    return this._memoryCache.getAllEntries();
+  }
+
   saveToDisk(): void {
     try {
       // Get all entries from the memory cache

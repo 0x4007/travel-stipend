@@ -1,0 +1,42 @@
+Destination,Normalized City,Normalized Country,Has Coordinates,Distance (km),Estimated Cost,Notes
+Seoul, Korea,Seoul,KR,Yes,0,0.00,
+Helsinki, Finland,Helsinki,FI,Yes,7032,585.00,
+Vilnius, Lithuania,Vilnius,LT,Yes,7336,640.00,
+Abu Dhabi, UAE,Abu Dhabi,AE,Yes,6837,545.00,
+Denver, USA,Denver,US,Yes,9960,930.00,
+San Diego, USA,San Diego,US,Yes,9800,915.00,
+Brooklyn, USA,Brooklyn,US,No,,,No coordinates found
+Montreal, Canada,Montreal,CA,No,,,No coordinates found
+Austin, USA,Austin,US,Yes,11203,1070.00,
+Florence, Italy,Florence,IT,No,,,No coordinates found
+Boston, USA,Boston,US,Yes,10964,1040.00,
+Arlington, VA, USA,Arlington,US,No,,,No coordinates found
+Las Vegas, USA,Las Vegas,US,Yes,9668,905.00,
+London, UK,London,GB,Yes,8876,835.00,
+Grapevine, Texas, USA,Grapevine,US,No,,,No coordinates found
+Barcelona, Spain,Barcelona,ES,Yes,9594,900.00,
+San Jose, USA,San Jose,US,Yes,9134,860.00,
+Singapore,Singapore,,Yes,4627,350.00,
+San Francisco, USA,San Francisco,US,Yes,9085,855.00,
+Cannes, France,Cannes,FR,No,,,No coordinates found
+Toronto, Canada,Toronto,CA,Yes,10617,1000.00,
+Geneva, Switzerland,Geneva,CH,Yes,8971,845.00,
+Berlin, Germany,Berlin,DE,Yes,8115,775.00,
+Tokyo, Japan,Tokyo,JP,Yes,1209,260.00,
+Munich, Germany,Munich,DE,Yes,8500,805.00,
+Seattle, USA,Seattle,US,Yes,8373,795.00,
+Chicago, USA,Chicago,US,Yes,10544,990.00,
+New York, USA,New York,US,Yes,11089,1055.00,
+Zurich, Switzerland,Zurich,CH,Yes,8744,825.00,
+Lisbon, Portugal,Lisbon,PT,Yes,10396,975.00,
+Milan, Italy,Milan,IT,No,,,No coordinates found
+Paris, France,Paris,FR,Yes,8927,840.00,
+Bangkok, Thailand,Bangkok,TH,Yes,3658,325.00,
+Jakarta, Indonesia,Jakarta,ID,Yes,5264,370.00,
+Taipei, Taiwan,Taipei,TW,No,,,No coordinates found
+Amsterdam, Netherlands,Amsterdam,NL,Yes,8552,810.00,
+Dubai, UAE,Dubai,AE,Yes,6729,525.00,
+Kyoto, Japan,Kyoto,JP,No,,,No coordinates found
+Ho Chi Minh, Vietnam,Ho Chi Minh,VN,Yes,3563,320.00,
+Hong Kong,Hong Kong,,Yes,2070,280.00,
+Prague, Czech Republic,Prague,CZ,Yes,8237,785.00,
