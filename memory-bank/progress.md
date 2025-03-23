@@ -73,8 +73,11 @@
 ✅ **Command Line Interface**
 
 - Argument parsing
-- Help text
-- Error handling
+- Intuitive parameter naming (conference dates and buffer days)
+- Travel schedule validation (preventing flying on conference days)
+- Buffer day enforcement for safe travel scheduling
+- Help text with clear examples
+- Comprehensive error handling
 
 ✅ **Web Scraping**
 
@@ -220,6 +223,22 @@
 
 ## Recent Achievements
 
+✅ **Improved Database Performance and Reliability**
+
+- Fixed database reset issues with optimized import process
+- Added better seed data for common destinations
+- Implemented intelligent detection of existing data
+- Optimized CSV file path lookup strategy
+- Added detailed error handling to prevent database failures
+
+✅ **Enhanced CLI Interface**
+
+- Added intuitive parameter names (`--conference-start`, `--conference-end`, `--days-before`, `--days-after`)
+- Maintained backward compatibility with legacy parameters
+- Implemented buffer day validation to ensure safe travel scheduling
+- Added clear warnings when attempting to schedule flights on conference days
+- Improved help text with practical examples for different use cases
+
 ✅ **Integrated Google Flights Scraper**
 
 - Replaced SerpAPI with custom Google Flights scraper
@@ -230,6 +249,8 @@
 
 ✅ **Enhanced Output Format**
 
+- Added clear distinction between conference dates and travel dates
+- Improved table output with more meaningful column names
 - Added flight price source information to CSV output
 - Updated console table display with source information
 - Improved sorting options to include new fields

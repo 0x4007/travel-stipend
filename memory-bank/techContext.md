@@ -42,6 +42,8 @@ travel-stipend/
 │   ├── esbuild-build.ts    # Production build script
 │   ├── esbuild-server.ts   # Development server
 │   └── index.ts            # Entry point
+├── db/                     # Database storage
+│   └── travel-stipend.db   # SQLite database file
 ├── fixtures/               # Input data files
 │   ├── airport-codes.csv   # Airport code reference data
 │   ├── conferences.csv     # Conference information
@@ -50,9 +52,17 @@ travel-stipend/
 │   ├── taxis.csv           # Taxi fare data
 │   └── cache/              # Persistent cache storage
 ├── src/                    # Source code
+│   ├── strategies/         # Flight pricing strategies
+│   │   ├── google-flights-strategy.ts  # Google Flights strategy
+│   │   ├── hybrid-strategy.ts      # Hybrid pricing strategy
+│   │   └── flight-pricing-context.ts   # Strategy context
 │   ├── utils/              # Utility functions
 │   │   ├── google-flights-scraper/ # Google Flights scraper components
-│   ├── travel-stipend-calculator.ts  # Main calculator
+│   │   ├── database.ts     # Database service
+│   │   ├── dates.ts        # Date handling utilities
+│   │   └── conference-matcher.ts   # Conference fuzzy matching
+│   ├── travel-stipend-calculator.ts  # Main calculator logic
+│   ├── travel-stipend-cli.ts         # Command-line interface
 │   └── historical-stipend-calculator.ts  # Historical data processor
 ├── tests/                  # Test files
 └── outputs/                # Generated output files (created at runtime)
@@ -64,6 +74,7 @@ The project uses esbuild for fast compilation and bundling:
 
 - **Development**: `bun build/esbuild-server.ts` - Runs the development server.
 - **Production**: `bun build/esbuild-build.ts` - Creates optimized production build.
+- **CLI**: `bun src/travel-stipend-cli.ts [location] --conference-start <date>` - Run the CLI tool with various options.
 
 ### Testing Strategy
 
@@ -190,11 +201,20 @@ These constants can be adjusted to reflect company policy or economic changes.
 The application is designed to be run locally as a command-line tool:
 
 ```bash
-# Run the calculator
-bun src/travel-stipend-calculator.ts
+# Basic usage with new parameter names
+bun src/travel-stipend-cli.ts "Singapore" --conference-start "15 April"
 
-# Run with sorting options
-bun src/travel-stipend-calculator.ts --sort total_stipend --reverse
+# Customize travel buffer days (arrive 2 days before, leave 2 days after)
+bun src/travel-stipend-cli.ts "Tokyo" --conference-start "20 May" --days-before 2 --days-after 2
+
+# Multi-day conference with ticket price
+bun src/travel-stipend-cli.ts "Barcelona" -c "MobileConf 2025" --conference-start "10 June" --conference-end "12 June" --ticket-price 750
+
+# Batch mode for all upcoming conferences
+bun src/travel-stipend-cli.ts -b
+
+# Batch mode with sorting and custom output format
+bun src/travel-stipend-cli.ts -b --sort total_stipend -r -o csv
 ```
 
-Results are saved to the outputs directory and displayed in the console.
+Results are displayed in the console and saved to the outputs directory with timestamped filenames.
