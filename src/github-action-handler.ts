@@ -133,28 +133,32 @@ async function run(): Promise<void> {
       buffer_days_after: Math.max(1, daysAfter)
     };
 
-    // Detect GitHub Actions environment and enable debugging if set
+    // Detect environment
     const isGitHubActions = !!process.env.GITHUB_ACTIONS;
+
+    // Get debug settings - only enable in GitHub Actions if explicitly set
     const isDebugMode = process.env.DEBUG_GOOGLE_FLIGHTS === "true";
+    const shouldCaptureScreenshots = process.env.CAPTURE_SCREENSHOTS === "true";
 
-    // Instead of skipping, we'll attempt to use Google Flights in GitHub Actions too
-    // but with extensive debugging enabled to diagnose issues
-    let strategy;
+    // Configure timeout
+    const timeout = parseInt(process.env.PUPPETEER_TIMEOUT ?? "60000", 10);
 
-    if (isDebugMode || isGitHubActions) {
-      logInfo("Running with Google Flights strategy in debug mode");
-      // Set environment variables for the scraper
-      process.env.DEBUG_GOOGLE_FLIGHTS = "true";
-      process.env.PUPPETEER_TIMEOUT = process.env.PUPPETEER_TIMEOUT ?? "60000";
-      strategy = new GoogleFlightsStrategy();
-    } else {
-      logInfo("Running with standard Google Flights strategy");
-      strategy = new GoogleFlightsStrategy();
+    // Determine screenshot mode
+    let screenshotMode = 'Disabled';
+    if (shouldCaptureScreenshots) {
+      screenshotMode = 'Enabled';
+    } else if (process.env.ENABLE_ERROR_SCREENSHOTS === "true") {
+      screenshotMode = 'Error-only';
     }
 
-    // Log strategy choice and environment
-    logInfo(`Flight pricing strategy: Google Flights (Debug mode: ${isDebugMode || isGitHubActions ? 'Enabled' : 'Disabled'})`);
+    // Log environment and configuration
     logInfo(`Environment: ${isGitHubActions ? 'GitHub Actions' : 'Local'}`);
+    logInfo(`Debug mode: ${isDebugMode ? 'Enabled' : 'Disabled'}`);
+    logInfo(`Screenshots: ${screenshotMode}`);
+    logInfo(`Timeout: ${timeout}ms`);
+
+    // Set up default strategy
+    const strategy = new GoogleFlightsStrategy();
     flightContext = new FlightPricingContextImpl(strategy);
 
     // Calculate stipend

@@ -38,8 +38,37 @@ export async function takeDebugScreenshot(
   };
 
   try {
-    // Check if debug mode is enabled
+    // Check if we should take this screenshot based on environment conditions
+    const isGitHubActions = Boolean(process.env.GITHUB_ACTIONS);
     const isDebugMode = process.env.DEBUG_GOOGLE_FLIGHTS === "true";
+    const shouldCaptureScreenshots = process.env.CAPTURE_SCREENSHOTS === "true";
+    const shouldCaptureErrorScreenshots = process.env.ENABLE_ERROR_SCREENSHOTS === "true";
+
+    // Skip most screenshots in GitHub Actions unless specifically needed
+    const isErrorScreenshot = description.toLowerCase().includes("error") ||
+                             description.toLowerCase().includes("fail") ||
+                             options.dumpConsole === true;
+
+    const isInitialScreenshot = description.toLowerCase().includes("initial") ||
+                               description.toLowerCase().includes("before-search");
+
+    const isFinalScreenshot = description.toLowerCase().includes("result") ||
+                             description.toLowerCase().includes("after-search");
+
+    // Only take screenshots in GitHub Actions if:
+    // 1. We're in debug mode, or
+    // 2. It's an error screenshot and error screenshots are enabled, or
+    // 3. It's an initial or final screenshot and screenshots are generally enabled
+    const shouldSkip = isGitHubActions &&
+      !isDebugMode &&
+      !(isErrorScreenshot && shouldCaptureErrorScreenshots) &&
+      !((isInitialScreenshot || isFinalScreenshot) && shouldCaptureScreenshots);
+
+    if (shouldSkip) {
+      log(LOG_LEVEL.DEBUG, `Skipping screenshot for: ${description} (in GitHub Actions with reduced logging)`);
+      return result;
+    }
+
     const sequenceNumber = options.sequence ?? Math.floor(Date.now() / 1000) % 10000;
 
     // Create timestamp-based directory structure
@@ -82,15 +111,31 @@ export async function takeDebugScreenshot(
       await highlightElements(page, options.highlightElements);
     }
 
+    // Adjust screenshot quality based on environment
+    const screenshotQuality = process.env.SCREENSHOT_QUALITY?.toLowerCase();
+    let quality = 70; // Default medium quality
+
+    if (screenshotQuality === "high") {
+      quality = 90;
+    } else if (screenshotQuality === "low") {
+      quality = 50;
+    }
+
+    // Use provided quality or select based on environment
+    const finalQuality = options.quality ?? quality;
+
     await page.screenshot({
       path: imgFilePath,
       fullPage: options.fullPage ?? false,
-      quality: options.quality ?? (isDebugMode ? 90 : 70)
+      quality: finalQuality
     });
     result.imagePath = imgFilePath;
 
-    // Capture HTML if requested
-    if (options.captureHtml) {
+    // In GitHub Actions, only capture HTML for error screenshots to reduce artifacts
+    const shouldCaptureHtml = options.captureHtml &&
+      (!isGitHubActions || isDebugMode || isErrorScreenshot);
+
+    if (shouldCaptureHtml) {
       const htmlFilename = `${baseFilename}.html`;
       const htmlFilePath = path.join(finalDirPath, htmlFilename);
       const html = await page.content();
@@ -99,35 +144,39 @@ export async function takeDebugScreenshot(
     }
 
     // Create metadata file with debugging information
-    const metadataFilename = `${baseFilename}.json`;
-    const metadataFilePath = path.join(finalDirPath, metadataFilename);
+    // In GitHub Actions with reduced logging, only create metadata for errors
+    if (!isGitHubActions || isDebugMode || isErrorScreenshot) {
+      const metadataFilename = `${baseFilename}.json`;
+      const metadataFilePath = path.join(finalDirPath, metadataFilename);
 
-    const metadata = {
-      timestamp,
-      url: page.url(),
-      description,
-      viewport: page.viewport(),
-      userAgent: await page.evaluate(() => navigator.userAgent),
-      cookies: await page.cookies() as unknown as string,
-      title: await page.title(),
-      performance: isDebugMode ? await page.evaluate(() => {
-        if (window.performance) {
-          return {
-            // Use safer methods to capture performance data
-            timeOrigin: window.performance.timeOrigin,
-            now: window.performance.now(),
-            // Capturing entries from different types
-            resources: window.performance.getEntriesByType('resource').slice(0, 10),
-            navigation: window.performance.getEntriesByType('navigation').slice(0, 5),
-            paint: window.performance.getEntriesByType('paint')
-          };
-        }
-        return null;
-      }) : null
-    };
+      const metadata = {
+        timestamp,
+        url: page.url(),
+        description,
+        viewport: page.viewport(),
+        userAgent: await page.evaluate(() => navigator.userAgent),
+        cookies: await page.cookies() as unknown as string,
+        title: await page.title(),
+        // Only capture performance metrics for debug mode or errors
+        performance: (isDebugMode || isErrorScreenshot) ? await page.evaluate(() => {
+          if (window.performance) {
+            return {
+              // Use safer methods to capture performance data
+              timeOrigin: window.performance.timeOrigin,
+              now: window.performance.now(),
+              // Capturing entries from different types
+              resources: window.performance.getEntriesByType('resource').slice(0, 10),
+              navigation: window.performance.getEntriesByType('navigation').slice(0, 5),
+              paint: window.performance.getEntriesByType('paint')
+            };
+          }
+          return null;
+        }) : null
+      };
 
-    fs.writeFileSync(metadataFilePath, JSON.stringify(metadata, null, 2));
-    result.metadataPath = metadataFilePath;
+      fs.writeFileSync(metadataFilePath, JSON.stringify(metadata, null, 2));
+      result.metadataPath = metadataFilePath;
+    }
 
     // Dump console logs if requested
     if (options.dumpConsole) {
@@ -147,17 +196,25 @@ export async function takeDebugScreenshot(
       result.logPath = logFilePath;
     }
 
-    log(LOG_LEVEL.INFO, `Debug screenshot saved to ${imgFilePath}`);
+    // Log at different levels based on screenshot type
+    if (isErrorScreenshot) {
+      log(LOG_LEVEL.WARN, `Error screenshot saved to ${imgFilePath}`);
+    } else {
+      log(LOG_LEVEL.INFO, `Debug screenshot saved to ${imgFilePath}`);
+    }
 
-    // Create or update index file for easier navigation
-    updateScreenshotIndex(finalDirPath, {
-      timestamp,
-      description,
-      imgPath: imgFilename,
-      htmlPath: result.htmlPath ? path.basename(result.htmlPath) : undefined,
-      metadataPath: path.basename(result.metadataPath || ""),
-      logPath: result.logPath ? path.basename(result.logPath) : undefined,
-    });
+    // Only create index in debug mode to reduce file operations
+    if (isDebugMode) {
+      // Create or update index file for easier navigation
+      updateScreenshotIndex(finalDirPath, {
+        timestamp,
+        description,
+        imgPath: imgFilename,
+        htmlPath: result.htmlPath ? path.basename(result.htmlPath) : undefined,
+        metadataPath: result.metadataPath ? path.basename(result.metadataPath) : undefined,
+        logPath: result.logPath ? path.basename(result.logPath) : undefined,
+      });
+    }
 
     return result;
   } catch (error) {
