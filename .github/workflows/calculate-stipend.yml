@@ -86,7 +86,7 @@ jobs:
 
       - name: Upload debug screenshots
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: google-flights-debug-screenshots
           path: debug-screenshots/
@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload debug logs
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: google-flights-debug-logs
           path: debug-logs/
@@ -102,7 +102,7 @@ jobs:
 
       - name: Upload test screenshots
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: test-screenshots
           path: test-screenshots/
