@@ -22,13 +22,12 @@ function getInput(name: string, options?: { required: boolean; }): string {
 
 function setOutput(name: string, value: Record<string, unknown>): void {
   if (process.env.GITHUB_OUTPUT) {
-    // When run as GitHub Action via workflow
+    // When run as GitHub Action via workflow with GITHUB_OUTPUT env variable
     const output = JSON.stringify(value);
-    console.log(`::set-output name=${name}::${output}`);
-    // Also write to GITHUB_OUTPUT file if available (newer GitHub Actions)
+    // Use the new approach of writing to environment files
     appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${output}\n`);
   } else {
-    // When run as GitHub Action module
+    // When run as GitHub Action module, use the core library
     core.setOutput(name, value);
   }
 }

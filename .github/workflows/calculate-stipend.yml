@@ -30,12 +30,12 @@ on:
         required: false
         type: string
       days_before:
-        description: 'Days to arrive before conference'
+        description: 'Days to arrive before conference (minimum 1 required)'
         required: false
         type: number
-        default: 1
+        default: 2
       days_after:
-        description: 'Days to leave after conference'
+        description: 'Days to leave after conference (minimum 1 required)'
         required: false
         type: number
         default: 1
@@ -96,8 +96,20 @@ jobs:
           bun src/github-action-handler.ts
         timeout-minutes: 10
 
+      - name: Check if debug screenshots exist
+        id: check_debug_screenshots
+        run: echo "debug_screenshots_exist=$([ -d debug-screenshots ] && [ "$(ls -A debug-screenshots 2>/dev/null)" ] && echo true || echo false)" >> $GITHUB_OUTPUT
+
+      - name: Check if debug logs exist
+        id: check_debug_logs
+        run: echo "debug_logs_exist=$([ -d debug-logs ] && [ "$(ls -A debug-logs 2>/dev/null)" ] && echo true || echo false)" >> $GITHUB_OUTPUT
+
+      - name: Check if test screenshots exist
+        id: check_test_screenshots
+        run: echo "test_screenshots_exist=$([ -d test-screenshots ] && [ "$(ls -A test-screenshots 2>/dev/null)" ] && echo true || echo false)" >> $GITHUB_OUTPUT
+
       - name: Upload debug screenshots
-        if: always()
+        if: always() && steps.check_debug_screenshots.outputs.debug_screenshots_exist == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: google-flights-debug-screenshots
@@ -105,7 +117,7 @@ jobs:
           retention-days: 5
 
       - name: Upload debug logs
-        if: always()
+        if: always() && steps.check_debug_logs.outputs.debug_logs_exist == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: google-flights-debug-logs
@@ -113,7 +125,7 @@ jobs:
           retention-days: 5
 
       - name: Upload test screenshots
-        if: always()
+        if: always() && steps.check_test_screenshots.outputs.test_screenshots_exist == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: test-screenshots
