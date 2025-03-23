@@ -50,7 +50,7 @@ jobs:
     env:
       DEBUG_GOOGLE_FLIGHTS: false
       ENABLE_ERROR_SCREENSHOTS: true
-      CAPTURE_SCREENSHOTS: false
+      CAPTURE_SCREENSHOTS: true
       SCREENSHOT_QUALITY: medium
       PUPPETEER_TIMEOUT: 60000
       LOG_LEVEL: "error,warning"
