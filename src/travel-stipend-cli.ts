@@ -18,8 +18,12 @@ const program = new Command()
   .option("-b, --batch", "Process all upcoming conferences (batch mode)")
   .option("-s, --single <location>", "Destination location (alternative to positional argument, for backward compatibility)")
   .option("-c, --conference <name>", "Conference name (optional, will use 'Business Trip' if not specified)")
-  .option("--start-date <date>", "Conference start date (required for single mode)")
-  .option("--end-date <date>", "Conference end date (defaults to start date)")
+  .option("--conference-start <date>", "Conference start date - when you need to be at the event (required)")
+  .option("--conference-end <date>", "Conference end date - last day of the event (defaults to start date)")
+  .option("--days-before <number>", "Days to arrive before conference starts (default: 1)")
+  .option("--days-after <number>", "Days to stay after conference ends (default: 1)")
+  .option("--start-date <date>", "Alias for --conference-start (for backward compatibility)")
+  .option("--end-date <date>", "Alias for --conference-end (for backward compatibility)")
   .option("--ticket-price <price>", "Conference ticket price (defaults to standard price)")
   .option("-o, --output <format>", "Output format: json, csv, table (default: table)")
   .option("--sort <field>", "Sort results by field (for batch mode)")
@@ -27,23 +31,23 @@ const program = new Command()
   .option("-v, --verbose", "Show detailed output including flight pricing info")
   .addHelpText("after", `
 Examples:
-  # Basic usage with location as positional argument (recommended)
-  $ bun run src/travel-stipend-cli.ts "Singapore, Singapore" --start-date "15 April"
+  # Basic usage with new, clearer parameter names
+  $ bun run src/travel-stipend-cli.ts "Singapore" --conference-start "15 April"
 
-  # With optional conference name
-  $ bun run src/travel-stipend-cli.ts "Tokyo, Japan" -c "TechSummit Asia" --start-date "20 May"
+  # Customize travel buffer days (arrive 2 days before, leave 2 days after)
+  $ bun run src/travel-stipend-cli.ts "Tokyo" --conference-start "20 May" --days-before 2 --days-after 2
 
-  # Complete example with all optional parameters
+  # Multi-day conference example
   $ bun run src/travel-stipend-cli.ts \\
-      "Tokyo, Japan" \\
-      -c "TechSummit Asia" \\
-      --start-date "20 May" \\
-      --end-date "23 May" \\
-      --ticket-price 600 \\
-      -o json
+      "Barcelona" \\
+      -c "MobileConf 2025" \\
+      --conference-start "10 June" \\
+      --conference-end "12 June" \\
+      --ticket-price 750 \\
+      -o table
 
-  # For backward compatibility, you can still use the -s/--single option
-  $ bun run src/travel-stipend-cli.ts -s "Singapore, Singapore" --start-date "15 April"
+  # Legacy mode (for backward compatibility)
+  $ bun run src/travel-stipend-cli.ts -s "Singapore" --start-date "15 April"
 
   # Batch mode for all upcoming conferences
   $ bun run src/travel-stipend-cli.ts -b
@@ -73,13 +77,31 @@ class StrategyFactory {
 interface SingleConferenceOptions {
   single?: string;
   conference?: string;
-  startDate?: string;
-  endDate?: string;
+  startDate?: string;            // Legacy parameter
+  endDate?: string;              // Legacy parameter
+  conferenceStart?: string;      // New parameter
+  conferenceEnd?: string;        // New parameter
+  daysBefore?: number;           // New parameter for buffer days
+  daysAfter?: number;            // New parameter for buffer days
   ticketPrice?: string;
 }
 
 async function processSingleConference(options: SingleConferenceOptions): Promise<StipendBreakdown> {
-  const { single: location, conference: inputConference, startDate, endDate, ticketPrice } = options;
+  const {
+    single: location,
+    conference: inputConference,
+    startDate,
+    endDate,
+    conferenceStart,
+    conferenceEnd,
+    daysBefore,
+    daysAfter,
+    ticketPrice
+  } = options;
+
+  // Use the new parameters if provided, fall back to legacy parameters
+  const actualStartDate = conferenceStart || startDate;
+  const actualEndDate = conferenceEnd || endDate || actualStartDate; // Default to start date if not specified
 
   // Check for required parameters with detailed error messages
   if (!location) {
@@ -88,18 +110,21 @@ ERROR: Missing destination location
 
 You must specify a destination location, either as a positional argument or with -s/--single
 Examples:
-  $ bun run src/travel-stipend-cli.ts "Singapore, Singapore" --start-date "15 April"
-  $ bun run src/travel-stipend-cli.ts -s "Singapore, Singapore" --start-date "15 April"
+  $ bun run src/travel-stipend-cli.ts "Singapore" --conference-start "15 April"
+  $ bun run src/travel-stipend-cli.ts -s "Singapore" --conference-start "15 April"
 `);
   }
 
-  if (!startDate) {
+  if (!actualStartDate) {
     throw new Error(`
-ERROR: Missing start date
+ERROR: Missing conference start date
 
-You must specify a start date with --start-date parameter
+You must specify when the conference/meeting starts with either:
+  --conference-start "15 April"    (preferred)
+  --start-date "15 April"          (legacy parameter)
+
 Example:
-  $ bun run src/travel-stipend-cli.ts "${location}" --start-date "15 April"
+  $ bun run src/travel-stipend-cli.ts "${location}" --conference-start "15 April"
 `);
   }
 
@@ -147,12 +172,20 @@ Example:
   const record: Conference = {
     conference: conferenceToUse,
     location,
-    start_date: startDate,
-    end_date: endDate ?? startDate, // Use start date as end date if not provided
+    start_date: actualStartDate ?? "", // Use empty string as fallback for type safety
+    end_date: actualEndDate ?? "", // Use empty string as fallback for type safety
     ticket_price: ticketPrice ? `$${ticketPrice}` : "",
     category,
-    description
+    description,
+    // Pass buffer days if provided
+    ...(daysBefore !== undefined && { buffer_days_before: daysBefore }),
+    ...(daysAfter !== undefined && { buffer_days_after: daysAfter })
   };
+
+  console.log(`Conference dates: ${actualStartDate ?? ""} to ${actualEndDate ?? ""}`);
+  if (daysBefore !== undefined || daysAfter !== undefined) {
+    console.log(`Travel buffer: ${daysBefore ?? 1} day(s) before, ${daysAfter ?? 1} day(s) after`);
+  }
 
   return calculateStipend(record);
 }
@@ -298,14 +331,15 @@ function outputResults(results: StipendBreakdown[], options: OutputOptions): voi
 
     case "table":
     default:
-      // Output as a table
+      // Output as a table with clear distinction between conference and travel dates
       console.table(
         results.map((r) => ({
           conference: r.conference,
           location: r.location,
-          conf_date: r.conference_start,
-          arrive: r.flight_departure,
-          depart: r.flight_return,
+          conf_start: r.conference_start,
+          conf_end: r.conference_end || r.conference_start,
+          travel_start: r.flight_departure,
+          travel_end: r.flight_return,
           flight: `$${r.flight_cost}`,
           lodging: `$${r.lodging_cost}`,
           meals: `$${r.meals_cost}`,
@@ -360,22 +394,52 @@ Examples:
 `);
       }
 
-      if (!options.startDate) {
+      // Check for either conference-start or start-date
+      if (!options.conferenceStart && !options.startDate) {
         throw new Error(`
-ERROR: Missing start date
+ERROR: Missing conference start date
 
-You must specify a start date with --start-date parameter
+You must specify when the conference/meeting starts with either:
+  --conference-start "15 April"    (preferred)
+  --start-date "15 April"          (legacy parameter)
+
 Example:
-  $ bun run src/travel-stipend-cli.ts "${locationToUse}" --start-date "15 April"
+  $ bun run src/travel-stipend-cli.ts "${locationToUse}" --conference-start "15 April"
 `);
       }
 
-      // Process a single conference
+      // Convert days-before and days-after to numbers if provided
+      let daysBefore = options.daysBefore !== undefined
+        ? parseInt(options.daysBefore as string, 10)
+        : undefined;
+
+      let daysAfter = options.daysAfter !== undefined
+        ? parseInt(options.daysAfter as string, 10)
+        : undefined;
+
+      // Safety check: require at least 1 day before AND 1 day after for flights
+      // This avoids scheduling flights on conference days
+      if (daysBefore === 0) {
+        console.warn("\nWARNING: Cannot fly on conference start day - you would miss the beginning!\nSetting days-before to 1");
+        daysBefore = 1;
+      }
+
+      if (daysAfter === 0) {
+        console.warn("\nWARNING: Cannot fly on conference end day - you would miss the conclusion!\nSetting days-after to 1");
+        daysAfter = 1;
+      }
+
+      // Process a single conference with all parameters
       const singleOptions = {
         single: locationToUse,
         conference: options.conference,
+        // Support both new and legacy parameters
+        conferenceStart: options.conferenceStart,
+        conferenceEnd: options.conferenceEnd,
         startDate: options.startDate,
         endDate: options.endDate,
+        daysBefore,
+        daysAfter,
         ticketPrice: options.ticketPrice
       };
 

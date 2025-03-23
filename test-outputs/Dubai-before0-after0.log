@@ -1,0 +1,47 @@
+Travel Stipend Calculator - Starting...
+Origin: Seoul, KR
+Using Google Flights pricing strategy for single mode
+No conference name provided. Using default: "Business Trip to Dubai"
+Conference dates: 1 April to 1 April
+Travel buffer: 0 day(s) before, 0 day(s) after
+Processing conference: Business Trip to Dubai in Dubai
+Initializing database...
+Opening database connection...
+Enabling foreign keys...
+Creating tables...
+Tables created successfully.
+Importing data if needed...
+Checking table coordinates...
+Current count for coordinates: 475
+Table coordinates already has data, skipping import
+Checking table airport_codes...
+Current count for airport_codes: 480
+Table airport_codes already has data, skipping import
+Checking table conferences...
+Current count for conferences: 90
+Table conferences already has data, skipping import
+Checking table cost_of_living...
+Current count for cost_of_living: 42
+Table cost_of_living already has data, skipping import
+Checking table taxis...
+Current count for taxis: 127
+Table taxis already has data, skipping import
+Database initialization complete.
+Distance from Seoul, KR to Dubai: 6728.9 km
+Scraping flight prices from Seoul, KR to Dubai
+Dates: 2025-04-01 to 2025-04-01
+[2025-03-23T13:04:28.028Z] [ERROR] Error verifying currency change to USD: {}
+[2025-03-23T13:04:34.082Z] [WARN] Could not verify selected destination from input field
+[2025-03-23T13:04:56.812Z] [WARN] Loading indicator did not disappear
+Stored flight price in cache: $1013
+Flight cost for Dubai: 1013 (from Google Flights)
+Last flight lookup time: 3/23/2025, 10:05:00 PM
+Conference duration: 1 days, Total stay: 1 days (0 nights)
+Travel dates: 2025-04-01 to 2025-04-01
+Buffer days: 0 day(s) before, 0 day(s) after the conference
+┌───┬────────────────────────┬──────────┬────────────┬──────────┬──────────────┬────────────┬────────┬─────────┬────────┬───────────┬───────┐
+│   │ conference             │ location │ conf_start │ conf_end │ travel_start │ travel_end │ flight │ lodging │ meals  │ transport │ total │
+├───┼────────────────────────┼──────────┼────────────┼──────────┼──────────────┼────────────┼────────┼─────────┼────────┼───────────┼───────┤
+│ 0 │ Business Trip to Dubai │ Dubai    │ 1 April    │ 1 April  │ 1 April      │ 1 April    │ $1013  │ $0      │ $121.5 │ $38.5     │ $2198 │
+└───┴────────────────────────┴──────────┴────────────┴──────────┴──────────────┴────────────┴────────┴─────────┴────────┴───────────┴───────┘
+Travel Stipend Calculator - Completed

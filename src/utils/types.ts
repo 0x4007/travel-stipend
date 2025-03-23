@@ -11,6 +11,10 @@ export interface Conference {
   location: string;
   ticket_price: string;
   description: string;
+
+  // Optional buffer days for more precise travel planning
+  buffer_days_before?: number;  // Days to arrive before conference (default: 1)
+  buffer_days_after?: number;   // Days to stay after conference (default: 1)
 }
 
 export interface MealCosts {

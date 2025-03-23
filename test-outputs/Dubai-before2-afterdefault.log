@@ -1,0 +1,81 @@
+Travel Stipend Calculator - Starting...
+Origin: Seoul, KR
+Using Google Flights pricing strategy for single mode
+No conference name provided. Using default: "Business Trip to Dubai"
+Conference dates: 1 April to 1 April
+Travel buffer: 2 day(s) before, 1 day(s) after
+Processing conference: Business Trip to Dubai in Dubai
+Initializing database...
+Opening database connection...
+Enabling foreign keys...
+Creating tables...
+Tables created successfully.
+Importing data if needed...
+Checking table coordinates...
+Current count for coordinates: 475
+Table coordinates already has data, skipping import
+Checking table airport_codes...
+Current count for airport_codes: 480
+Table airport_codes already has data, skipping import
+Checking table conferences...
+Current count for conferences: 90
+Table conferences already has data, skipping import
+Checking table cost_of_living...
+Current count for cost_of_living: 42
+Table cost_of_living already has data, skipping import
+Checking table taxis...
+Current count for taxis: 127
+Table taxis already has data, skipping import
+Database initialization complete.
+Distance from Seoul, KR to Dubai: 6728.9 km
+Scraping flight prices from Seoul, KR to Dubai
+Dates: 2025-03-30 to 2025-04-02
+[2025-03-23T13:02:10.634Z] [ERROR] Error verifying currency change to USD: {}
+[2025-03-23T13:02:10.729Z] [WARN] Could not find origin field with specific selectors, trying to find any input field
+[2025-03-23T13:02:10.740Z] [ERROR] Could not find any input fields
+[2025-03-23T13:02:10.741Z] [ERROR] Error searching flights: Could not find any input fields
+Error scraping Google Flights price: 137 |       originField = inputFields[0];
+138 |       log(LOG_LEVEL.INFO, "Using first input field as origin field");
+139 |     } else {
+140 |       log(LOG_LEVEL.ERROR, "Could not find any input fields");
+141 | 
+142 |       throw new Error("Could not find any input fields");
+                  ^
+error: Could not find any input fields
+      at <anonymous> (/Users/nv/repos/0x4007/travel-stipend/src/utils/google-flights-scraper/form-field-handler.ts:142:13)
+
+Checking cache with key: GMP|DXB|2025-03-30|2025-04-02|1|amadeus-major-carriers-v1
+No cache entry found, fetching from API
+Getting new Amadeus access token...
+Searching flights from GMP to DXB
+Dates: 2025-03-30 to 2025-04-02
+Sending request to Amadeus API...
+Received response with status: 200
+Filtered to 2 major carrier flights out of 47 total flights
+  - CA: Star Alliance - $449.2
+    Outbound segments:
+      - CA: Star Alliance
+      - CA: Star Alliance
+    Return segments:
+      - CA: Star Alliance
+      - CA: Star Alliance
+  - MU: SkyTeam - $2073.2
+    Outbound segments:
+      - MU: SkyTeam
+      - MU: SkyTeam
+    Return segments:
+      - MU: SkyTeam
+      - MU: SkyTeam
+Storing result in cache with key: GMP|DXB|2025-03-30|2025-04-02|1|amadeus-major-carriers-v1
+Cache entry created and saved to disk
+Flight cost for Dubai: 1261 (from Amadeus API)
+Last flight lookup time: 3/23/2025, 10:02:17 PM
+Conference duration: 1 days, Total stay: 4 days (3 nights)
+Travel dates: 2025-03-30 to 2025-04-02
+Buffer days: 2 day(s) before, 1 day(s) after the conference
+┌───┬────────────────────────┬──────────┬────────────┬──────────┬──────────────┬────────────┬────────┬─────────┬─────────┬───────────┬──────────┐
+│   │ conference             │ location │ conf_start │ conf_end │ travel_start │ travel_end │ flight │ lodging │ meals   │ transport │ total    │
+├───┼────────────────────────┼──────────┼────────────┼──────────┼──────────────┼────────────┼────────┼─────────┼─────────┼───────────┼──────────┤
+│ 0 │ Business Trip to Dubai │ Dubai    │ 1 April    │ 1 April  │ 30 March     │ 2 April    │ $1261  │ $577.5  │ $325.27 │ $154      │ $3417.78 │
+└───┴────────────────────────┴──────────┴────────────┴──────────┴──────────────┴────────────┴────────┴─────────┴─────────┴───────────┴──────────┘
+Travel Stipend Calculator - Completed

@@ -48,7 +48,7 @@ export function calculateDateDiff(startDateStr: string, endDateStr: string): num
 
 // Calculate meal allowance based on day index (for duration-based scaling) - removed as unused
 
-// Generate flight dates for a conference (one day before and after, or same day for origin city)
+// Generate flight dates for a conference (with customizable buffer days)
 export function generateFlightDates(conference: Conference, isOriginCity = false): { outbound: string; return: string } {
   const startDate = parseDate(conference.start_date);
   if (!startDate) {
@@ -60,15 +60,33 @@ export function generateFlightDates(conference: Conference, isOriginCity = false
     throw new Error("Invalid conference dates");
   }
 
-  // For origin city conferences, use the actual conference dates
-  // For non-origin city conferences, use conference start date (no longer subtracting a day)
-  const outboundDate = new Date(startDate);
-  // Arrival is same day as conference starts (ARRIVAL_DAYS_BEFORE is now 0)
+  // Get buffer days from the conference record, or use defaults
+  // Always enforce minimum of 1 day before AND 1 day after to prevent flying on conference days
+  let bufferDaysBefore = conference.buffer_days_before ?? 1; // Default: 1 day before
+  let bufferDaysAfter = conference.buffer_days_after ?? 1;   // Default: 1 day after
 
-  // Set return date to one day after conference (or same day for origin city)
+  // Safety check: require at least 1 day before and 1 day after for flights
+  if (bufferDaysBefore === 0) {
+    console.warn("SAFETY WARNING: Cannot fly on conference start day. Setting buffer_days_before to 1");
+    bufferDaysBefore = 1; // Force at least one buffer day before
+  }
+
+  if (bufferDaysAfter === 0) {
+    console.warn("SAFETY WARNING: Cannot fly on conference end day. Setting buffer_days_after to 1");
+    bufferDaysAfter = 1; // Force at least one buffer day after
+  }
+
+  // For origin city conferences, use the actual conference dates
+  // For non-origin city conferences, add buffer days
+  const outboundDate = new Date(startDate);
+  if (!isOriginCity && bufferDaysBefore > 0) {
+    outboundDate.setDate(startDate.getDate() - bufferDaysBefore);
+  }
+
+  // Set return date to specified days after conference (or same day for origin city)
   const returnDate = new Date(endDate);
-  if (!isOriginCity) {
-    returnDate.setDate(endDate.getDate() + 1);
+  if (!isOriginCity && bufferDaysAfter > 0) {
+    returnDate.setDate(endDate.getDate() + bufferDaysAfter);
   }
 
   // Format dates as YYYY-MM-DD in local timezone

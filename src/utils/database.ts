@@ -63,10 +63,25 @@ export class DatabaseService {
         fs.mkdirSync(dbDir);
       }
 
-      // Open database
+      // Use the existing database file in the db directory if it exists
+      const dbPath = path.join(dbDir, 'travel-stipend.db');
+
+      // Check if database file exists and has content
+      if (fs.existsSync(dbPath)) {
+        const stats = fs.statSync(dbPath);
+        if (stats.size > 0) {
+          console.log(`Found existing database (${stats.size} bytes): ${dbPath}`);
+        } else {
+          console.log(`Database file exists but is empty (${stats.size} bytes): ${dbPath}`);
+        }
+      } else {
+        console.log(`Creating new database file: ${dbPath}`);
+      }
+
+      // Open database connection
       console.log('Opening database connection...');
       this._db = await open({
-        filename: path.join(dbDir, 'travel-stipend.db'),
+        filename: dbPath,
         driver: sqlite3.Database
       });
 
@@ -356,25 +371,41 @@ export class DatabaseService {
 
     try {
       const filename = table === 'cost_of_living' ? 'cost_of_living.csv' : `${table.replace('_', '-')}.csv`;
-      // Try both the project directory and the user's home directory
-      const projectCsvPath = path.join(process.cwd(), 'fixtures', filename);
-      const fixtureCsvPath = path.join(process.cwd(), filename);
-      const homeCsvPath = path.join('/Users/nv/fixtures', filename);
 
-      let csvPath: string;
-      if (fs.existsSync(projectCsvPath)) {
-        csvPath = projectCsvPath;
-      } else if (fs.existsSync(fixtureCsvPath)) {
-        csvPath = fixtureCsvPath;
-      } else if (fs.existsSync(homeCsvPath)) {
-        csvPath = homeCsvPath;
-      } else {
+      // Try all possible locations for the CSV files
+      const possiblePaths = [
+        path.join(process.cwd(), 'fixtures', filename),      // /Users/nv/repos/0x4007/travel-stipend/fixtures/
+        path.join(process.cwd(), 'fixtures', 'csv', filename),
+        path.join(process.cwd(), filename),
+        path.join('/Users/nv/fixtures', filename),
+        path.join('/Users/nv/repos/0x4007/travel-stipend/fixtures', filename)
+      ];
+
+      // Verbose logging to debug path issues
+      console.log(`Looking for ${filename} in:`);
+      possiblePaths.forEach(p => console.log(` - ${p} (exists: ${fs.existsSync(p)})`));
+
+      // Find the first path that exists
+      let csvPath: string | undefined;
+      for (const p of possiblePaths) {
+        if (fs.existsSync(p)) {
+          csvPath = p;
+          console.log(`Found ${filename} at: ${p}`);
+          break;
+        }
+      }
+
+      // If we couldn't find the file, handle appropriately
+      if (!csvPath) {
         // Add some seed data for missing coordinates
         if (table === 'coordinates') {
           await this._addSeedCoordinates();
           return;
         }
+
+        // For other tables, print warning but don't fail
         console.log(`CSV file not found in any location: ${filename}`);
+        console.log(`WARNING: Database table ${table} will remain empty!`);
         return;
       }
 
@@ -465,28 +496,83 @@ export class DatabaseService {
     }
   }
 
+  /**
+   * Get the size of the database file in bytes
+   */
+  private _getDatabaseSize(): number {
+    const dbPath = path.join(process.cwd(), 'db', 'travel-stipend.db');
+
+    if (!fs.existsSync(dbPath)) {
+      return 0;
+    }
+
+    try {
+      const stats = fs.statSync(dbPath);
+      return stats.size;
+    } catch (error) {
+      console.error('Error getting database file size:', error);
+      return 0;
+    }
+  }
+
   private async _importDataIfNeeded(): Promise<void> {
     if (!this._db) throw new Error('Database not initialized');
 
-    const tables = ['coordinates', 'airport_codes', 'conferences', 'cost_of_living', 'taxis'];
+    // First check if we have a substantial database file already
+    const dbSize = this._getDatabaseSize();
+    if (dbSize > 100000) { // If DB is larger than ~100KB, assume it's already populated
+      console.log(`Database size is ${dbSize} bytes, which indicates data is already present.`);
+      console.log('Skipping data import phase for performance reasons.');
+      return;
+    }
 
+    // Start by checking if any tables are populated
+    const tables = ['coordinates', 'airport_codes', 'conferences', 'cost_of_living', 'taxis'];
+    let hasAllTablesPopulated = true;
+
+    // First phase: just check table counts
+    console.log('Checking if tables have data...');
     for (const table of tables) {
       try {
-        console.log(`Checking table ${table}...`);
         const count = await this._db.get(`SELECT COUNT(*) as count FROM ${table}`);
-        console.log(`Current count for ${table}: ${count?.count}`);
+        console.log(`Table ${table} has ${count?.count} records`);
+
+        if (count?.count === 0) {
+          hasAllTablesPopulated = false;
+        }
+      } catch (error) {
+        console.error(`Error checking count for table ${table}:`, error);
+        hasAllTablesPopulated = false;
+      }
+    }
+
+    // If all tables have some data, skip the import
+    if (hasAllTablesPopulated) {
+      console.log('All tables already have data. Skipping import phase.');
+      return;
+    }
+
+    // Second phase: import data for empty tables
+    console.log('Starting data import for empty tables...');
+    for (const table of tables) {
+      try {
+        console.log(`Checking table ${table} for import...`);
+        const count = await this._db.get(`SELECT COUNT(*) as count FROM ${table}`);
 
         if (count?.count === 0) {
           console.log(`Importing data for empty table: ${table}`);
           await this._importCsvToTable(table);
         } else {
-          console.log(`Table ${table} already has data, skipping import`);
+          console.log(`Table ${table} already has ${count?.count} records, skipping import`);
         }
       } catch (error) {
         console.error(`Error processing table ${table}:`, error);
-        throw error;
+        // Just log the error but continue with other tables
+        console.log(`Continuing with next table due to error`);
       }
     }
+
+    console.log('Data import process completed');
   }
 
   public async getConferences(): Promise<Conference[]> {

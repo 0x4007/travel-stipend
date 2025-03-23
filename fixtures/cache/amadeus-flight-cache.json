@@ -1,0 +1,10 @@
+{
+  "GMP|DXB|2025-03-30|2025-04-02|1|amadeus-major-carriers-v1": {
+    "value": {
+      "price": 1261,
+      "timestamp": "2025-03-23T13:02:17.380Z",
+      "source": "Amadeus API"
+    },
+    "timestamp": 1742734937380
+  }
+}

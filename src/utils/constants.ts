@@ -31,8 +31,8 @@ export const INCIDENTALS_PER_DAY = DEFAULT_DAILY_INCIDENTALS;
 export const DEFAULT_DAILY_FOOD = DEFAULT_DAILY_MEALS;
 
 // Additional days around conference
-export const ARRIVAL_DAYS_BEFORE = 0; // Changed to 0 - arrive on the conference day
-export const DEPARTURE_DAYS_AFTER = 1; // Stay one night after
+export const ARRIVAL_DAYS_BEFORE = 1;
+export const DEPARTURE_DAYS_AFTER = 1;
 
 // More aliases for backward compatibility
 export const PRE_CONFERENCE_DAYS = ARRIVAL_DAYS_BEFORE;

@@ -171,16 +171,19 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   // Calculate conference and travel days
   const conferenceDays = calculateDateDiff(record.start_date, record.end_date) + 1; // +1 because end date is inclusive
 
-  // For origin city conferences, don't include buffer days
-  const preConferenceDays = isOriginCity ? 0 : PRE_CONFERENCE_DAYS;
-  const postConferenceDays = isOriginCity ? 0 : POST_CONFERENCE_DAYS;
+  // Use custom buffer days if provided, otherwise use defaults
+  const preConferenceDays = isOriginCity ? 0 : (record.buffer_days_before ?? PRE_CONFERENCE_DAYS);
+  const postConferenceDays = isOriginCity ? 0 : (record.buffer_days_after ?? POST_CONFERENCE_DAYS);
   const totalDays = conferenceDays + preConferenceDays + postConferenceDays;
   const numberOfNights = totalDays - 1; // One less night than days
 
   console.log(`Conference duration: ${conferenceDays} days, Total stay: ${totalDays} days (${numberOfNights} nights)`);
   console.log(`Travel dates: ${flightDates.outbound} to ${flightDates.return}`);
+
   if (isOriginCity) {
     console.log(`No buffer days included for origin city conference`);
+  } else {
+    console.log(`Buffer days: ${preConferenceDays} day(s) before, ${postConferenceDays} day(s) after the conference`);
   }
 
   // Calculate nights breakdown
