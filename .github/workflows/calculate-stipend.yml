@@ -89,12 +89,11 @@ jobs:
           AMADEUS_API_SECRET: ${{ secrets.AMADEUS_API_SECRET }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Enable more verbose logging for debugging
-          export DEBUG=puppeteer:*
-          export NODE_DEBUG=puppeteer
+          # Run with targeted error logging only
+          echo "Running travel stipend calculator with reduced logging"
 
           # Run the script with increased timeout
-          bun --inspect src/github-action-handler.ts
+          bun src/github-action-handler.ts
         timeout-minutes: 10
 
       - name: Upload debug screenshots
