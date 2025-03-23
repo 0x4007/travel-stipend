@@ -6,6 +6,54 @@ import { DatabaseService } from './utils/database';
 import { GoogleFlightsStrategy } from './strategies/google-flights-strategy';
 import { FlightPricingContextImpl } from './strategies/flight-pricing-context';
 import { findBestMatchingConference } from './utils/conference-matcher';
+import { appendFileSync } from 'fs';
+
+// Allow script to run both as GitHub Action and directly via workflow
+const getInput = (name: string, options?: { required: boolean }): string => {
+  // When run directly via workflow, inputs are passed via environment variables
+  const envName = `INPUT_${name.replace(/ /g, '_').toUpperCase()}`;
+  if (process.env[envName]) {
+    return process.env[envName] || '';
+  }
+  // When run as a GitHub Action, inputs are accessed via @actions/core
+  return core.getInput(name, options);
+};
+
+const setOutput = (name: string, value: Record<string, unknown>): void => {
+  if (process.env.GITHUB_OUTPUT) {
+    // When run as GitHub Action via workflow
+    const output = JSON.stringify(value);
+    console.log(`::set-output name=${name}::${output}`);
+    // Also write to GITHUB_OUTPUT file if available (newer GitHub Actions)
+    appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${output}\n`);
+  } else {
+    // When run as GitHub Action module
+    core.setOutput(name, value);
+  }
+};
+
+const logInfo = (message: string): void => {
+  console.log(message);
+  if (core.info) {
+    core.info(message);
+  }
+};
+
+const logWarning = (message: string): void => {
+  console.warn(message);
+  if (core.warning) {
+    core.warning(message);
+  }
+};
+
+const setFailed = (message: string): void => {
+  console.error(message);
+  if (core.setFailed) {
+    core.setFailed(message);
+  } else {
+    process.exit(1);
+  }
+};
 
 // Split into smaller functions to reduce cognitive complexity
 async function getConferenceDetails(
@@ -24,7 +72,7 @@ async function getConferenceDetails(
 
   if (matchResult.found) {
     if (matchResult.similarity && matchResult.similarity < 1.0) {
-      core.info(`Using closest matching conference: "${matchResult.conference?.conference}" (${Math.round(matchResult.similarity * 100)}% match)`);
+      logInfo(`Using closest matching conference: "${matchResult.conference?.conference}" (${Math.round(matchResult.similarity * 100)}% match)`);
     }
     return {
       name: matchResult.conference?.conference ?? conferenceName,
@@ -34,11 +82,11 @@ async function getConferenceDetails(
   }
 
   if (matchResult.suggestions?.length) {
-    core.info('Conference not found in database. Similar conferences:');
+    logInfo('Conference not found in database. Similar conferences:');
     matchResult.suggestions.forEach((conf, i) => {
-      core.info(`  ${i + 1}. ${conf.conference}`);
+      logInfo(`  ${i + 1}. ${conf.conference}`);
     });
-    core.info('Using provided conference name.');
+    logInfo('Using provided conference name.');
   }
 
   return { name: conferenceName, category: defaultCategory, description: defaultDescription };
@@ -49,23 +97,23 @@ async function run(): Promise<void> {
 
   try {
     // Get inputs
-    const location = core.getInput('location', { required: true });
-    const conferenceStart = core.getInput('conference_start', { required: true });
-    const conferenceEnd = core.getInput('conference_end') || conferenceStart;
-    const conferenceName = core.getInput('conference_name');
-    const daysBefore = parseInt(core.getInput('days_before') || '1', 10);
-    const daysAfter = parseInt(core.getInput('days_after') || '1', 10);
-    const ticketPrice = core.getInput('ticket_price');
+    const location = getInput('location', { required: true });
+    const conferenceStart = getInput('conference_start', { required: true });
+    const conferenceEnd = getInput('conference_end') || conferenceStart;
+    const conferenceName = getInput('conference_name');
+    const daysBefore = parseInt(getInput('days_before') || '1', 10);
+    const daysAfter = parseInt(getInput('days_after') || '1', 10);
+    const ticketPrice = getInput('ticket_price');
 
     // Safety check: require at least 1 day before AND 1 day after for flights
     if (daysBefore < 1) {
-      core.warning('Cannot fly on conference start day - you would miss the beginning!');
-      core.warning('Using minimum 1 day before conference');
+      logWarning('Cannot fly on conference start day - you would miss the beginning!');
+      logWarning('Using minimum 1 day before conference');
     }
 
     if (daysAfter < 1) {
-      core.warning('Cannot fly on conference end day - you would miss the conclusion!');
-      core.warning('Using minimum 1 day after conference');
+      logWarning('Cannot fly on conference end day - you would miss the conclusion!');
+      logWarning('Using minimum 1 day after conference');
     }
 
     // Get conference details using helper function
@@ -93,8 +141,8 @@ async function run(): Promise<void> {
     const nights = Math.ceil((new Date(result.flight_return).getTime() - new Date(result.flight_departure).getTime()) / (1000 * 60 * 60 * 24));
     const days = nights + 1;
 
-    // Set outputs
-    core.setOutput('stipend', {
+    // Create results object
+    const stipendResult = {
       conference: result.conference,
       location: result.location,
       conference_start: result.conference_start,
@@ -112,7 +160,10 @@ async function run(): Promise<void> {
         nights,
         days
       }
-    });
+    };
+
+    // Set outputs
+    setOutput('stipend', stipendResult);
 
     // Build summary table
     const summaryTable = [
@@ -132,18 +183,26 @@ async function run(): Promise<void> {
       ['Total Stipend', '', `$${result.total_stipend}`]
     ];
 
-    // Write summary
-    await core.summary
-      .addHeading('Travel Stipend Calculation')
-      .addTable(summaryTable)
-      .addBreak()
-      .write();
+    // Log results to console in table format (for direct workflow run)
+    console.log('\nTravel Stipend Calculation:');
+    console.table(summaryTable.slice(1).map(row => {
+      return { Item: row[0], Details: row[1], Cost: row[2] };
+    }));
+
+    // Write GitHub summary if in GitHub Actions environment
+    if (process.env.GITHUB_STEP_SUMMARY) {
+      await core.summary
+        .addHeading('Travel Stipend Calculation')
+        .addTable(summaryTable)
+        .addBreak()
+        .write();
+    }
 
   } catch (error) {
     if (error instanceof Error) {
-      core.setFailed(error.message);
+      setFailed(error.message);
     } else {
-      core.setFailed('An unexpected error occurred');
+      setFailed('An unexpected error occurred');
     }
   } finally {
     // Clean up resources
@@ -156,5 +215,5 @@ async function run(): Promise<void> {
 
 // Handle errors in the top-level async function
 run().catch(error => {
-  core.setFailed(`Unhandled error in run(): ${error}`);
+  setFailed(`Unhandled error in run(): ${error}`);
 });

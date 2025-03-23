@@ -46,7 +46,14 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Create action handler
-        run: |
-          mkdir -p .github/actions
-          bun run create-stipend-action
+      - name: Run travel stipend calculator
+        id: stipend-calculator
+        env:
+          INPUT_LOCATION: ${{ github.event.inputs.location }}
+          INPUT_CONFERENCE_START: ${{ github.event.inputs.conference_start }}
+          INPUT_CONFERENCE_END: ${{ github.event.inputs.conference_end || github.event.inputs.conference_start }}
+          INPUT_CONFERENCE_NAME: ${{ github.event.inputs.conference_name }}
+          INPUT_DAYS_BEFORE: ${{ github.event.inputs.days_before }}
+          INPUT_DAYS_AFTER: ${{ github.event.inputs.days_after }}
+          INPUT_TICKET_PRICE: ${{ github.event.inputs.ticket_price }}
+        run: bun src/github-action-handler.ts
