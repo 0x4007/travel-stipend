@@ -48,11 +48,12 @@ jobs:
   calculate:
     runs-on: ubuntu-latest
     env:
-      DEBUG_GOOGLE_FLIGHTS: true
-      CAPTURE_SCREENSHOTS: true
-      SCREENSHOT_QUALITY: high
+      DEBUG_GOOGLE_FLIGHTS: false
+      ENABLE_ERROR_SCREENSHOTS: true
+      CAPTURE_SCREENSHOTS: false
+      SCREENSHOT_QUALITY: medium
       PUPPETEER_TIMEOUT: 60000
-      DETAILED_LOGGING: true
+      LOG_LEVEL: "error,warning"
       PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome
     steps:
       - uses: actions/checkout@v4
