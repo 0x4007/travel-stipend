@@ -8,14 +8,16 @@ import { ORIGIN } from "./utils/constants";
 import { GoogleFlightsStrategy } from "./strategies/google-flights-strategy";
 import { HybridStrategy } from "./strategies/hybrid-strategy";
 import { FlightPricingContextImpl } from "./strategies/flight-pricing-context";
+import { findBestMatchingConference } from "./utils/conference-matcher";
 
 // Program definition with examples
 const program = new Command()
   .version("1.0.0")
   .description("Travel Stipend Calculator CLI")
+  .argument("[location]", "Destination location (e.g. 'Singapore, Singapore')")
   .option("-b, --batch", "Process all upcoming conferences (batch mode)")
-  .option("-s, --single <location>", "Calculate stipend for a single location")
-  .option("-c, --conference <name>", "Conference name (required for single mode)")
+  .option("-s, --single <location>", "Destination location (alternative to positional argument, for backward compatibility)")
+  .option("-c, --conference <name>", "Conference name (optional, will use 'Business Trip' if not specified)")
   .option("--start-date <date>", "Conference start date (required for single mode)")
   .option("--end-date <date>", "Conference end date (defaults to start date)")
   .option("--ticket-price <price>", "Conference ticket price (defaults to standard price)")
@@ -25,17 +27,23 @@ const program = new Command()
   .option("-v, --verbose", "Show detailed output including flight pricing info")
   .addHelpText("after", `
 Examples:
-  # Calculate single destination stipend (minimal required parameters)
-  $ bun run src/travel-stipend-cli.ts -s "Singapore, Singapore" -c "DevCon Asia 2025" --start-date "15 April"
+  # Basic usage with location as positional argument (recommended)
+  $ bun run src/travel-stipend-cli.ts "Singapore, Singapore" --start-date "15 April"
 
-  # Complete single destination example with all options
+  # With optional conference name
+  $ bun run src/travel-stipend-cli.ts "Tokyo, Japan" -c "TechSummit Asia" --start-date "20 May"
+
+  # Complete example with all optional parameters
   $ bun run src/travel-stipend-cli.ts \\
-      -s "Tokyo, Japan" \\
+      "Tokyo, Japan" \\
       -c "TechSummit Asia" \\
       --start-date "20 May" \\
       --end-date "23 May" \\
       --ticket-price 600 \\
       -o json
+
+  # For backward compatibility, you can still use the -s/--single option
+  $ bun run src/travel-stipend-cli.ts -s "Singapore, Singapore" --start-date "15 April"
 
   # Batch mode for all upcoming conferences
   $ bun run src/travel-stipend-cli.ts -b
@@ -71,48 +79,79 @@ interface SingleConferenceOptions {
 }
 
 async function processSingleConference(options: SingleConferenceOptions): Promise<StipendBreakdown> {
-  const { single: location, conference, startDate, endDate, ticketPrice } = options;
+  const { single: location, conference: inputConference, startDate, endDate, ticketPrice } = options;
 
   // Check for required parameters with detailed error messages
   if (!location) {
     throw new Error(`
 ERROR: Missing destination location
 
-You must specify a location with -s or --single
-Example:
-  $ bun run src/travel-stipend-cli.ts -s "Singapore, Singapore" -c "Conference Name" --start-date "15 April"
-`);
-  }
-
-  if (!conference) {
-    throw new Error(`
-ERROR: Missing conference name
-
-You must specify a conference name with -c or --conference
-Example:
-  $ bun run src/travel-stipend-cli.ts -s "${location}" -c "DevCon Asia 2025" --start-date "15 April"
+You must specify a destination location, either as a positional argument or with -s/--single
+Examples:
+  $ bun run src/travel-stipend-cli.ts "Singapore, Singapore" --start-date "15 April"
+  $ bun run src/travel-stipend-cli.ts -s "Singapore, Singapore" --start-date "15 April"
 `);
   }
 
   if (!startDate) {
     throw new Error(`
-ERROR: Missing conference start date
+ERROR: Missing start date
 
 You must specify a start date with --start-date parameter
 Example:
-  $ bun run src/travel-stipend-cli.ts -s "${location}" -c "${conference}" --start-date "15 April"
+  $ bun run src/travel-stipend-cli.ts "${location}" --start-date "15 April"
 `);
+  }
+
+  // Use default name if conference name not provided
+  const defaultConferenceName = `Business Trip to ${location}`;
+
+  // Determine conference name to use
+  let conferenceToUse = defaultConferenceName;
+  let category = "CLI Input";
+  let description = "";
+
+  // Only do fuzzy matching if a conference name was provided
+  if (inputConference) {
+    // Try to match the conference name with fuzzy matching
+    const matchResult = await findBestMatchingConference(inputConference);
+
+    // Handle fuzzy matching results
+    if (matchResult.found) {
+      // We found a matching conference in the database
+      if (matchResult.similarity && matchResult.similarity < 1.0) {
+        console.log(`Using closest matching conference: "${matchResult.conference?.conference}" (${Math.round(matchResult.similarity * 100)}% match)`);
+      }
+      conferenceToUse = matchResult.conference?.conference ?? inputConference;
+      category = matchResult.conference?.category ?? category;
+      description = matchResult.conference?.description ?? description;
+    } else if (matchResult.suggestions && matchResult.suggestions.length > 0) {
+      // No exact match but we have suggestions
+      console.log(`\nConference "${inputConference}" not found in the database. Did you mean one of these?`);
+      matchResult.suggestions.forEach((conf, i) => {
+        console.log(`  ${i + 1}. ${conf.conference}`);
+      });
+      console.log(`\nProceeding with the user-provided conference name. Use one of the suggestions above for a more accurate calculation.\n`);
+
+      // Use the provided conference name
+      conferenceToUse = inputConference;
+    } else {
+      // No match and no suggestions
+      conferenceToUse = inputConference;
+    }
+  } else {
+    console.log(`No conference name provided. Using default: "${defaultConferenceName}"`);
   }
 
   // Create a conference record from command line options
   const record: Conference = {
-    conference,
+    conference: conferenceToUse,
     location,
     start_date: startDate,
     end_date: endDate ?? startDate, // Use start date as end date if not provided
     ticket_price: ticketPrice ? `$${ticketPrice}` : "",
-    category: "CLI Input", // Default values for required fields
-    description: ""
+    category,
+    description
   };
 
   return calculateStipend(record);
@@ -264,13 +303,13 @@ function outputResults(results: StipendBreakdown[], options: OutputOptions): voi
         results.map((r) => ({
           conference: r.conference,
           location: r.location,
-          start: r.conference_start,
-          end: r.conference_end,
+          conf_date: r.conference_start,
+          arrive: r.flight_departure,
+          depart: r.flight_return,
           flight: `$${r.flight_cost}`,
           lodging: `$${r.lodging_cost}`,
           meals: `$${r.meals_cost}`,
           transport: `$${r.local_transport_cost}`,
-          ticket: `$${r.ticket_price}`,
           total: `$${r.total_stipend}`
         }))
       );
@@ -284,43 +323,63 @@ function outputResults(results: StipendBreakdown[], options: OutputOptions): voi
 async function main(): Promise<void> {
   program.parse(process.argv);
   const options = program.opts();
-
-  // Validate options
-  if (!options.batch && !options.single) {
-    console.error(`
-ERROR: You must specify either --batch or --single mode
-
-Examples:
-  # Single destination mode (all required parameters)
-  $ bun run src/travel-stipend-cli.ts -s "Singapore, Singapore" -c "DevCon Asia 2025" --start-date "15 April"
-
-  # Batch mode
-  $ bun run src/travel-stipend-cli.ts -b
-
-For full help, run:
-  $ bun run src/travel-stipend-cli.ts --help
-`);
-    process.exit(1);
-  }
+  const location = program.args[0]; // Get location from positional argument
 
   try {
     console.log("Travel Stipend Calculator - Starting...");
     console.log(`Origin: ${ORIGIN}`);
 
+    // Determine if we're running in batch mode or single mode
+    const isBatchMode = options.batch;
+
     // Get appropriate strategy based on mode
-    const strategy = options.batch
+    const strategy = isBatchMode
       ? StrategyFactory.createBatchStrategy()
       : StrategyFactory.createSingleStrategy();
     const context = new FlightPricingContextImpl(strategy);
 
     let results: StipendBreakdown[] = [];
 
-    if (options.batch) {
+    if (isBatchMode) {
       // Process all conferences
       results = await processBatchConferences();
     } else {
+      // Single mode (default)
+
+      // If location wasn't provided as positional arg, check for the old --single option for backward compatibility
+      const locationToUse = location || options.single;
+
+      if (!locationToUse) {
+        throw new Error(`
+ERROR: Missing destination location
+
+You must specify a destination location, either as a positional argument or with -s/--single
+Examples:
+  $ bun run src/travel-stipend-cli.ts "Singapore, Singapore" --start-date "15 April"
+  $ bun run src/travel-stipend-cli.ts -s "Singapore, Singapore" --start-date "15 April"
+`);
+      }
+
+      if (!options.startDate) {
+        throw new Error(`
+ERROR: Missing start date
+
+You must specify a start date with --start-date parameter
+Example:
+  $ bun run src/travel-stipend-cli.ts "${locationToUse}" --start-date "15 April"
+`);
+      }
+
       // Process a single conference
-      const result = await processSingleConference(options);
+      const singleOptions = {
+        single: locationToUse,
+        conference: options.conference,
+        startDate: options.startDate,
+        endDate: options.endDate,
+        ticketPrice: options.ticketPrice
+      };
+
+      const result = await processSingleConference(singleOptions);
       results = [result];
     }
 

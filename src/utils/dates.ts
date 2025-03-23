@@ -61,11 +61,9 @@ export function generateFlightDates(conference: Conference, isOriginCity = false
   }
 
   // For origin city conferences, use the actual conference dates
-  // For non-origin city conferences, add buffer days
+  // For non-origin city conferences, use conference start date (no longer subtracting a day)
   const outboundDate = new Date(startDate);
-  if (!isOriginCity) {
-    outboundDate.setDate(startDate.getDate() - 1);
-  }
+  // Arrival is same day as conference starts (ARRIVAL_DAYS_BEFORE is now 0)
 
   // Set return date to one day after conference (or same day for origin city)
   const returnDate = new Date(endDate);

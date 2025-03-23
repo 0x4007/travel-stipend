@@ -356,10 +356,25 @@ export class DatabaseService {
 
     try {
       const filename = table === 'cost_of_living' ? 'cost_of_living.csv' : `${table.replace('_', '-')}.csv`;
-      const csvPath = path.join(process.cwd(), 'fixtures', filename);
+      // Try both the project directory and the user's home directory
+      const projectCsvPath = path.join(process.cwd(), 'fixtures', filename);
+      const fixtureCsvPath = path.join(process.cwd(), filename);
+      const homeCsvPath = path.join('/Users/nv/fixtures', filename);
 
-      if (!fs.existsSync(csvPath)) {
-        console.log(`CSV file not found: ${csvPath}`);
+      let csvPath: string;
+      if (fs.existsSync(projectCsvPath)) {
+        csvPath = projectCsvPath;
+      } else if (fs.existsSync(fixtureCsvPath)) {
+        csvPath = fixtureCsvPath;
+      } else if (fs.existsSync(homeCsvPath)) {
+        csvPath = homeCsvPath;
+      } else {
+        // Add some seed data for missing coordinates
+        if (table === 'coordinates') {
+          await this._addSeedCoordinates();
+          return;
+        }
+        console.log(`CSV file not found in any location: ${filename}`);
         return;
       }
 
@@ -388,10 +403,72 @@ export class DatabaseService {
     }
   }
 
+  private async _addSeedCoordinates(): Promise<void> {
+    if (!this._db) throw new Error('Database not initialized');
+
+    const seedData = [
+      // Common destinations
+      { city: 'Seoul, KR', lat: 37.5665, lng: 126.9780 },
+      { city: 'Dubai, AE', lat: 25.2048, lng: 55.2708 },
+      { city: 'Singapore, SG', lat: 1.3521, lng: 103.8198 },
+      { city: 'Tokyo, JP', lat: 35.6762, lng: 139.6503 },
+      { city: 'London, GB', lat: 51.5074, lng: -0.1278 },
+      { city: 'New York, US', lat: 40.7128, lng: -74.0060 },
+      { city: 'San Francisco, US', lat: 37.7749, lng: -122.4194 },
+      { city: 'Berlin, DE', lat: 52.5200, lng: 13.4050 },
+
+      // Variations for common cities (no country code)
+      { city: 'Dubai', lat: 25.2048, lng: 55.2708 },
+      { city: 'Singapore', lat: 1.3521, lng: 103.8198 },
+      { city: 'Seoul', lat: 37.5665, lng: 126.9780 },
+      { city: 'Tokyo', lat: 35.6762, lng: 139.6503 },
+      { city: 'London', lat: 51.5074, lng: -0.1278 },
+      { city: 'New York', lat: 40.7128, lng: -74.0060 },
+      { city: 'San Francisco', lat: 37.7749, lng: -122.4194 },
+      { city: 'Berlin', lat: 52.5200, lng: 13.4050 },
+
+      // More international cities
+      { city: 'Paris, FR', lat: 48.8566, lng: 2.3522 },
+      { city: 'Hong Kong, HK', lat: 22.3193, lng: 114.1694 },
+      { city: 'Bangkok, TH', lat: 13.7563, lng: 100.5018 },
+      { city: 'Sydney, AU', lat: 33.8688, lng: 151.2093 },
+      { city: 'Amsterdam, NL', lat: 52.3676, lng: 4.9041 },
+      { city: 'Barcelona, ES', lat: 41.3851, lng: 2.1734 },
+      { city: 'Madrid, ES', lat: 40.4168, lng: -3.7038 },
+      { city: 'Rome, IT', lat: 41.9028, lng: 12.4964 },
+      { city: 'Vienna, AT', lat: 48.2082, lng: 16.3738 },
+      { city: 'Istanbul, TR', lat: 41.0082, lng: 28.9784 },
+      { city: 'Mumbai, IN', lat: 19.0760, lng: 72.8777 },
+      { city: 'Shanghai, CN', lat: 31.2304, lng: 121.4737 },
+      { city: 'Beijing, CN', lat: 39.9042, lng: 116.4074 },
+
+      // With variations
+      { city: 'Paris', lat: 48.8566, lng: 2.3522 },
+      { city: 'Hong Kong', lat: 22.3193, lng: 114.1694 },
+      { city: 'Bangkok', lat: 13.7563, lng: 100.5018 },
+      { city: 'Sydney', lat: 33.8688, lng: 151.2093 }
+    ];
+
+    try {
+      await this._db.run('BEGIN TRANSACTION');
+      for (const item of seedData) {
+        await this._db.run(
+          'INSERT OR REPLACE INTO coordinates (city, lat, lng) VALUES (?, ?, ?)',
+          [item.city, item.lat, item.lng]
+        );
+      }
+      await this._db.run('COMMIT');
+      console.log('Added seed coordinates data');
+    } catch (error) {
+      await this._db.run('ROLLBACK');
+      throw error;
+    }
+  }
+
   private async _importDataIfNeeded(): Promise<void> {
     if (!this._db) throw new Error('Database not initialized');
 
-    const tables = ['airport_codes', 'conferences', 'cost_of_living', 'taxis'];
+    const tables = ['coordinates', 'airport_codes', 'conferences', 'cost_of_living', 'taxis'];
 
     for (const table of tables) {
       try {

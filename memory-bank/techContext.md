@@ -177,7 +177,7 @@ export const PRE_CONFERENCE_DAYS = 1;
 export const POST_CONFERENCE_DAYS = 1;
 
 // Default ticket price when not provided
-export const DEFAULT_TICKET_PRICE = 1000;
+export const DEFAULT_TICKET_PRICE = 0;
 
 // Weekend vs Weekday adjustments
 export const WEEKEND_RATE_MULTIPLIER = 0.9;

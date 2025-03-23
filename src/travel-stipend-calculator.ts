@@ -51,9 +51,9 @@ async function calculateFlightCostForConference(
     console.log(`Last flight lookup time: ${new Date().toLocaleString()}`);
     return { cost: scrapedResult.price, source: scrapedResult.source };
   } else {
-    // Use the enhanced flight cost calculation model as fallback
+    // Use distance-based calculation as fallback
     const calculatedCost = calculateFlightCost(distanceKm, destination, ORIGIN);
-    console.log(`Flight cost for ${destination}: ${calculatedCost} (calculated with enhanced model)`);
+    console.log(`Flight cost for ${destination}: ${calculatedCost}`);
     return { cost: calculatedCost, source: "Distance-based calculation" };
   }
 }
@@ -178,6 +178,7 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   const numberOfNights = totalDays - 1; // One less night than days
 
   console.log(`Conference duration: ${conferenceDays} days, Total stay: ${totalDays} days (${numberOfNights} nights)`);
+  console.log(`Travel dates: ${flightDates.outbound} to ${flightDates.return}`);
   if (isOriginCity) {
     console.log(`No buffer days included for origin city conference`);
   }
@@ -225,11 +226,26 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
     return date.getDate() + " " + date.toLocaleString("en-US", { month: "long" });
   }
 
+  // Calculate proper end date
+  // If record.end_date is empty, calculate it from the start_date
+  let conferenceEndDate = record.end_date;
+  if (!conferenceEndDate || conferenceEndDate === record.start_date) {
+    // Calculate the end date based on conference days
+    if (conferenceDays > 1) {
+      const endDate = new Date(`${record.start_date} 2025`);
+      endDate.setDate(endDate.getDate() + conferenceDays - 1);
+      conferenceEndDate = endDate.getDate() + " " + endDate.toLocaleString("en-US", { month: "long" });
+    } else {
+      // For 1-day conferences, use the start date
+      conferenceEndDate = record.start_date;
+    }
+  }
+
   const result: StipendBreakdown = {
     conference: record.conference,
     location: destination,
     conference_start: record.start_date,
-    conference_end: record.end_date,
+    conference_end: conferenceEndDate,
     flight_departure: formatDateToConferenceStyle(flightDates.outbound),
     flight_return: formatDateToConferenceStyle(flightDates.return),
     distance_km: distanceKm,

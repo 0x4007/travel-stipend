@@ -1,39 +1,47 @@
-// Configuration Constants used across the application
+// Origin city for all travel calculations (must match seed data format "City, CC")
+export const ORIGIN = "Seoul, KR";
 
-// Fixed origin for travel (for example, your home base)
-export const ORIGIN = "Seoul, Korea";
+// Default conference duration in days (if no end date is specified)
+export const DEFAULT_CONFERENCE_DAYS = 1;
 
-// Cost-per-kilometer rate (USD per km)
-export const COST_PER_KM = 0.2; // round trip
-
-// Base rates for accommodation and daily expenses at baseline cost-of-living
-export const BASE_LODGING_PER_NIGHT = 220; // USD (adjusted based on global average)
-export const BASE_MEALS_PER_DAY = 75; // USD (adjusted for average costs)
-export const BASE_LOCAL_TRANSPORT_PER_DAY = 35; // USD (increased based on analysis of actual spending)
-
-// New allowance categories
-export const INTERNATIONAL_INTERNET_ALLOWANCE = 25; // USD for international data plans
-export const INCIDENTALS_PER_DAY = 20; // USD for miscellaneous business expenses
-
-// Business-specific allowances
-export const BUSINESS_ENTERTAINMENT_PER_DAY = 100; // USD (for business dinners and networking events)
-// Removed BUSINESS_DISTRICT_MULTIPLIER as base rate now includes business district premium
-
-// Travel duration adjustments
-export const PRE_CONFERENCE_DAYS = 1; // Days before conference to cover
-export const POST_CONFERENCE_DAYS = 1; // Days after conference to cover
-
-// Default ticket price when not provided
-export const DEFAULT_TICKET_PRICE = 1000; // USD
-
-// Minimum similarity score to consider a match for fuzzy matching
+// Fuzzy matching threshold for conference names (0.0 to 1.0)
 export const SIMILARITY_THRESHOLD = 0.6;
 
-// Default number of days for conference duration if not specified
-export const DEFAULT_CONFERENCE_DAYS = 2;
+// Default flight cost per kilometer (in USD)
+export const COST_PER_KM = 0.15;
 
-// Default departure airport code (Seoul Incheon)
-export const DEFAULT_DEPARTURE_AIRPORT = "ICN";
+// Cost below which we'll warn about potentially unrealistic flight prices
+export const MIN_FLIGHT_COST = 100;
 
-// Weekend vs Weekday adjustments
-export const WEEKEND_RATE_MULTIPLIER = 0.85; // 15% discount for weekend stays
+// Default values (in USD)
+export const DEFAULT_TICKET_PRICE = 1000;  // Conference ticket
+export const DEFAULT_HOTEL_COST = 150;     // Hotel per night
+export const DEFAULT_DAILY_MEALS = 65;     // Food per day
+export const DEFAULT_DAILY_TRANSPORT = 35; // Local transport per day
+export const DEFAULT_DAILY_INCIDENTALS = 25; // Incidentals per day
+export const BUSINESS_ENTERTAINMENT_PER_DAY = 50; // Business entertainment allowance
+
+// Aliases for backward compatibility
+export const DEFAULT_CONFERENCE_TICKET = DEFAULT_TICKET_PRICE;
+export const BASE_LOCAL_TRANSPORT_PER_DAY = DEFAULT_DAILY_TRANSPORT;
+export const BASE_MEALS_PER_DAY = DEFAULT_DAILY_MEALS;
+export const BASE_LODGING_PER_DAY = DEFAULT_HOTEL_COST;
+export const BASE_LODGING_PER_NIGHT = DEFAULT_HOTEL_COST;
+export const INCIDENTALS_PER_DAY = DEFAULT_DAILY_INCIDENTALS;
+export const DEFAULT_DAILY_FOOD = DEFAULT_DAILY_MEALS;
+
+// Additional days around conference
+export const ARRIVAL_DAYS_BEFORE = 0; // Changed to 0 - arrive on the conference day
+export const DEPARTURE_DAYS_AFTER = 1; // Stay one night after
+
+// More aliases for backward compatibility
+export const PRE_CONFERENCE_DAYS = ARRIVAL_DAYS_BEFORE;
+export const POST_CONFERENCE_DAYS = DEPARTURE_DAYS_AFTER;
+
+// Default cost of living index
+export const DEFAULT_COST_OF_LIVING_INDEX = 100;
+
+// Cost adjustments
+export const INTERNATIONAL_FLIGHT_BUFFER = 1.2; // 20% buffer for international flights
+export const INTERNATIONAL_INTERNET_ALLOWANCE = 15; // Daily allowance for international internet
+export const WEEKEND_RATE_MULTIPLIER = 1.25; // 25% premium for weekend rates

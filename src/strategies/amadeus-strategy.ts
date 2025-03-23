@@ -1,9 +1,5 @@
-import { config } from "dotenv";
 import { AmadeusApi } from "../utils/amadeus-api";
 import { FlightDates, FlightPriceResult, FlightPricingStrategy } from "./flight-pricing-strategy";
-
-// Load environment variables
-config();
 
 export class AmadeusStrategy implements FlightPricingStrategy {
   private _api: AmadeusApi | null = null;
@@ -15,10 +11,13 @@ export class AmadeusStrategy implements FlightPricingStrategy {
 
   private async _getApi(): Promise<AmadeusApi> {
     if (!this._api) {
+      // Get the API key and secret from environment variables
+      // Bun automatically imports .env files
       const apiKey = process.env.AMADEUS_API_KEY;
       const apiSecret = process.env.AMADEUS_API_SECRET;
 
       if (!apiKey || !apiSecret) {
+        console.warn("Amadeus API credentials not found in environment variables");
         throw new Error("Missing Amadeus API credentials");
       }
 
@@ -59,18 +58,30 @@ export class AmadeusStrategy implements FlightPricingStrategy {
 
       return {
         price: 0,
-        source: "Amadeus API (No results)"
+        source: "No results found"
       };
     } catch (error) {
       console.error("[AmadeusStrategy] Error:", error);
-      throw error;
+      // Don't rethrow, just return with price 0
+      return {
+        price: 0,
+        source: "Error"
+      };
     }
   }
 
   async isAvailable(): Promise<boolean> {
     try {
+      // Check if environment variables are set
       const apiKey = process.env.AMADEUS_API_KEY;
       const apiSecret = process.env.AMADEUS_API_SECRET;
+
+      // Log the environment variables for debugging
+      if (!apiKey || !apiSecret) {
+        console.log("Amadeus API credentials not set in environment variables");
+      } else {
+        console.log("Amadeus API credentials found in environment variables");
+      }
 
       return !!(apiKey && apiSecret);
     } catch (error) {
