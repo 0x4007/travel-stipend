@@ -6,7 +6,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDZ0MnQaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNnQydHIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Helsinki, Finland|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -16,7 +16,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDNraG4aShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wM2tobnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
       "selectedDestination": "helsinki"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Vilnius, Lithuania|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -26,7 +26,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wN19rcRooEgoyMDI1LTA2LTAxagwIAxIIL20vMDdfa3FyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
       "selectedDestination": "vilnius"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Abu Dhabi, UAE|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -36,7 +36,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpJEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgsIAxIHL20vMGd4ahpJEgoyMDI1LTA2LTAxMghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoLCAMSBy9tLzBneGpyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
       "selectedDestination": "abu dhabi"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Denver, USA|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -46,7 +46,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMmNsMRooEgoyMDI1LTA2LTAxagwIAxIIL20vMDJjbDFyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
       "selectedDestination": "denver"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|San Diego, USA|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -56,7 +56,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDcxdnIaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNzF2cnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
       "selectedDestination": "san diego"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Austin, USA|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -66,7 +66,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhonEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyCwgDEgcvbS8wdnptGicSCjIwMjUtMDYtMDFqCwgDEgcvbS8wdnptcgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD",
       "selectedDestination": "austin"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Boston, USA|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -76,7 +76,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDFjeF8aShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wMWN4X3IMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
       "selectedDestination": "boston"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Las Vegas, USA|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -86,7 +86,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wY3YzdxooEgoyMDI1LTA2LTAxagwIAxIIL20vMGN2M3dyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
       "selectedDestination": "las vegas"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Barcelona, Spain|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -96,7 +96,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDFmNjIaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wMWY2MnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
       "selectedDestination": "barcelona"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|San Jose, USA|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -106,7 +106,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZjA0dhooEgoyMDI1LTA2LTAxagwIAxIIL20vMGYwNHZyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
       "selectedDestination": "san jose"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|San Francisco, USA|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -116,7 +116,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMGQ2bHAaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wZDZscHIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
       "selectedDestination": "san francisco"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Toronto, Canada|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -126,7 +126,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8waDdoNhooEgoyMDI1LTA2LTAxagwIAxIIL20vMGg3aDZyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
       "selectedDestination": "toronto"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Geneva, Switzerland|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -136,7 +136,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDM5MDIaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wMzkwMnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
       "selectedDestination": "geneva"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Berlin, Germany|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -146,7 +146,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMTU2cRooEgoyMDI1LTA2LTAxagwIAxIIL20vMDE1NnFyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
       "selectedDestination": "berlin"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Tokyo, Japan|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -156,7 +156,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDdkZmsaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wN2Rma3IMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
       "selectedDestination": "tokyo"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Munich, Germany|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -166,7 +166,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhoqEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDggDEgovbS8wMmg2XzZwGioSCjIwMjUtMDYtMDFqDggDEgovbS8wMmg2XzZwcgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD",
       "selectedDestination": "munich"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Seattle, USA|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -176,7 +176,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMGQ5anIaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wZDlqcnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
       "selectedDestination": "seattle"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Chicago, USA|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -186,7 +186,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wMV9kNBooEgoyMDI1LTA2LTAxagwIAxIIL20vMDFfZDRyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
       "selectedDestination": "chicago"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|New York, USA|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -196,7 +196,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpLEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3Fmcg0IAxIJL20vMDJfMjg2GksSCjIwMjUtMDYtMDEyCE9ORVdPUkxEMgdTS1lURUFNMg1TVEFSX0FMTElBTkNFag0IAxIJL20vMDJfMjg2cgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD",
       "selectedDestination": "new york"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Zurich, Switzerland|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -205,7 +205,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wODk2NhooEgoyMDI1LTA2LTAxagwIAxIIL20vMDg5NjZyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Lisbon, Portugal|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -215,7 +215,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDRsbGIaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNGxsYnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
       "selectedDestination": "lisbon"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Bangkok, Thailand|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -225,7 +225,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wZm4yZxooEgoyMDI1LTA2LTAxagwIAxIIL20vMGZuMmdyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
       "selectedDestination": "bangkok"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Jakarta, Indonesia|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -235,7 +235,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDQ0cnYaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNDRydnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
       "selectedDestination": "jakarta"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Amsterdam, Netherlands|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -245,7 +245,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhonEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyCwgDEgcvbS8wazNwGicSCjIwMjUtMDYtMDFqCwgDEgcvbS8wazNwcgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD",
       "selectedDestination": "amsterdam"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Dubai, UAE|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -255,7 +255,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpLEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3Fmcg0IAxIJL20vMDFmMDhyGksSCjIwMjUtMDYtMDEyCE9ORVdPUkxEMgdTS1lURUFNMg1TVEFSX0FMTElBTkNFag0IAxIJL20vMDFmMDhycgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD",
       "selectedDestination": "dubai"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Hong Kong|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -265,7 +265,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA1LTI1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wM2g2NBooEgoyMDI1LTA2LTAxagwIAxIIL20vMDNoNjRyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
       "selectedDestination": "hong kong"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|Prague, Czech Republic|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -275,7 +275,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDV5d2caShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNXl3Z3IMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
       "selectedDestination": "prague"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, South Korea|London, UK|2025-05-25|2025-06-01|google-flights-v1": {
     "value": {
@@ -285,7 +285,7 @@
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTI1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDRqcGwaShIKMjAyNS0wNi0wMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNGpwbHIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD",
       "selectedDestination": "london"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, Korea|Tokyo, Japan|2025-05-19|2025-05-24|google-flights-v1": {
     "value": {
@@ -294,7 +294,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTE5MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDdkZmsaShIKMjAyNS0wNS0yNDIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wN2Rma3IMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, Korea|Tokyo, Japan|2025-05-19|2025-05-21|google-flights-v1": {
     "value": {
@@ -303,7 +303,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTE5MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDdkZmsaShIKMjAyNS0wNS0yMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wN2Rma3IMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, Korea|Singapore, Singapore|2025-04-14|2025-04-16|google-flights-v1": {
     "value": {
@@ -312,7 +312,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA0LTE0MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDZ0MnQaShIKMjAyNS0wNC0xNjIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNnQydHIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, Korea|Berlin, Germany|2025-04-14|2025-04-16|google-flights-v1": {
     "value": {
@@ -321,7 +321,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA0LTE0MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDE1NnEaShIKMjAyNS0wNC0xNjIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wMTU2cXIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, KR|Dubai, AE|2025-03-31|2025-04-02|google-flights-v1": {
     "value": {
@@ -330,7 +330,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpLEgoyMDI1LTAzLTMxMghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3Fmcg0IAxIJL20vMDFmMDhyGksSCjIwMjUtMDQtMDIyCE9ORVdPUkxEMgdTS1lURUFNMg1TVEFSX0FMTElBTkNFag0IAxIJL20vMDFmMDhycgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, KR|Singapore, SG|2025-05-09|2025-05-11|google-flights-v1": {
     "value": {
@@ -339,7 +339,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTA5MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDZ0MnQaShIKMjAyNS0wNS0xMTIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNnQydHIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, KR|dubai|2025-03-31|2025-04-02|google-flights-v1": {
     "value": {
@@ -348,7 +348,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpLEgoyMDI1LTAzLTMxMghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3Fmcg0IAxIJL20vMDFmMDhyGksSCjIwMjUtMDQtMDIyCE9ORVdPUkxEMgdTS1lURUFNMg1TVEFSX0FMTElBTkNFag0IAxIJL20vMDFmMDhycgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, KR|Dubai|2025-03-31|2025-04-02|google-flights-v1": {
     "value": {
@@ -357,7 +357,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpLEgoyMDI1LTAzLTMxMghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3Fmcg0IAxIJL20vMDFmMDhyGksSCjIwMjUtMDQtMDIyCE9ORVdPUkxEMgdTS1lURUFNMg1TVEFSX0FMTElBTkNFag0IAxIJL20vMDFmMDhycgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, KR|Dubai|2025-03-31|2025-04-04|google-flights-v1": {
     "value": {
@@ -366,7 +366,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpLEgoyMDI1LTAzLTMxMghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3Fmcg0IAxIJL20vMDFmMDhyGksSCjIwMjUtMDQtMDQyCE9ORVdPUkxEMgdTS1lURUFNMg1TVEFSX0FMTElBTkNFag0IAxIJL20vMDFmMDhycgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, KR|Dubai|2025-03-29|2025-04-03|google-flights-v1": {
     "value": {
@@ -375,7 +375,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpLEgoyMDI1LTAzLTI5MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3Fmcg0IAxIJL20vMDFmMDhyGksSCjIwMjUtMDQtMDMyCE9ORVdPUkxEMgdTS1lURUFNMg1TVEFSX0FMTElBTkNFag0IAxIJL20vMDFmMDhycgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, KR|Dubai|2025-04-01|2025-04-01|google-flights-v1": {
     "value": {
@@ -384,7 +384,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpLEgoyMDI1LTA0LTAxMghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3Fmcg0IAxIJL20vMDFmMDhyGksSCjIwMjUtMDQtMDEyCE9ORVdPUkxEMgdTS1lURUFNMg1TVEFSX0FMTElBTkNFag0IAxIJL20vMDFmMDhycgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, KR|dubai|2025-03-31|2025-04-01|google-flights-v1": {
     "value": {
@@ -393,7 +393,7 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpLEgoyMDI1LTAzLTMxMghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3Fmcg0IAxIJL20vMDFmMDhyGksSCjIwMjUtMDQtMDEyCE9ORVdPUkxEMgdTS1lURUFNMg1TVEFSX0FMTElBTkNFag0IAxIJL20vMDFmMDhycgwIAhIIL20vMGhzcWZAAUgBcAGCAQsI____________AZgBAQ&curr=USD"
     },
-    "timestamp": 1742737191159
+    "timestamp": 1742755768293
   },
   "Seoul, KR|tokyo|2025-05-03|2025-05-06|google-flights-v1": {
     "value": {
@@ -402,6 +402,55 @@
       "source": "Google Flights",
       "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA1LTAzMghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDdkZmsaShIKMjAyNS0wNS0wNjIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wN2Rma3IMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
     },
-    "timestamp": 1742737239585
+    "timestamp": 1742755768293
+  },
+  "Seoul, South Korea|Barcelona, Spain|2025-06-15|2025-06-22|google-flights-v1": {
+    "value": {
+      "price": 1118,
+      "timestamp": "2025-03-23T18:50:18.800Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA2LTE1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAISCC9tLzBoc3FmcgwIAxIIL20vMDFmNjIaShIKMjAyNS0wNi0yMjIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wMWY2MnIMCAISCC9tLzBoc3FmQAFIAXABggELCP___________wGYAQE&curr=USD"
+    },
+    "timestamp": 1742755818800
+  },
+  "Tokyo, Japan|Paris, France|2025-06-15|2025-06-22|google-flights-v1": {
+    "value": {
+      "price": 919,
+      "timestamp": "2025-03-23T18:50:52.358Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA2LTE1agwIAhIIL20vMGhzcWZyDAgDEggvbS8wNXF0ahooEgoyMDI1LTA2LTIyagwIAxIIL20vMDVxdGpyDAgCEggvbS8waHNxZkABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "paris"
+    },
+    "timestamp": 1742755852358
+  },
+  "Singapore|London, UK|2025-06-15|2025-06-22|google-flights-v1": {
+    "value": {
+      "price": 1103,
+      "timestamp": "2025-03-23T18:51:26.147Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA2LTE1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAMSCC9tLzA2dDJ0cgwIAxIIL20vMDRqcGwaShIKMjAyNS0wNi0yMjIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNGpwbHIMCAMSCC9tLzA2dDJ0QAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "london"
+    },
+    "timestamp": 1742755886147
+  },
+  "Hong Kong|Madrid, Spain|2025-06-15|2025-06-22|google-flights-v1": {
+    "value": {
+      "price": 729,
+      "timestamp": "2025-03-23T18:51:59.421Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhooEgoyMDI1LTA2LTE1agwIAxIIL20vMDZ0MnRyDAgDEggvbS8wNTZfeRooEgoyMDI1LTA2LTIyagwIAxIIL20vMDU2X3lyDAgDEggvbS8wNnQydEABSAFwAYIBCwj___________8BmAEB&curr=USD",
+      "selectedDestination": "madrid"
+    },
+    "timestamp": 1742755919421
+  },
+  "Bangkok, Thailand|Rome, Italy|2025-06-15|2025-06-22|google-flights-v1": {
+    "value": {
+      "price": 874,
+      "timestamp": "2025-03-23T18:52:34.140Z",
+      "source": "Google Flights",
+      "url": "https://www.google.com/travel/flights/search?tfs=CBwQAhpKEgoyMDI1LTA2LTE1MghPTkVXT1JMRDIHU0tZVEVBTTINU1RBUl9BTExJQU5DRWoMCAMSCC9tLzBmbjJncgwIAxIIL20vMDZjNjIaShIKMjAyNS0wNi0yMjIIT05FV09STEQyB1NLWVRFQU0yDVNUQVJfQUxMSUFOQ0VqDAgDEggvbS8wNmM2MnIMCAMSCC9tLzBmbjJnQAFIAXABggELCP___________wGYAQE&curr=USD",
+      "selectedDestination": "rome"
+    },
+    "timestamp": 1742755954140
   }
 }

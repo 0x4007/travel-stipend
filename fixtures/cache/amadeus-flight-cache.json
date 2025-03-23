@@ -5,6 +5,22 @@
       "timestamp": "2025-03-23T13:02:17.380Z",
       "source": "Amadeus API"
     },
-    "timestamp": 1742734937380
+    "timestamp": 1742753699385
+  },
+  "ICN|BCN|2025-06-15|2025-06-22|1|amadeus-major-carriers-v1": {
+    "value": {
+      "price": 1062,
+      "timestamp": "2025-03-23T18:14:59.384Z",
+      "source": "Amadeus API"
+    },
+    "timestamp": 1742753699385
+  },
+  "ICN|BCN|2025-06-15|2025-06-22|1|amadeus-v1": {
+    "value": {
+      "price": 1065,
+      "timestamp": "2025-03-23T18:15:05.116Z",
+      "source": "Amadeus API"
+    },
+    "timestamp": 1742753705116
   }
 }

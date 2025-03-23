@@ -101,12 +101,20 @@ jobs:
           bun src/github-action-handler.ts
         timeout-minutes: 10
 
+      - name: Find screenshots and log files
+        id: find_files
+        run: |
+          echo "Finding all screenshot and log files..."
+          find debug-screenshots -type f -name "*.png" || echo "No debug screenshots found"
+          find debug-logs -type f -name "*.log" || echo "No debug logs found"
+          find test-screenshots -type f -name "*.png" || echo "No test screenshots found"
+
       - name: Upload debug screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: google-flights-debug-screenshots
-          path: debug-screenshots
+          path: debug-screenshots/**
           if-no-files-found: ignore
           retention-days: 5
 
@@ -115,7 +123,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: google-flights-debug-logs
-          path: debug-logs
+          path: debug-logs/**
           if-no-files-found: ignore
           retention-days: 5
 
@@ -124,6 +132,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-screenshots
-          path: test-screenshots
+          path: test-screenshots/**
           if-no-files-found: ignore
           retention-days: 5

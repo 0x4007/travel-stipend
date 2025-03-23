@@ -41,33 +41,22 @@ export async function takeDebugScreenshot(
     // Check if we should take this screenshot based on environment conditions
     const isGitHubActions = Boolean(process.env.GITHUB_ACTIONS);
     const isDebugMode = process.env.DEBUG_GOOGLE_FLIGHTS === "true";
-    const shouldCaptureScreenshots = process.env.CAPTURE_SCREENSHOTS === "true";
-    const shouldCaptureErrorScreenshots = process.env.ENABLE_ERROR_SCREENSHOTS === "true";
 
-    // Skip most screenshots in GitHub Actions unless specifically needed
+    // Force enable screenshots in GitHub Actions to debug the screenshot capture issue
     const isErrorScreenshot = description.toLowerCase().includes("error") ||
                              description.toLowerCase().includes("fail") ||
                              options.dumpConsole === true;
 
-    const isInitialScreenshot = description.toLowerCase().includes("initial") ||
-                               description.toLowerCase().includes("before-search");
-
-    const isFinalScreenshot = description.toLowerCase().includes("result") ||
-                             description.toLowerCase().includes("after-search");
-
-    // Only take screenshots in GitHub Actions if:
-    // 1. We're in debug mode, or
-    // 2. It's an error screenshot and error screenshots are enabled, or
-    // 3. It's an initial or final screenshot and screenshots are generally enabled
-    const shouldSkip = isGitHubActions &&
-      !isDebugMode &&
-      !(isErrorScreenshot && shouldCaptureErrorScreenshots) &&
-      !((isInitialScreenshot || isFinalScreenshot) && shouldCaptureScreenshots);
+    // Modified condition: Always capture screenshots in GitHub Actions
+    // This ensures that we'll always get screenshots for debugging
+    const shouldSkip = false; // Force screenshots to be captured
 
     if (shouldSkip) {
       log(LOG_LEVEL.DEBUG, `Skipping screenshot for: ${description} (in GitHub Actions with reduced logging)`);
       return result;
     }
+
+    log(LOG_LEVEL.INFO, `Taking screenshot for: ${description}`);
 
     const sequenceNumber = options.sequence ?? Math.floor(Date.now() / 1000) % 10000;
 
@@ -193,6 +182,7 @@ export async function takeDebugScreenshot(
       });
 
       fs.writeFileSync(logFilePath, JSON.stringify(consoleLogs, null, 2));
+      // Fix the type error - ensure logPath is always a string
       result.logPath = logFilePath;
     }
 
@@ -211,7 +201,7 @@ export async function takeDebugScreenshot(
         description,
         imgPath: imgFilename,
         htmlPath: result.htmlPath ? path.basename(result.htmlPath) : undefined,
-        metadataPath: result.metadataPath ? path.basename(result.metadataPath) : undefined,
+        metadataPath: result.metadataPath || '', // Fix the type error
         logPath: result.logPath ? path.basename(result.logPath) : undefined,
       });
     }
