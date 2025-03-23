@@ -1,7 +1,7 @@
 {
-  "name": "ts-template",
-  "version": "0.0.0",
-  "description": "Template repository with TypeScript support.",
+  "name": "travel-stipend-action",
+  "version": "0.1.0",
+  "description": "GitHub Action for calculating travel stipends for conferences and business trips",
   "main": "build/index.ts",
   "author": "Ubiquity DAO",
   "license": "MIT",
@@ -10,6 +10,7 @@
     "bun": ">=1.0.0"
   },
   "scripts": {
+    "create-release": "bun scripts/create-release.ts",
     "db": "sqlite3 travel_data.db",
     "start": "bun build/esbuild-server.ts",
     "build": "bun build/esbuild-build.ts",
@@ -33,10 +34,12 @@
     "remove-jsdoc:file": "bun scripts/remove-jsdoc-from-file.ts"
   },
   "keywords": [
-    "typescript",
-    "template",
-    "dao",
-    "ubiquity"
+    "github-action",
+    "travel",
+    "stipend",
+    "conference",
+    "business-trip",
+    "flight-costs"
   ],
   "dependencies": {
     "@types/sqlite3": "^5.1.0",
