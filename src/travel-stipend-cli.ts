@@ -4,7 +4,6 @@ import fs from "fs";
 import { calculateStipend } from "./travel-stipend-calculator";
 import { Conference, StipendBreakdown } from "./utils/types";
 import { DatabaseService } from "./utils/database";
-import { ORIGIN } from "./utils/constants";
 import { GoogleFlightsStrategy } from "./strategies/google-flights-strategy";
 import { HybridStrategy } from "./strategies/hybrid-strategy";
 import { FlightPricingContextImpl } from "./strategies/flight-pricing-context";
@@ -14,9 +13,10 @@ import { findBestMatchingConference } from "./utils/conference-matcher";
 const program = new Command()
   .version("1.0.0")
   .description("Travel Stipend Calculator CLI")
-  .argument("[location]", "Destination location (e.g. 'Singapore, Singapore')")
+  .argument("[location]", "Destination location (e.g. 'Singapore, SG')")
   .option("-b, --batch", "Process all upcoming conferences (batch mode)")
-  .option("-s, --single <location>", "Destination location (alternative to positional argument, for backward compatibility)")
+  .option("-s, --single <location>", "Destination location (alternative to positional argument)")
+  .option("--origin <city>", "Origin city for travel calculations (e.g. 'Seoul, KR')", "Seoul, KR")
   .option("-c, --conference <name>", "Conference name (optional, will use 'Business Trip' if not specified)")
   .option("--conference-start <date>", "Conference start date - when you need to be at the event (required)")
   .option("--conference-end <date>", "Conference end date - last day of the event (defaults to start date)")
@@ -31,23 +31,28 @@ const program = new Command()
   .option("-v, --verbose", "Show detailed output including flight pricing info")
   .addHelpText("after", `
 Examples:
-  # Basic usage with new, clearer parameter names
-  $ bun run src/travel-stipend-cli.ts "Singapore" --conference-start "15 April"
+  # Basic usage with origin city
+  $ bun run src/travel-stipend-cli.ts "Singapore, SG" --origin "Seoul, KR" --conference-start "15 April"
 
-  # Customize travel buffer days (arrive 2 days before, leave 2 days after)
-  $ bun run src/travel-stipend-cli.ts "Tokyo" --conference-start "20 May" --days-before 2 --days-after 2
+  # Customize travel buffer days
+  $ bun run src/travel-stipend-cli.ts "Tokyo, JP" \\
+      --origin "Seoul, KR" \\
+      --conference-start "20 May" \\
+      --days-before 2 \\
+      --days-after 2
 
   # Multi-day conference example
   $ bun run src/travel-stipend-cli.ts \\
-      "Barcelona" \\
+      "Barcelona, ES" \\
+      --origin "Seoul, KR" \\
       -c "MobileConf 2025" \\
       --conference-start "10 June" \\
       --conference-end "12 June" \\
       --ticket-price 750 \\
       -o table
 
-  # Legacy mode (for backward compatibility)
-  $ bun run src/travel-stipend-cli.ts -s "Singapore" --start-date "15 April"
+  # Legacy mode (with origin city)
+  $ bun run src/travel-stipend-cli.ts -s "Singapore, SG" --origin "Seoul, KR" --start-date "15 April"
 
   # Batch mode for all upcoming conferences
   $ bun run src/travel-stipend-cli.ts -b
@@ -82,8 +87,9 @@ interface SingleConferenceOptions {
   conferenceStart?: string;      // New parameter
   conferenceEnd?: string;        // New parameter
   daysBefore?: number;           // New parameter for buffer days
-  daysAfter?: number;            // New parameter for buffer days
+  daysAfter?: number;           // New parameter for buffer days
   ticketPrice?: string;
+  origin: string;               // Required origin city
 }
 
 async function processSingleConference(options: SingleConferenceOptions): Promise<StipendBreakdown> {
@@ -96,7 +102,8 @@ async function processSingleConference(options: SingleConferenceOptions): Promis
     conferenceEnd,
     daysBefore,
     daysAfter,
-    ticketPrice
+    ticketPrice,
+    origin
   } = options;
 
   // Use the new parameters if provided, fall back to legacy parameters
@@ -110,8 +117,8 @@ ERROR: Missing destination location
 
 You must specify a destination location, either as a positional argument or with -s/--single
 Examples:
-  $ bun run src/travel-stipend-cli.ts "Singapore" --conference-start "15 April"
-  $ bun run src/travel-stipend-cli.ts -s "Singapore" --conference-start "15 April"
+  $ bun run src/travel-stipend-cli.ts "Singapore, SG" --origin "Seoul, KR" --conference-start "15 April"
+  $ bun run src/travel-stipend-cli.ts -s "Singapore, SG" --origin "Seoul, KR" --conference-start "15 April"
 `);
   }
 
@@ -124,7 +131,7 @@ You must specify when the conference/meeting starts with either:
   --start-date "15 April"          (legacy parameter)
 
 Example:
-  $ bun run src/travel-stipend-cli.ts "${location}" --conference-start "15 April"
+  $ bun run src/travel-stipend-cli.ts "${location}" --origin "${origin}" --conference-start "15 April"
 `);
   }
 
@@ -169,9 +176,10 @@ Example:
   }
 
   // Create a conference record from command line options
-  const record: Conference = {
+  const record: Conference & { origin: string } = {
     conference: conferenceToUse,
     location,
+    origin,
     start_date: actualStartDate ?? "", // Use empty string as fallback for type safety
     end_date: actualEndDate ?? "", // Use empty string as fallback for type safety
     ticket_price: ticketPrice ? `$${ticketPrice}` : "",
@@ -193,8 +201,7 @@ Example:
 /**
  * Process all upcoming conferences
  */
-// Options parameter is not needed for batch processing
-async function processBatchConferences(): Promise<StipendBreakdown[]> {
+async function processBatchConferences(origin: string): Promise<StipendBreakdown[]> {
   console.log("Starting batch processing of all upcoming conferences...");
 
   // Get conference data from database
@@ -215,7 +222,7 @@ async function processBatchConferences(): Promise<StipendBreakdown[]> {
   for (const record of futureRecords) {
     try {
       console.log(`Processing conference: ${record.conference} in ${record.location}`);
-      const result = await calculateStipend(record);
+      const result = await calculateStipend({ ...record, origin });
       results.push(result);
       console.log(`Completed: ${record.conference} - Total stipend: $${result.total_stipend}`);
     } catch (error) {
@@ -361,7 +368,7 @@ async function main(): Promise<void> {
 
   try {
     console.log("Travel Stipend Calculator - Starting...");
-    console.log(`Origin: ${ORIGIN}`);
+    console.log(`Origin: ${options.origin}`);
 
     // Determine if we're running in batch mode or single mode
     const isBatchMode = options.batch;
@@ -376,7 +383,7 @@ async function main(): Promise<void> {
 
     if (isBatchMode) {
       // Process all conferences
-      results = await processBatchConferences();
+      results = await processBatchConferences(options.origin);
     } else {
       // Single mode (default)
 
@@ -389,8 +396,8 @@ ERROR: Missing destination location
 
 You must specify a destination location, either as a positional argument or with -s/--single
 Examples:
-  $ bun run src/travel-stipend-cli.ts "Singapore, Singapore" --start-date "15 April"
-  $ bun run src/travel-stipend-cli.ts -s "Singapore, Singapore" --start-date "15 April"
+  $ bun run src/travel-stipend-cli.ts "Singapore, SG" --origin "Seoul, KR" --start-date "15 April"
+  $ bun run src/travel-stipend-cli.ts -s "Singapore, SG" --origin "Seoul, KR" --start-date "15 April"
 `);
       }
 
@@ -404,7 +411,7 @@ You must specify when the conference/meeting starts with either:
   --start-date "15 April"          (legacy parameter)
 
 Example:
-  $ bun run src/travel-stipend-cli.ts "${locationToUse}" --conference-start "15 April"
+  $ bun run src/travel-stipend-cli.ts "${locationToUse}" --origin "${options.origin}" --conference-start "15 April"
 `);
       }
 
@@ -440,7 +447,8 @@ Example:
         endDate: options.endDate,
         daysBefore,
         daysAfter,
-        ticketPrice: options.ticketPrice
+        ticketPrice: options.ticketPrice,
+        origin: options.origin
       };
 
       const result = await processSingleConference(singleOptions);

@@ -10,7 +10,6 @@ import {
   DEFAULT_TICKET_PRICE,
   INCIDENTALS_PER_DAY,
   INTERNATIONAL_INTERNET_ALLOWANCE,
-  ORIGIN,
   POST_CONFERENCE_DAYS,
   PRE_CONFERENCE_DAYS,
   WEEKEND_RATE_MULTIPLIER,
@@ -31,6 +30,7 @@ const stipendCache = new PersistentCache<StipendBreakdown>("fixtures/cache/stipe
 
 // Helper function to calculate flight cost
 async function calculateFlightCostForConference(
+  origin: string,
   destination: string,
   flightDates: { outbound: string; return: string },
   distanceKm: number,
@@ -43,7 +43,7 @@ async function calculateFlightCostForConference(
   }
 
   // Try to get flight cost from Google Flights scraper
-  const scrapedResult = await scrapeFlightPrice(ORIGIN, destination, flightDates);
+  const scrapedResult = await scrapeFlightPrice(origin, destination, flightDates);
 
   if (scrapedResult.price !== null) {
     // If we have scraped flight price, use it
@@ -52,7 +52,7 @@ async function calculateFlightCostForConference(
     return { cost: scrapedResult.price, source: scrapedResult.source };
   } else {
     // Use distance-based calculation as fallback
-    const calculatedCost = calculateFlightCost(distanceKm, destination, ORIGIN);
+    const calculatedCost = calculateFlightCost(distanceKm, destination, origin);
     console.log(`Flight cost for ${destination}: ${calculatedCost}`);
     return { cost: calculatedCost, source: "Distance-based calculation" };
   }
@@ -60,6 +60,7 @@ async function calculateFlightCostForConference(
 
 // Helper functions to break down stipend calculations
 async function calculateFlightDetails(
+  origin: string,
   destination: string,
   isOriginCity: boolean,
   record: Conference
@@ -70,11 +71,11 @@ async function calculateFlightDetails(
   flightDates: { outbound: string; return: string };
 }> {
   // Get coordinates from DB and calculate distance
-  const originCoords = await DatabaseService.getInstance().getCityCoordinates(ORIGIN);
+  const originCoords = await DatabaseService.getInstance().getCityCoordinates(origin);
   const destCoords = await DatabaseService.getInstance().getCityCoordinates(destination);
 
   if (!originCoords.length || !destCoords.length) {
-    throw new Error(`Could not find coordinates for ${!originCoords.length ? ORIGIN : destination}`);
+    throw new Error(`Could not find coordinates for ${!originCoords.length ? origin : destination}`);
   }
 
   // Calculate distance directly using the coordinates we already have
@@ -82,11 +83,11 @@ async function calculateFlightDetails(
   const destCoord = destCoords[0];
   const distanceKm = haversineDistance(originCoord, destCoord);
 
-  console.log(`Distance from ${ORIGIN} to ${destination}: ${distanceKm.toFixed(1)} km`);
+  console.log(`Distance from ${origin} to ${destination}: ${distanceKm.toFixed(1)} km`);
 
   // Generate flight dates and calculate flight cost
   const flightDates = generateFlightDates(record, isOriginCity);
-  const flightResult = await calculateFlightCostForConference(destination, flightDates, distanceKm, isOriginCity);
+  const flightResult = await calculateFlightCostForConference(origin, destination, flightDates, distanceKm, isOriginCity);
 
   return {
     distanceKm,
@@ -142,13 +143,18 @@ function calculateMealsCosts(
 }
 
 // Main function to calculate stipend with caching
-export async function calculateStipend(record: Conference): Promise<StipendBreakdown> {
+export async function calculateStipend(record: Conference & { origin?: string }): Promise<StipendBreakdown> {
+  if (!record.origin) {
+    throw new Error("Origin city is required for travel stipend calculation");
+  }
+
+  const origin = record.origin;
   const cacheKey = createHashKey([
     record.conference,
     record.location,
     record.start_date,
     record.end_date,
-    ORIGIN,
+    origin,
     COST_PER_KM,
     BASE_LODGING_PER_NIGHT,
     BASE_MEALS_PER_DAY,
@@ -160,10 +166,15 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   console.log(`Processing conference: ${record.conference} in ${destination}`);
 
   // Check if conference is in origin city
-  const isOriginCity = ORIGIN === destination;
+  const isOriginCity = origin === destination;
 
   // Get flight details
-  const { distanceKm, flightCost, flightPriceSource, flightDates } = await calculateFlightDetails(destination, isOriginCity, record);
+  const { distanceKm, flightCost, flightPriceSource, flightDates } = await calculateFlightDetails(
+    origin,
+    destination,
+    isOriginCity,
+    record
+  );
 
   // Get cost-of-living multiplier for the destination
   const colFactor = await getCostOfLivingFactor(destination);
@@ -206,7 +217,7 @@ export async function calculateStipend(record: Conference): Promise<StipendBreak
   const ticketPrice = record.ticket_price ? parseFloat(record.ticket_price.replace("$", "")) : DEFAULT_TICKET_PRICE;
 
   // Determine if international travel (and not in origin city)
-  const isInternational = !isOriginCity && ORIGIN.toLowerCase().includes("korea") && !destination.toLowerCase().includes("korea");
+  const isInternational = !isOriginCity && origin.toLowerCase().includes("korea") && !destination.toLowerCase().includes("korea");
 
   // Add internet/data allowance (only for international travel)
   const internetDataAllowance = isInternational ? INTERNATIONAL_INTERNET_ALLOWANCE : 0;

@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 import * as core from '@actions/core';
-import { Conference } from './utils/types';
-import { calculateStipend } from './travel-stipend-calculator';
-import { DatabaseService } from './utils/database';
-import { GoogleFlightsStrategy } from './strategies/google-flights-strategy';
+import { Conference } from "./utils/types";
+import { calculateStipend } from "./travel-stipend-calculator";
+import { DatabaseService } from "./utils/database";
+import { GoogleFlightsStrategy } from "./strategies/google-flights-strategy";
 // Note: We keep the distance strategy available in case we need to fallback if Google Flights fails
-import { FlightPricingContextImpl } from './strategies/flight-pricing-context';
-import { findBestMatchingConference } from './utils/conference-matcher';
-import { appendFileSync } from 'fs';
+import { FlightPricingContextImpl } from "./strategies/flight-pricing-context";
+import { findBestMatchingConference } from "./utils/conference-matcher";
+import { appendFileSync } from "fs";
 
 // Allow script to run both as GitHub Action and directly via workflow
 function getInput(name: string, options?: { required: boolean; }): string {
@@ -97,13 +97,14 @@ async function run(): Promise<void> {
 
   try {
     // Get inputs
-    const location = getInput('location', { required: true });
-    const conferenceStart = getInput('conference_start', { required: true });
-    const conferenceEnd = getInput('conference_end') || conferenceStart;
-    const conferenceName = getInput('conference_name');
-    const daysBefore = parseInt(getInput('days_before') || '1', 10);
-    const daysAfter = parseInt(getInput('days_after') || '1', 10);
-    const ticketPrice = getInput('ticket_price');
+    const location = getInput("location", { required: true });
+    const origin = getInput("origin", { required: true });
+    const conferenceStart = getInput("conference_start", { required: true });
+    const conferenceEnd = getInput("conference_end") || conferenceStart;
+    const conferenceName = getInput("conference_name");
+    const daysBefore = parseInt(getInput("days_before") || "1", 10);
+    const daysAfter = parseInt(getInput("days_after") || "1", 10);
+    const ticketPrice = getInput("ticket_price");
 
     // Safety check: require at least 1 day before AND 1 day after for flights
     if (daysBefore < 1) {
@@ -120,12 +121,13 @@ async function run(): Promise<void> {
     const { name, category, description } = await getConferenceDetails(conferenceName, location);
 
     // Create conference record
-    const conference: Conference = {
+    const conference: Conference & { origin: string } = {
       conference: name,
       location,
+      origin,
       start_date: conferenceStart,
       end_date: conferenceEnd,
-      ticket_price: ticketPrice ? `$${ticketPrice}` : '',
+      ticket_price: ticketPrice ? `$${ticketPrice}` : "",
       category,
       description,
       buffer_days_before: Math.max(1, daysBefore),

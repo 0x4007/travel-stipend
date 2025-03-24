@@ -1,6 +1,3 @@
-// Origin city for all travel calculations (must match seed data format "City, CC")
-export const ORIGIN = "Seoul, KR";
-
 // Default conference duration in days (if no end date is specified)
 export const DEFAULT_CONFERENCE_DAYS = 1;
 

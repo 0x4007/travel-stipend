@@ -1,76 +1,46 @@
-import { ORIGIN } from "../src/utils/constants";
-import { loadCoordinatesData } from "../src/utils/coordinates";
-import { getDistanceKmFromCities } from "../src/utils/distance";
+import { DEFAULT_TEST_ORIGIN } from "./utils/test-constants";
+import { DatabaseService } from "../src/utils/database";
+import { haversineDistance } from "../src/utils/distance";
 
-// Load the coordinates data
-const coordinates = loadCoordinatesData("fixtures/coordinates.csv");
+async function forceBarcelonaSpain() {
+  const db = DatabaseService.getInstance();
 
-console.log("Forcing Barcelona to use Spain coordinates:");
-console.log("----------------------------------------");
+  console.log("Testing Barcelona location resolution:");
+  console.log("---------------------------------");
 
-// Find Barcelona in Spain coordinates
-console.log("Looking for Barcelona in Spain...");
-let barcelonaSpainCoords: { lat: number, lng: number } | undefined;
+  try {
+    const originCoords = await db.getCityCoordinates(DEFAULT_TEST_ORIGIN);
+    if (!originCoords.length) {
+      throw new Error(`Could not find coordinates for ${DEFAULT_TEST_ORIGIN}`);
+    }
 
-// Get all city names
-const cityNames = coordinates.getCityNames();
+    try {
+      // Get coordinates for Barcelona without country
+      const barceCoords = await db.getCityCoordinates("Barcelona");
+      const distance = haversineDistance(originCoords[0], barceCoords[0]);
+      console.log(`Distance from ${DEFAULT_TEST_ORIGIN} to Barcelona: ${Math.round(distance)} km`);
 
-// Find all Barcelona entries
-const barcelonaEntries = cityNames.filter(name =>
-  name.toLowerCase().includes("barcelona"));
+      // Get coordinates for Barcelona Spain for comparison
+      const spainCoords = await db.getCityCoordinates("Barcelona Spain");
+      const spainDistance = haversineDistance(originCoords[0], spainCoords[0]);
+      console.log(`Distance from ${DEFAULT_TEST_ORIGIN} to Barcelona Spain: ${Math.round(spainDistance)} km`);
 
-console.log("All Barcelona entries:");
-barcelonaEntries.forEach(entry => {
-  const coords = coordinates.getCoordinates(entry);
-  console.log(`- "${entry}" => Coordinates: ${coords?.lat}, ${coords?.lng}`);
+      // Compare distances to verify matching
+      if (Math.abs(distance - spainDistance) < 1) {
+        console.log("\n✅ Success: Barcelona is correctly resolving to Barcelona, Spain");
+      } else {
+        console.log("\n❌ Warning: Barcelona is not resolving to Barcelona, Spain");
+        console.log(`   Distance difference: ${Math.abs(distance - spainDistance)} km`);
+      }
 
-  // If this entry is Barcelona in Spain, store its coordinates
-  if (entry.toLowerCase().includes("spain") || entry.toLowerCase().includes("españa")) {
-    barcelonaSpainCoords = coords;
-    console.log(`Found Barcelona in Spain: ${entry}`);
+    } catch (error) {
+      console.error("Error comparing distances:", (error as Error).message);
+    }
+  } catch (error) {
+    console.error("Error:", (error as Error).message);
+  } finally {
+    await db.close();
   }
-});
-
-if (!barcelonaSpainCoords) {
-  console.error("Could not find Barcelona in Spain coordinates");
-  process.exit(1);
 }
 
-// Get Barcelona coordinates
-const barcelonaCoords = coordinates.getCoordinates("Barcelona");
-if (!barcelonaCoords) {
-  console.error("Could not find Barcelona coordinates");
-  process.exit(1);
-}
-
-console.log("Original Barcelona coordinates:", barcelonaCoords);
-console.log("Barcelona Spain coordinates:", barcelonaSpainCoords);
-
-// Directly modify the coordinates mapping
-// This is a hack to force Barcelona to use Spain coordinates
-// @ts-ignore - Accessing private property
-coordinates._cityMap["Barcelona"] = barcelonaSpainCoords;
-
-console.log("Modified Barcelona coordinates:", coordinates.getCoordinates("Barcelona"));
-
-// Test with just "Barcelona"
-try {
-  const distance = getDistanceKmFromCities(ORIGIN, "Barcelona", coordinates);
-  console.log(`Distance from ${ORIGIN} to Barcelona: ${Math.round(distance)} km`);
-
-  // Get the distance to Barcelona Spain for comparison
-  const spainDistance = getDistanceKmFromCities(ORIGIN, "Barcelona Spain", coordinates);
-  console.log(`Distance from ${ORIGIN} to Barcelona Spain: ${Math.round(spainDistance)} km`);
-
-  // Check if the fix is working
-  const isFixWorking = Math.abs(distance - spainDistance) < 1;
-  console.log(`\nIs the fix working? ${isFixWorking ? "YES" : "NO"}`);
-
-  if (isFixWorking) {
-    console.log("Success! 'Barcelona' now correctly matches with 'Barcelona, Spain'");
-  } else {
-    console.log("Fix not working. 'Barcelona' is still matching with a different city");
-  }
-} catch (error) {
-  console.log(`Error: ${(error as Error).message}`);
-}
+forceBarcelonaSpain().catch(console.error);

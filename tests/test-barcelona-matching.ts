@@ -1,38 +1,65 @@
-import { ORIGIN } from "../src/utils/constants";
-import { loadCoordinatesData } from "../src/utils/coordinates";
-import { getDistanceKmFromCities } from "../src/utils/distance";
+import { DEFAULT_TEST_ORIGIN } from "./utils/test-constants";
+import { DatabaseService } from "../src/utils/database";
+import { haversineDistance } from "../src/utils/distance";
 
-// Load the coordinates data
-const coordinates = loadCoordinatesData("fixtures/coordinates.csv");
+async function testBarcelonaMatching() {
+  const db = DatabaseService.getInstance();
 
-// Test with different formats of Barcelona
-const barcelonaFormats = [
-  "Barcelona",
-  "Barcelona, Spain",
-  "Barcelona, Philippines",
-  "Barcelona, Venezuela"
-];
+  console.log(`Origin: ${DEFAULT_TEST_ORIGIN}`);
+  console.log("Testing different Barcelona formats:");
+  console.log("----------------------------------");
 
-console.log(`Origin: ${ORIGIN}`);
-console.log("Testing different Barcelona formats:");
-console.log("-----------------------------------");
+  // Test different formats
+  const formats = [
+    "Barcelona",
+    "Barcelona, Spain",
+    "Barcelona Spain",
+    "Barcelona ES",
+    "Barcelona, ES",
+    "Barcelona, Philippines",
+    "Barcelona Philippines",
+    "Barcelona PH",
+    "Barcelona, PH",
+  ];
 
-// Test each format
-barcelonaFormats.forEach(format => {
   try {
-    const distance = getDistanceKmFromCities(ORIGIN, format, coordinates);
-    console.log(`Format: "${format}" => Distance: ${Math.round(distance)} km`);
-  } catch (error) {
-    console.log(`Format: "${format}" => Error: ${(error as Error).message}`);
-  }
-});
+    const originCoords = await db.getCityCoordinates(DEFAULT_TEST_ORIGIN);
+    if (!originCoords.length) {
+      throw new Error(`Could not find coordinates for ${DEFAULT_TEST_ORIGIN}`);
+    }
 
-// Test fuzzy matching
-console.log("\nTesting fuzzy matching:");
-console.log("----------------------");
-try {
-  const distance = getDistanceKmFromCities(ORIGIN, "Barselona", coordinates);
-  console.log(`Format: "Barselona" (misspelled) => Distance: ${Math.round(distance)} km`);
-} catch (error) {
-  console.log(`Format: "Barselona" (misspelled) => Error: ${(error as Error).message}`);
+    for (const format of formats) {
+      try {
+        const destCoords = await db.getCityCoordinates(format);
+        if (!destCoords.length) {
+          console.log(`Format: "${format}" => No coordinates found`);
+          continue;
+        }
+
+        const distance = haversineDistance(originCoords[0], destCoords[0]);
+        console.log(`Format: "${format}" => Distance: ${Math.round(distance)} km`);
+      } catch (error) {
+        console.log(`Format: "${format}" => Error: ${(error as Error).message}`);
+      }
+    }
+
+    // Test misspelling
+    try {
+      const misspelledCoords = await db.getCityCoordinates("Barselona");
+      if (!misspelledCoords.length) {
+        console.log(`Format: "Barselona" (misspelled) => No coordinates found`);
+      } else {
+        const distance = haversineDistance(originCoords[0], misspelledCoords[0]);
+        console.log(`Format: "Barselona" (misspelled) => Distance: ${Math.round(distance)} km`);
+      }
+    } catch (error) {
+      console.log(`Format: "Barselona" (misspelled) => Error: ${(error as Error).message}`);
+    }
+  } catch (error) {
+    console.error("Error:", (error as Error).message);
+  } finally {
+    await db.close();
+  }
 }
+
+testBarcelonaMatching().catch(console.error);
