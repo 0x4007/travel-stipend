@@ -1,8 +1,6 @@
 import { config } from "dotenv";
 import { Page } from "puppeteer";
-import { navigateToFlights } from "./google-flights-scraper/src/google-flights/page-navigation";
-import { scrapeFlightPrices } from "./google-flights-scraper/src/google-flights/scrape/scrape-flight-prices";
-import { launchBrowser } from "./google-flights-scraper/src/utils/launch";
+import { launchBrowser, navigateToFlights, scrapeFlightPrices } from "./google-flights-scraper/src/index";
 
 // Load environment variables
 config();
