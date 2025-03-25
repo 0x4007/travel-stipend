@@ -19,7 +19,7 @@ A command-line tool for calculating travel stipends for employees attending conf
 bun run src/travel-stipend-cli.ts "Dubai" --start-date "1 april"
 
 # With optional conference name and other details
-bun run src/travel-stipend-cli.ts "Tokyo, JP" --conference "TechSummit" --start-date "10 may" --end-date "12 may"
+bun run src/travel-stipend-cli.ts "Tokyo" --conference "TechSummit" --start-date "10 may" --end-date "12 may"
 
 # Using output formats (table, json, csv)
 bun run src/travel-stipend-cli.ts "Singapore" --start-date "15 june" -o json
