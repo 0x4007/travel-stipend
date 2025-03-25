@@ -1,16 +1,17 @@
-import { GoogleFlightsScraper } from "../utils/google-flights-scraper";
-import { FlightPrice } from "../utils/google-flights-scraper/types";
+import { Page } from "puppeteer";
+import { navigateToFlights } from "../utils/google-flights-scraper/src/google-flights/page-navigation";
+import { scrapeFlightPrices } from "../utils/google-flights-scraper/src/google-flights/scrape/scrape-flight-prices";
+import { launchBrowser } from "../utils/google-flights-scraper/src/utils/launch";
 import { FlightDates, FlightPriceResult, FlightPricingStrategy } from "./flight-pricing-strategy";
 
 export class GoogleFlightsStrategy implements FlightPricingStrategy {
-  private _scraper: GoogleFlightsScraper | null = null;
+  private _browser: Awaited<ReturnType<typeof launchBrowser>> | null = null;
+  private _page: Page | null = null;
 
-  private async _initializeScraper(): Promise<void> {
-    if (!this._scraper) {
-      this._scraper = new GoogleFlightsScraper();
-      await this._scraper.initialize({ headless: true });
-      await this._scraper.navigateToGoogleFlights();
-      await this._scraper.changeCurrencyToUsd();
+  private async _initializeBrowser(): Promise<void> {
+    if (!this._browser) {
+      this._browser = await launchBrowser();
+      this._page = await this._browser.newPage();
     }
   }
 
@@ -20,24 +21,36 @@ export class GoogleFlightsStrategy implements FlightPricingStrategy {
     dates: FlightDates
   ): Promise<FlightPriceResult> {
     try {
-      await this._initializeScraper();
-
-      if (!this._scraper) {
-        throw new Error("Failed to initialize Google Flights scraper");
+      await this._initializeBrowser();
+      if (!this._page) {
+        throw new Error("Failed to initialize browser page");
       }
 
       console.log(`[GoogleFlightsStrategy] Searching flights from ${origin} to ${destination}`);
       console.log(`[GoogleFlightsStrategy] Dates: ${dates.outbound} to ${dates.return}`);
 
-      const results = await this._scraper.searchFlights(origin, destination, dates.outbound, dates.return);
+      // Set up flight search parameters
+      const parameters = {
+        from: origin,
+        to: destination,
+        departureDate: dates.outbound,
+        returnDate: dates.return,
+        includeBudget: true
+      };
 
-      if (results.success && 'prices' in results && results.prices.length > 0) {
+      // Navigate to Google Flights and perform search
+      await navigateToFlights(this._page, parameters);
+
+      // Scrape flight prices
+      const flightData = await scrapeFlightPrices(this._page);
+
+      if (flightData.length > 0) {
         // Calculate average from top flights or all flights if no top flights
-        const topFlights = results.prices.filter((flight: FlightPrice) => flight.isTopFlight);
-        const flightsToUse = topFlights.length > 0 ? topFlights : results.prices;
+        const topFlights = flightData.filter(flight => flight.isTopFlight);
+        const flightsToUse = topFlights.length > 0 ? topFlights : flightData;
 
         const avgPrice = Math.round(
-          flightsToUse.reduce((sum: number, flight: FlightPrice) => sum + flight.price, 0) / flightsToUse.length
+          flightsToUse.reduce((sum, flight) => sum + flight.price, 0) / flightsToUse.length
         );
 
         return {
@@ -58,8 +71,8 @@ export class GoogleFlightsStrategy implements FlightPricingStrategy {
 
   async isAvailable(): Promise<boolean> {
     try {
-      // Check if puppeteer can be initialized - this indicates if we can run a browser
-      await this._initializeScraper();
+      // Check if browser can be launched
+      await this._initializeBrowser();
       return true;
     } catch (error) {
       console.error("[GoogleFlightsStrategy] Not available:", error);
@@ -68,9 +81,10 @@ export class GoogleFlightsStrategy implements FlightPricingStrategy {
   }
 
   async cleanup(): Promise<void> {
-    if (this._scraper) {
-      await this._scraper.close();
-      this._scraper = null;
+    if (this._browser) {
+      await this._browser.close();
+      this._browser = null;
+      this._page = null;
     }
   }
 }

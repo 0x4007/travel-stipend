@@ -17,8 +17,6 @@
     "create-release": "bun scripts/create-release.ts",
     "create-stipend-action": "bun scripts/create-stipend-action.ts",
     "db": "sqlite3 travel_data.db",
-    "start": "bun build/esbuild-server.ts",
-    "build": "bun build/esbuild-build.ts",
     "calc": "bun src/travel-stipend-calculator.ts",
     "calc:historical": "bun src/historical-stipend-calculator.ts",
     "format": "run-s format:*",

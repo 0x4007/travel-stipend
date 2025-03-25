@@ -2,10 +2,14 @@ import airportCodes from "airport-codes";
 import cityTimezones from "city-timezones";
 import { countries } from "countries-list";
 import { config } from "dotenv";
+import { Page } from "puppeteer";
 import { AmadeusApi } from "./amadeus-api";
 import { createHashKey, PersistentCache } from "./cache";
-import { ORIGIN } from "./constants";
-import { GoogleFlightsScraper } from "./google-flights-scraper";
+import { navigateToFlights } from "./google-flights-scraper/src/google-flights/page-navigation";
+import { scrapeFlightPrices } from "./google-flights-scraper/src/google-flights/scrape/scrape-flight-prices";
+import { launchBrowser } from "./google-flights-scraper/src/utils/launch";
+// Default origin city for flight calculations
+const DEFAULT_ORIGIN = "Seoul, KR";
 
 // Load environment variables
 config();
@@ -26,7 +30,7 @@ interface FlightCostCacheEntry {
 const flightCache = new PersistentCache<{ price: number; timestamp: string; source: string }>("fixtures/cache/flight-cache.json");
 const flightCostCache = new PersistentCache<FlightCostCacheEntry>("fixtures/cache/flight-cost-cache.json");
 
-export function calculateFlightCost(distanceKm: number, destination: string, origin: string = ORIGIN): number {
+export function calculateFlightCost(distanceKm: number, destination: string, origin: string = DEFAULT_ORIGIN): number {
   // Check cache first
   const cacheKey = createHashKey([origin, destination, distanceKm.toFixed(1), "v3-training"]);
   const cachedEntry = flightCostCache.get(cacheKey);
@@ -112,16 +116,16 @@ export function calculateFlightCost(distanceKm: number, destination: string, ori
 
   // Helper function to filter valid training entries
   function filterValidTrainingEntries(
-    entries: [string, FlightCostCacheEntry][],
+    entries: [string, { value: FlightCostCacheEntry; timestamp: number }][],
     distanceKm: number
   ): FlightCostCacheEntry[] {
     return entries
-      .filter(([key, entry]) => {
-        if (!isValidTrainingEntry(entry)) return false;
+      .filter(([key, { value }]) => {
+        if (!isValidTrainingEntry(value)) return false;
         const entryDistance = extractDistanceFromKey(key);
         return entryDistance !== null && isWithinDistanceTolerance(entryDistance, distanceKm);
       })
-      .map(([, entry]) => entry);
+      .map(([, { value }]) => value);
   }
 
   function retrieveTrainingDataForDistance(distanceKm: number): FlightCostCacheEntry[] {
@@ -423,67 +427,56 @@ async function searchGoogleFlights(
   console.log(`Scraping flight prices from ${origin} to ${destination}`);
   console.log(`Dates: ${dates.outbound} to ${dates.return}`);
 
-  const scraper = new GoogleFlightsScraper();
-  await scraper.initialize({ headless: true });
+  let browser: Awaited<ReturnType<typeof launchBrowser>> | null = null;
+  let page: Page | null = null;
 
   try {
-    await scraper.navigateToGoogleFlights();
-    await scraper.changeCurrencyToUsd();
-    const results = await scraper.searchFlights(origin, destination, dates.outbound, dates.return);
+    browser = await launchBrowser();
+    page = await browser.newPage();
 
-    await scraper.close();
-    return processGoogleFlightsResults(results);
-  } catch (error) {
-    await scraper.close();
-    throw error;
-  }
-}
-
-interface FlightPrice {
-  isTopFlight: boolean;
-  price: number;
-}
-
-interface GoogleFlightsResult {
-  success: boolean;
-  prices?: FlightPrice[];
-  price?: number;
-  source?: string;
-}
-
-function processGoogleFlightsResults(results: GoogleFlightsResult): { price: number | null; source: string } {
-  if (!results.success) {
-    return { price: null, source: "Google Flights" };
-  }
-
-  if ('prices' in results && Array.isArray(results.prices) && results.prices.length > 0) {
-    const topFlights = results.prices.filter(flight => flight.isTopFlight);
-    const flightsToAverage = topFlights.length > 0 ? topFlights : results.prices;
-    return calculateFlightAverage(flightsToAverage);
-  }
-
-  if ('price' in results && typeof results.price === 'number') {
-    return {
-      price: results.price,
-      source: results.source ?? "Google Flights"
+    // Set up flight search parameters
+    const parameters = {
+      from: origin,
+      to: destination,
+      departureDate: dates.outbound,
+      returnDate: dates.return,
+      includeBudget: true
     };
+
+    // Navigate to Google Flights and perform search
+    await navigateToFlights(page, parameters);
+
+    // Scrape flight prices
+    const flightData = await scrapeFlightPrices(page);
+
+    if (flightData.length > 0) {
+      // Calculate average from top flights or all flights if no top flights
+      const topFlights = flightData.filter(flight => flight.isTopFlight);
+      const flightsToUse = topFlights.length > 0 ? topFlights : flightData;
+
+      const avgPrice = Math.round(
+        flightsToUse.reduce((sum, flight) => sum + flight.price, 0) / flightsToUse.length
+      );
+
+      return {
+        price: avgPrice,
+        source: "Google Flights"
+      };
+    }
+
+    return {
+      price: null,
+      source: "Google Flights (No results)"
+    };
+  } catch (error) {
+    console.error("Error scraping Google Flights:", error);
+    return {
+      price: null,
+      source: "Google Flights error"
+    };
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
-
-  return { price: null, source: "Google Flights" };
-}
-
-function calculateFlightAverage(flights: FlightPrice[]): { price: number; source: string } {
-  const sum = flights.reduce((total: number, flight: { price: number }) => total + flight.price, 0);
-  const avg = Math.round(sum / flights.length);
-
-  if (avg > 0) {
-    flightCache.set(createHashKey([String(avg)]), {
-      price: avg,
-      timestamp: new Date().toISOString(),
-      source: "Google Flights",
-    });
-    console.log(`Stored flight price in cache: $${avg}`);
-  }
-
-  return { price: avg, source: "Google Flights" };
 }
