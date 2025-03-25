@@ -48,18 +48,13 @@ export async function searchFlightPrices(params: SearchParams): Promise<SearchRe
     console.log("Changed currency to USD");
 
     // Search for flights
-    const flightData = await scraper.searchFlights(
-      params.from,
-      params.to,
-      params.departureDate,
-      params.returnDate
-    );
+    const flightData = await scraper.searchFlights(params.from, params.to, params.departureDate, params.returnDate);
 
     // Display flight data
     console.log("\nFlight search results:");
     console.log("=====================");
 
-    if (flightData.success && 'prices' in flightData && flightData.prices) {
+    if (flightData.success && "prices" in flightData && flightData.prices) {
       console.log(`Found ${flightData.prices.length} flight prices`);
 
       const formattedPrices = flightData.prices.map((price) => ({
@@ -69,18 +64,18 @@ export async function searchFlightPrices(params: SearchParams): Promise<SearchRe
         arrival: price.arrivalTime,
         duration: price.duration,
         stops: price.stops,
-        isTopFlight: price.isTopFlight
+        isTopFlight: price.isTopFlight,
       }));
 
       console.table(formattedPrices);
       return flightData as SearchResult;
-    } else if (flightData.success && 'price' in flightData) {
+    } else if (flightData.success && "price" in flightData) {
       // Handle case where we get a single price
       console.log(`Found flight price: $${flightData.price}`);
       return {
         success: true,
         price: flightData.price,
-        source: flightData.source
+        source: flightData.source,
       };
     } else {
       console.log("No flight data found");
@@ -103,20 +98,20 @@ if (require.main === module) {
     from: process.argv[2] || "Seoul, South Korea",
     to: process.argv[3] || "Tokyo, Japan",
     departureDate: process.argv[4] || "2024-05-20",
-    returnDate: process.argv[5]
+    returnDate: process.argv[5],
   };
 
   searchFlightPrices(params)
-    .then(result => {
-      if (result && 'prices' in result && result.prices) {
+    .then((result) => {
+      if (result && "prices" in result && result.prices) {
         const averagePrice = result.prices.reduce((sum, p) => sum + p.price, 0) / result.prices.length;
         console.log(`\nAverage price: $${averagePrice.toFixed(2)}`);
-      } else if (result && 'price' in result) {
+      } else if (result && "price" in result) {
         console.log(`\nFlight price: $${result.price}`);
       }
       process.exit(0);
     })
-    .catch(error => {
+    .catch((error) => {
       console.error("Search failed:", error);
       process.exit(1);
     });

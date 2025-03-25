@@ -52,7 +52,7 @@ async function validateCountryCoordinates() {
     console.log(`\nTesting: ${destination}`);
     const result: DestinationValidation = {
       destination,
-      hasCoordinates: false
+      hasCoordinates: false,
     };
 
     try {
@@ -101,19 +101,19 @@ async function validateCountryCoordinates() {
 
   // Generate success rate statistics
   const totalDestinations = results.length;
-  const normalizedDestinations = results.filter(r => r.normalizedCountry !== undefined).length;
-  const destinationsWithCoordinates = results.filter(r => r.hasCoordinates).length;
-  const destinationsWithDistance = results.filter(r => r.distanceKm !== undefined && !isNaN(r.distanceKm)).length;
+  const normalizedDestinations = results.filter((r) => r.normalizedCountry !== undefined).length;
+  const destinationsWithCoordinates = results.filter((r) => r.hasCoordinates).length;
+  const destinationsWithDistance = results.filter((r) => r.distanceKm !== undefined && !isNaN(r.distanceKm)).length;
 
   console.log("\n=== Validation Results ===");
   console.log(`Total destinations tested: ${totalDestinations}`);
-  console.log(`Destinations with country codes: ${normalizedDestinations} (${(normalizedDestinations/totalDestinations*100).toFixed(1)}%)`);
-  console.log(`Destinations with coordinates: ${destinationsWithCoordinates} (${(destinationsWithCoordinates/totalDestinations*100).toFixed(1)}%)`);
-  console.log(`Destinations with valid distances: ${destinationsWithDistance} (${(destinationsWithDistance/totalDestinations*100).toFixed(1)}%)`);
+  console.log(`Destinations with country codes: ${normalizedDestinations} (${((normalizedDestinations / totalDestinations) * 100).toFixed(1)}%)`);
+  console.log(`Destinations with coordinates: ${destinationsWithCoordinates} (${((destinationsWithCoordinates / totalDestinations) * 100).toFixed(1)}%)`);
+  console.log(`Destinations with valid distances: ${destinationsWithDistance} (${((destinationsWithDistance / totalDestinations) * 100).toFixed(1)}%)`);
 
   // Save results to CSV
   const csvHeader = "Destination,Normalized City,Normalized Country,Has Coordinates,Distance (km),Estimated Cost,Notes";
-  const csvRows = results.map(r => {
+  const csvRows = results.map((r) => {
     return [
       r.destination,
       r.normalizedCity ?? "",
@@ -121,7 +121,7 @@ async function validateCountryCoordinates() {
       r.hasCoordinates ? "Yes" : "No",
       r.distanceKm !== undefined ? (isNaN(r.distanceKm) ? "Error" : Math.round(r.distanceKm)) : "",
       r.estimatedCost !== undefined ? r.estimatedCost.toFixed(2) : "",
-      r.notes ?? ""
+      r.notes ?? "",
     ].join(",");
   });
 
@@ -132,10 +132,10 @@ async function validateCountryCoordinates() {
   console.log(`\nResults saved to: ${csvFilePath}`);
 
   // Problems report
-  const problemDestinations = results.filter(r => !r.hasCoordinates || r.notes);
+  const problemDestinations = results.filter((r) => !r.hasCoordinates || r.notes);
   if (problemDestinations.length > 0) {
     console.log("\n=== Destinations with Problems ===");
-    problemDestinations.forEach(r => {
+    problemDestinations.forEach((r) => {
       console.log(`${r.destination}: ${r.notes ?? (r.hasCoordinates ? "" : "No coordinates found")}`);
     });
   }

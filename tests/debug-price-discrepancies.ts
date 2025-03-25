@@ -60,7 +60,7 @@ function filterHighDiscrepancies(data: FlightPriceData[]): DiscrepancyTest[] {
         expectedPrice,
         actualPrice,
         discrepancyPercent,
-        url: row["Google Flights URL"]
+        url: row["Google Flights URL"],
       };
     })
     .filter((test) => test.discrepancyPercent > 25)
@@ -72,8 +72,9 @@ async function runDiscrepancyTest() {
   try {
     // Find the most recent test results file
     const testResultsDir = path.join(process.cwd(), "test-results");
-    const files = fs.readdirSync(testResultsDir)
-      .filter(file => file.startsWith("flight-price-analysis") && file.endsWith(".csv"))
+    const files = fs
+      .readdirSync(testResultsDir)
+      .filter((file) => file.startsWith("flight-price-analysis") && file.endsWith(".csv"))
       .sort()
       .reverse(); // Most recent first
 
@@ -102,10 +103,7 @@ async function runDiscrepancyTest() {
     }
 
     // Save discrepancy summary
-    fs.writeFileSync(
-      path.join(debugDir, "discrepancy-summary.json"),
-      JSON.stringify(highDiscrepancies, null, 2)
-    );
+    fs.writeFileSync(path.join(debugDir, "discrepancy-summary.json"), JSON.stringify(highDiscrepancies, null, 2));
 
     log(LOG_LEVEL.INFO, `Saved discrepancy summary to ${path.join(debugDir, "discrepancy-summary.json")}`);
 
@@ -136,16 +134,16 @@ async function runDiscrepancyTest() {
 
         // Extract price from result
         let price = 0;
-        if ('price' in result) {
+        if ("price" in result) {
           price = result.price;
         } else if (result.prices && result.prices.length > 0) {
           price = Math.round(result.prices.reduce((sum, p) => sum + p.price, 0) / result.prices.length);
         }
 
         // Extract other properties safely
-        const screenshotPath = 'screenshotPath' in result ? result.screenshotPath : undefined;
-        const selectedDestination = 'selectedDestination' in result ? result.selectedDestination : undefined;
-        const hasAllianceFilters = 'allianceFiltersApplied' in result ? result.allianceFiltersApplied : undefined;
+        const screenshotPath = "screenshotPath" in result ? result.screenshotPath : undefined;
+        const selectedDestination = "selectedDestination" in result ? result.selectedDestination : undefined;
+        const hasAllianceFilters = "allianceFiltersApplied" in result ? result.allianceFiltersApplied : undefined;
 
         // Save the result
         const debugResult = {
@@ -155,7 +153,7 @@ async function runDiscrepancyTest() {
           screenshotPath,
           selectedDestination,
           hasAllianceFilters,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         };
 
         results.push(debugResult);
@@ -167,25 +165,19 @@ async function runDiscrepancyTest() {
           .replace(/-+/g, "-")
           .replace(/(^-)|(-$)/g, "");
 
-        fs.writeFileSync(
-          path.join(debugDir, `${sanitizedDestination}-debug.json`),
-          JSON.stringify(debugResult, null, 2)
-        );
+        fs.writeFileSync(path.join(debugDir, `${sanitizedDestination}-debug.json`), JSON.stringify(debugResult, null, 2));
 
         log(LOG_LEVEL.INFO, `Saved debug result for ${test.destination}`);
 
         // Wait a bit between searches to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } catch (error) {
         log(LOG_LEVEL.ERROR, `Error testing ${test.destination}:`, error instanceof Error ? error.message : String(error));
       }
     }
 
     // Save all results
-    fs.writeFileSync(
-      path.join(debugDir, "all-results.json"),
-      JSON.stringify(results, null, 2)
-    );
+    fs.writeFileSync(path.join(debugDir, "all-results.json"), JSON.stringify(results, null, 2));
 
     log(LOG_LEVEL.INFO, `Saved all results to ${path.join(debugDir, "all-results.json")}`);
 

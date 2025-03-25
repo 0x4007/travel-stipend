@@ -29,7 +29,7 @@ async function testCountryCodeMapping() {
     { input: "Czech Republic", expected: "CZ" },
     { input: "Czechia", expected: "CZ" },
     { input: "Vietnam", expected: "VN" },
-    { input: "Viet Nam", expected: "VN" }
+    { input: "Viet Nam", expected: "VN" },
   ];
 
   console.log("\nTesting country code lookup:");
@@ -49,7 +49,7 @@ async function testCountryCodeMapping() {
     { input: "AE", expected: "United Arab Emirates" },
     { input: "FR", expected: "France" },
     { input: "ES", expected: "Spain" },
-    { input: "CH", expected: "Switzerland" }
+    { input: "CH", expected: "Switzerland" },
   ];
 
   console.log("\nTesting country name lookup:");
@@ -70,7 +70,7 @@ async function testCountryCodeMapping() {
     { input: "Madrid, España", expectedCity: "Madrid", expectedCountry: "ES" },
     { input: "Prague, Czechia", expectedCity: "Prague", expectedCountry: "CZ" },
     { input: "Singapore", expectedCity: "Singapore", expectedCountry: undefined },
-    { input: "Hong Kong", expectedCity: "Hong Kong", expectedCountry: undefined }
+    { input: "Hong Kong", expectedCity: "Hong Kong", expectedCountry: undefined },
   ];
 
   console.log("\nTesting city-country normalization:");
@@ -78,7 +78,9 @@ async function testCountryCodeMapping() {
     const { city, countryCode } = normalizeCityCountry(test.input);
     const cityResult = city === test.expectedCity ? "✅" : "❌";
     const countryResult = countryCode === test.expectedCountry ? "✅" : "❌";
-    console.log(`${cityResult} ${countryResult} ${test.input} => City: ${city}, Country: ${countryCode} (expected: ${test.expectedCity}, ${test.expectedCountry})`);
+    console.log(
+      `${cityResult} ${countryResult} ${test.input} => City: ${city}, Country: ${countryCode} (expected: ${test.expectedCity}, ${test.expectedCountry})`
+    );
   }
 
   // Test distance calculation with default list

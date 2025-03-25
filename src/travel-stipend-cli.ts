@@ -22,7 +22,9 @@ const program = new Command()
   .option("--sort <field>", "Sort results by field (for batch mode)")
   .option("-r, --reverse", "Reverse sort order")
   .option("-v, --verbose", "Show detailed output")
-  .addHelpText("after", `
+  .addHelpText(
+    "after",
+    `
 Examples:
   # Basic usage
   $ bun run src/travel-stipend-cli.ts \\
@@ -48,7 +50,8 @@ Examples:
 
   # Batch mode with sorting and output format
   $ bun run src/travel-stipend-cli.ts -b --sort total_stipend -r -o csv
-`);
+`
+  );
 
 /**
  * Process a single conference or business trip
@@ -63,19 +66,10 @@ async function processSingleConference(options: {
   ticketPrice?: string;
   origin: string;
 }): Promise<StipendBreakdown> {
-  const {
-    destination,
-    conference,
-    departureDate,
-    returnDate,
-    bufferBefore,
-    bufferAfter,
-    ticketPrice,
-    origin
-  } = options;
+  const { destination, conference, departureDate, returnDate, bufferBefore, bufferAfter, ticketPrice, origin } = options;
 
   // Use default name if conference name not provided
-  const defaultName = `Business Trip to ${destination.split(',')[0]}`;
+  const defaultName = `Business Trip to ${destination.split(",")[0]}`;
   const conferenceName = conference ?? defaultName;
 
   if (!departureDate) {
@@ -89,11 +83,11 @@ async function processSingleConference(options: {
     origin,
     start_date: departureDate,
     end_date: returnDate ?? departureDate,
-    ticket_price: `$${ticketPrice ?? ""}`,
+    ticket_price: ticketPrice ? `$${ticketPrice}` : undefined,
     category: "Business Travel",
     description: "",
     ...(bufferBefore !== undefined ? { buffer_days_before: parseInt(bufferBefore, 10) } : {}),
-    ...(bufferAfter !== undefined ? { buffer_days_after: parseInt(bufferAfter, 10) } : {})
+    ...(bufferAfter !== undefined ? { buffer_days_after: parseInt(bufferAfter, 10) } : {}),
   };
 
   console.log(`Conference dates: ${departureDate} to ${returnDate ?? departureDate}`);
@@ -116,7 +110,7 @@ async function processBatchConferences(origin: string): Promise<StipendBreakdown
 
   // Filter out past conferences
   const currentDate = new Date();
-  const futureRecords = records.filter(record => {
+  const futureRecords = records.filter((record) => {
     try {
       const startDate = new Date(`${record.start_date} ${currentDate.getFullYear()}`);
       const nextYearDate = new Date(`${record.start_date} ${currentDate.getFullYear() + 1}`);
@@ -150,14 +144,12 @@ async function processBatchConferences(origin: string): Promise<StipendBreakdown
 function sortResults(results: StipendBreakdown[], options: { sort?: string; reverse?: boolean }): StipendBreakdown[] {
   if (!options.sort) return results;
 
-  console.log(`Sorting by ${options.sort} (${options.reverse ? 'descending' : 'ascending'})`);
+  console.log(`Sorting by ${options.sort} (${options.reverse ? "descending" : "ascending"})`);
 
   return [...results].sort((a, b) => {
     const valueA = a[options.sort as keyof StipendBreakdown];
     const valueB = b[options.sort as keyof StipendBreakdown];
-    const comparison = typeof valueA === "string" && typeof valueB === "string"
-      ? valueA.localeCompare(valueB)
-      : (valueA as number) - (valueB as number);
+    const comparison = typeof valueA === "string" && typeof valueB === "string" ? valueA.localeCompare(valueB) : (valueA as number) - (valueB as number);
     return options.reverse ? -comparison : comparison;
   });
 }
@@ -181,20 +173,38 @@ function outputResults(results: StipendBreakdown[], format = "table"): void {
 
     case "csv": {
       const header = [
-        "conference", "location", "conference_start", "conference_end",
-        "flight_departure", "flight_return", "flight_cost", "flight_price_source",
-        "lodging_cost", "meals_cost", "local_transport_cost", "ticket_price",
-        "total_stipend"
+        "conference",
+        "location",
+        "conference_start",
+        "conference_end",
+        "flight_departure",
+        "flight_return",
+        "flight_cost",
+        "flight_price_source",
+        "lodging_cost",
+        "meals_cost",
+        "local_transport_cost",
+        "ticket_price",
+        "total_stipend",
       ].join(",");
 
-      const rows = results.map(r => ([
-        `"${r.conference}"`, `"${r.location}"`,
-        `"${r.conference_start}"`, `"${r.conference_end ?? ""}"`,
-        `"${r.flight_departure}"`, `"${r.flight_return}"`,
-        r.flight_cost, `"${r.flight_price_source}"`, r.lodging_cost,
-        r.meals_cost, r.local_transport_cost, r.ticket_price,
-        r.total_stipend
-      ].join(",")));
+      const rows = results.map((r) =>
+        [
+          `"${r.conference}"`,
+          `"${r.location}"`,
+          `"${r.conference_start}"`,
+          `"${r.conference_end ?? ""}"`,
+          `"${r.flight_departure}"`,
+          `"${r.flight_return}"`,
+          r.flight_cost,
+          `"${r.flight_price_source}"`,
+          r.lodging_cost,
+          r.meals_cost,
+          r.local_transport_cost,
+          r.ticket_price,
+          r.total_stipend,
+        ].join(",")
+      );
 
       const content = [header, ...rows].join("\n");
       const file = `outputs/stipends_${timestamp}.csv`;
@@ -205,16 +215,40 @@ function outputResults(results: StipendBreakdown[], format = "table"): void {
     }
 
     default:
-      console.table(results.map(r => ({
-        conference: r.conference,
-        location: r.location,
-        dates: `${r.conference_start} - ${r.conference_end ?? r.conference_start}`,
-        flight: `$${r.flight_cost}`,
-        lodging: `$${r.lodging_cost}`,
-        meals: `$${r.meals_cost}`,
-        transport: `$${r.local_transport_cost}`,
-        total: `$${r.total_stipend}`
-      })));
+      console.log("Detailed breakdown:");
+      results.forEach((r) => {
+        console.log(`\nConference: ${r.conference}`);
+        console.log(`Flight cost: ${r.flight_cost}`);
+        console.log(`Lodging cost: ${r.lodging_cost}`);
+        console.log(`Meals cost: ${r.meals_cost}`);
+        console.log(`Transport cost: ${r.local_transport_cost}`);
+        console.log(`Internet allowance: ${r.internet_data_allowance}`);
+        console.log(`Incidentals allowance: ${r.incidentals_allowance}`);
+        console.log(`Ticket price: ${r.ticket_price}`);
+        console.log(`Total stipend: ${r.total_stipend}`);
+
+        // Calculate total manually to verify
+        const manualTotal =
+          r.flight_cost + r.lodging_cost + r.meals_cost + r.local_transport_cost + r.internet_data_allowance + r.incidentals_allowance + r.ticket_price;
+
+        console.log(`Manual total calculation: ${manualTotal.toFixed(2)}`);
+      });
+
+      console.table(
+        results.map((r) => ({
+          conference: r.conference,
+          location: r.location,
+          dates: `${r.conference_start} - ${r.conference_end ?? r.conference_start}`,
+          flight: Number(r.flight_cost).toFixed(2),
+          lodging: Number(r.lodging_cost).toFixed(2),
+          meals: Number(r.meals_cost).toFixed(2),
+          transport: Number(r.local_transport_cost).toFixed(2),
+          internet: Number(r.internet_data_allowance).toFixed(2),
+          incidentals: Number(r.incidentals_allowance).toFixed(2),
+          ticket: Number(r.ticket_price).toFixed(2),
+          total: Number(r.total_stipend).toFixed(2),
+        }))
+      );
       break;
   }
 }
@@ -238,16 +272,18 @@ async function main(): Promise<void> {
         throw new Error("Departure date is required (use --departure-date)");
       }
 
-      results = [await processSingleConference({
-        destination: options.destination,
-        conference: options.conference,
-        departureDate: options.departureDate,
-        returnDate: options.returnDate,
-        bufferBefore: options.bufferBefore,
-        bufferAfter: options.bufferAfter,
-        ticketPrice: options.ticketPrice,
-        origin: options.origin
-      })];
+      results = [
+        await processSingleConference({
+          destination: options.destination,
+          conference: options.conference,
+          departureDate: options.departureDate,
+          returnDate: options.returnDate,
+          bufferBefore: options.bufferBefore,
+          bufferAfter: options.bufferAfter,
+          ticketPrice: options.ticketPrice,
+          origin: options.origin,
+        }),
+      ];
     }
 
     if (options.sort) {
@@ -257,7 +293,6 @@ async function main(): Promise<void> {
     outputResults(results, options.output);
     await DatabaseService.getInstance().close();
     console.log("Travel Stipend Calculator - Completed");
-
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);
@@ -265,7 +300,7 @@ async function main(): Promise<void> {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch(err => {
+  main().catch((err) => {
     console.error("Fatal error:", err);
     process.exit(1);
   });

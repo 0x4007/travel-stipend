@@ -343,7 +343,7 @@ describe("Comprehensive Distance-Based Price Analysis", () => {
           }
         }
 
-        if (!flightResult || !flightResult.success || !("price" in flightResult)) {
+        if (!flightResult?.success || !("price" in flightResult)) {
           console.error(`Failed to get flight price for ${destination} after ${maxRetries} attempts`);
           return;
         }

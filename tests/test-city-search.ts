@@ -32,14 +32,22 @@ async function testCitySearch() {
     );
 
     // Log the result
-    log(LOG_LEVEL.INFO, "Search result:", JSON.stringify({
-      success: result.success,
-      price: 'price' in result ? result.price : undefined,
-      numPrices: 'prices' in result ? result.prices.length : 0,
-      screenshotPath: 'screenshotPath' in result ? result.screenshotPath : undefined,
-      selectedDestination: 'selectedDestination' in result ? result.selectedDestination : undefined,
-      allianceFiltersApplied: 'allianceFiltersApplied' in result ? result.allianceFiltersApplied : undefined
-    }, null, 2));
+    log(
+      LOG_LEVEL.INFO,
+      "Search result:",
+      JSON.stringify(
+        {
+          success: result.success,
+          price: "price" in result ? result.price : undefined,
+          numPrices: "prices" in result ? result.prices.length : 0,
+          screenshotPath: "screenshotPath" in result ? result.screenshotPath : undefined,
+          selectedDestination: "selectedDestination" in result ? result.selectedDestination : undefined,
+          allianceFiltersApplied: "allianceFiltersApplied" in result ? result.allianceFiltersApplied : undefined,
+        },
+        null,
+        2
+      )
+    );
 
     // Close the scraper
     await scraper.close();

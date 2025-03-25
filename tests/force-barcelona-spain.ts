@@ -32,7 +32,6 @@ async function forceBarcelonaSpain() {
         console.log("\n❌ Warning: Barcelona is not resolving to Barcelona, Spain");
         console.log(`   Distance difference: ${Math.abs(distance - spainDistance)} km`);
       }
-
     } catch (error) {
       console.error("Error comparing distances:", (error as Error).message);
     }

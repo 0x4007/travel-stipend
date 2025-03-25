@@ -59,12 +59,7 @@ async function testBarcelonaPricingDetailed() {
   try {
     console.log("Searching for flights with major carriers only...");
     const amadeusWithMajor = new AmadeusApi(apiKey, apiSecret, true);
-    const resultMajor = await amadeusWithMajor.searchFlights(
-      originCity,
-      destCity,
-      departureDate,
-      returnDate
-    );
+    const resultMajor = await amadeusWithMajor.searchFlights(originCity, destCity, departureDate, returnDate);
 
     if (resultMajor.success && resultMajor.price) {
       console.log(`Major carriers average price: $${resultMajor.price}`);
@@ -95,12 +90,7 @@ async function testBarcelonaPricingDetailed() {
   try {
     console.log("Searching for flights with all carriers (including budget)...");
     const amadeusAllCarriers = new AmadeusApi(apiKey, apiSecret, false);
-    const resultAll = await amadeusAllCarriers.searchFlights(
-      originCity,
-      destCity,
-      departureDate,
-      returnDate
-    );
+    const resultAll = await amadeusAllCarriers.searchFlights(originCity, destCity, departureDate, returnDate);
 
     if (resultAll.success && resultAll.price) {
       console.log(`All carriers average price: $${resultAll.price}`);
@@ -122,8 +112,7 @@ async function testBarcelonaPricingDetailed() {
           console.log(`\nCheapest flight: $${minPriceMajor}`);
 
           // Calculate average price
-          const avgPrice = resultAll.prices.reduce((sum, flight) => sum + flight.price, 0) /
-                          resultAll.prices.length;
+          const avgPrice = resultAll.prices.reduce((sum, flight) => sum + flight.price, 0) / resultAll.prices.length;
           console.log(`Average price: $${Math.round(avgPrice)}`);
         }
       }

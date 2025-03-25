@@ -46,7 +46,7 @@ export function generateFlightDates(conference: Conference, isOriginCity = false
   // Get buffer days from the conference record, or use defaults
   // Always enforce minimum of 1 day before AND 1 day after to prevent flying on conference days
   let bufferDaysBefore = conference.buffer_days_before ?? 1; // Default: 1 day before
-  let bufferDaysAfter = conference.buffer_days_after ?? 1;   // Default: 1 day after
+  let bufferDaysAfter = conference.buffer_days_after ?? 1; // Default: 1 day after
 
   // Safety check: require at least 1 day before and 1 day after for flights
   if (bufferDaysBefore === 0) {
@@ -72,10 +72,12 @@ export function generateFlightDates(conference: Conference, isOriginCity = false
   }
 
   // Format dates as YYYY-MM-DD
-  const formatDate = (date: Date) => date.toISOString().split("T")[0];
+  function formatDate(date: Date) {
+    return date.toISOString().split("T")[0];
+  }
 
   return {
     outbound: formatDate(outboundDate),
-    return: formatDate(returnDate)
+    return: formatDate(returnDate),
   };
 }

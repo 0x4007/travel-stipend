@@ -18,7 +18,7 @@ const testLocations = [
   { location: "Mumbai, India", expectedRegion: "Asia" },
   { location: "Toronto, Canada", expectedRegion: "North America" },
   { location: "Mexico City, Mexico", expectedRegion: "North America" },
-  { location: "Cape Town, South Africa", expectedRegion: "Africa" }
+  { location: "Cape Town, South Africa", expectedRegion: "Africa" },
 ];
 
 // We can infer the region by looking at flight costs between locations in the same region vs different regions
@@ -49,7 +49,7 @@ console.log("======================");
 const premiumRoutes = [
   { from: "New York, USA", to: "Tokyo, Japan", description: "North America to Asia" },
   { from: "London, UK", to: "Sydney, Australia", description: "Europe to Australia" },
-  { from: "São Paulo, Brazil", to: "Tokyo, Japan", description: "South America to Asia" }
+  { from: "São Paulo, Brazil", to: "Tokyo, Japan", description: "South America to Asia" },
 ];
 
 for (const { from, to, description } of premiumRoutes) {

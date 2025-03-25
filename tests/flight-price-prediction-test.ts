@@ -84,12 +84,7 @@ async function initializeCoordinates(cities: string[]): Promise<CoordinatesMappi
 }
 
 // Process a single destination
-async function processDestination(
-  scraper: GoogleFlightsScraper,
-  coordinates: CoordinatesMapping,
-  origin: string,
-  destination: string
-): Promise<RouteAnalysis> {
+async function processDestination(scraper: GoogleFlightsScraper, coordinates: CoordinatesMapping, origin: string, destination: string): Promise<RouteAnalysis> {
   try {
     // Calculate distance
     console.log(`\nTesting ${origin} to ${destination}:`);
@@ -110,7 +105,7 @@ async function processDestination(
         errorPercent: null,
         distanceTier: "Unknown",
         dateCollected: new Date().toISOString(),
-        errorMessage: errorMsg
+        errorMessage: errorMsg,
       };
     }
 
@@ -122,9 +117,7 @@ async function processDestination(
     const returnDate = "2025-06-01";
     console.log(`Searching flights for dates: ${departureDate} - ${returnDate}`);
 
-    const { flightResult, errorMessage } = await searchFlightWithRetry(
-      scraper, origin, destination, departureDate, returnDate
-    );
+    const { flightResult, errorMessage } = await searchFlightWithRetry(scraper, origin, destination, departureDate, returnDate);
 
     // Process results or handle failure
     if (flightResult?.success && flightResult?.price !== undefined) {
@@ -133,9 +126,7 @@ async function processDestination(
       const errorPercent = ((estimatedPrice - actualPrice) / actualPrice) * 100;
 
       // Extract searchUrl safely
-      const searchUrl = flightResult.searchUrl && typeof flightResult.searchUrl === "string"
-        ? flightResult.searchUrl
-        : undefined;
+      const searchUrl = flightResult.searchUrl && typeof flightResult.searchUrl === "string" ? flightResult.searchUrl : undefined;
 
       // Get tier for analysis
       const distanceTier = getDistanceTier(distanceKm);
@@ -180,7 +171,7 @@ async function processDestination(
         errorPercent: null,
         distanceTier: getDistanceTier(distanceKm),
         dateCollected: new Date().toISOString(),
-        errorMessage: error
+        errorMessage: error,
       };
     }
   } catch (error) {
@@ -196,7 +187,7 @@ async function processDestination(
       errorPercent: null,
       distanceTier: "Unknown",
       dateCollected: new Date().toISOString(),
-      errorMessage: errorMsg
+      errorMessage: errorMsg,
     };
   }
 }
@@ -248,29 +239,19 @@ async function searchFlightWithRetry(
 }
 
 // Generate analysis reports
-function generateReports(
-  results: RouteAnalysis[],
-  failedDestinations: { destination: string; error: string }[],
-  totalDestinations: number
-): void {
+function generateReports(results: RouteAnalysis[], failedDestinations: { destination: string; error: string }[], totalDestinations: number): void {
   console.log("\n==========================================");
   console.log("Flight Price Prediction Test Results:");
   console.log("==========================================");
 
   // Filter out failed results for analysis
-  const successfulResults = results.filter(r => r.actualPrice !== null);
+  const successfulResults = results.filter((r) => r.actualPrice !== null);
 
   // Calculate and log aggregate statistics
   if (successfulResults.length > 0) {
-    const avgErrorPercent = successfulResults.reduce(
-      (sum, r) => sum + Math.abs(r.errorPercent ?? 0),
-      0
-    ) / successfulResults.length;
+    const avgErrorPercent = successfulResults.reduce((sum, r) => sum + Math.abs(r.errorPercent ?? 0), 0) / successfulResults.length;
 
-    const avgPricePerKm = successfulResults.reduce(
-      (sum, r) => sum + (r.pricePerKm ?? 0),
-      0
-    ) / successfulResults.length;
+    const avgPricePerKm = successfulResults.reduce((sum, r) => sum + (r.pricePerKm ?? 0), 0) / successfulResults.length;
 
     console.log("\nSuccessful Routes:");
     console.log(`Total Routes Tested: ${totalDestinations}`);
@@ -283,11 +264,9 @@ function generateReports(
   }
 
   // Group results by error level
-  const highErrorResults = successfulResults.filter(r => Math.abs(r.errorPercent ?? 0) > 25);
-  const moderateErrorResults = successfulResults.filter(
-    r => Math.abs(r.errorPercent ?? 0) > 10 && Math.abs(r.errorPercent ?? 0) <= 25
-  );
-  const lowErrorResults = successfulResults.filter(r => Math.abs(r.errorPercent ?? 0) <= 10);
+  const highErrorResults = successfulResults.filter((r) => Math.abs(r.errorPercent ?? 0) > 25);
+  const moderateErrorResults = successfulResults.filter((r) => Math.abs(r.errorPercent ?? 0) > 10 && Math.abs(r.errorPercent ?? 0) <= 25);
+  const lowErrorResults = successfulResults.filter((r) => Math.abs(r.errorPercent ?? 0) <= 10);
 
   console.log("\nError Analysis:");
   console.log(`High Error (>25%): ${highErrorResults.length} routes`);
@@ -296,10 +275,8 @@ function generateReports(
 
   if (highErrorResults.length > 0) {
     console.log("\nHigh Error Routes (>25%):");
-    highErrorResults.forEach(r => {
-      console.log(
-        `${r.destination}: ${r.errorPercent?.toFixed(2)}% error ($${r.actualPrice} vs. $${r.estimatedPrice.toFixed(2)})`
-      );
+    highErrorResults.forEach((r) => {
+      console.log(`${r.destination}: ${r.errorPercent?.toFixed(2)}% error ($${r.actualPrice} vs. $${r.estimatedPrice.toFixed(2)})`);
     });
   }
 
@@ -317,7 +294,7 @@ function saveResultsToCsv(results: RouteAnalysis[], outputDir: string): string {
   const csvHeader =
     "Origin,Destination,Distance (km),Actual Price,Estimated Price,Error %,Price per km,Distance Tier,Date Collected,Google Flights URL,Error Message";
 
-  const csvRows = results.map(r => {
+  const csvRows = results.map((r) => {
     const actualPrice = r.actualPrice ?? "N/A";
     const errorPercent = r.errorPercent !== null ? r.errorPercent.toFixed(2) : "N/A";
     const pricePerKm = r.pricePerKm !== null ? r.pricePerKm.toFixed(4) : "N/A";
@@ -369,7 +346,7 @@ async function runFlightCostPredictionTest() {
       if (result.actualPrice === null && result.errorMessage) {
         failedDestinations.push({
           destination,
-          error: result.errorMessage
+          error: result.errorMessage,
         });
       }
     }
@@ -380,7 +357,6 @@ async function runFlightCostPredictionTest() {
     // Save results to CSV
     const csvFilePath = saveResultsToCsv(results, outputDir);
     console.log(`\nResults saved to: ${csvFilePath}`);
-
   } catch (error) {
     console.error("Error running flight cost prediction test:", error instanceof Error ? error.message : String(error));
   } finally {

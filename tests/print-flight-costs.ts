@@ -1,4 +1,4 @@
-import { calculateFlightCost } from '../src/utils/flights';
+import { calculateFlightCost } from "../src/utils/flights";
 
 // Test with different distance ranges
 const TEST_DISTANCES = [
@@ -13,11 +13,11 @@ const TEST_DISTANCES = [
 // Simple price model for comparison (similar to the one in distance-price-analysis.test.ts)
 function getBaselinePrice(distance: number): number {
   const BASE_PRICE = 200;
-  return Math.round((BASE_PRICE + (distance * 0.10)) / 5) * 5; // Round to nearest $5
+  return Math.round((BASE_PRICE + distance * 0.1) / 5) * 5; // Round to nearest $5
 }
 
-console.log('Flight Cost Analysis (Distance-Based):');
-console.log('=====================================');
+console.log("Flight Cost Analysis (Distance-Based):");
+console.log("=====================================");
 console.log();
 
 let totalError = 0;
@@ -40,6 +40,6 @@ TEST_DISTANCES.forEach(({ distance, from, to }) => {
   console.log();
 });
 
-console.log('Summary:');
+console.log("Summary:");
 console.log(`Average Error: ${(totalError / TEST_DISTANCES.length).toFixed(2)}%`);
 console.log(`Average Absolute Error: ${(totalAbsError / TEST_DISTANCES.length).toFixed(2)}%`);

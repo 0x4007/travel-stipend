@@ -9,27 +9,17 @@ console.log("------------------------------------------");
 
 // Print all Barcelona entries in the database
 console.log("\nAll Barcelona entries in the database:");
-const barcelonaEntries = cityNames.filter(name =>
-  name.toLowerCase().includes("barcelona"));
-barcelonaEntries.forEach(entry => {
+const barcelonaEntries = cityNames.filter((name) => name.toLowerCase().includes("barcelona"));
+barcelonaEntries.forEach((entry) => {
   const coords = coordinates.getCoordinates(entry);
   console.log(`- "${entry}" => Coordinates: ${coords?.lat}, ${coords?.lng}`);
 });
 
 // Try different case variations
-const caseVariations = [
-  "Barcelona",
-  "BARCELONA",
-  "barcelona",
-  "Barcelona Spain",
-  "BARCELONA SPAIN",
-  "barcelona spain",
-  "Barcelona SPAIN",
-  "barcelona Spain"
-];
+const caseVariations = ["Barcelona", "BARCELONA", "barcelona", "Barcelona Spain", "BARCELONA SPAIN", "barcelona spain", "Barcelona SPAIN", "barcelona Spain"];
 
 console.log("\nTrying different case variations:");
-caseVariations.forEach(variation => {
+caseVariations.forEach((variation) => {
   const coords = coordinates.getCoordinates(variation);
   console.log(`- "${variation}" => ${coords ? `Found at ${coords.lat}, ${coords.lng}` : "Not found"}`);
 });

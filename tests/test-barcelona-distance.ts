@@ -3,24 +3,24 @@ import { haversineDistance } from "../src/utils/distance";
 
 // Seoul coordinates from constants.ts (ORIGIN = "Seoul, Korea")
 const seoul: Coordinates = {
-  lat: 37.5600,
-  lng: 126.9900
+  lat: 37.56,
+  lng: 126.99,
 };
 
 // Different Barcelona coordinates from coordinates.csv
 const barcelonaSpain: Coordinates = {
   lat: 41.3828,
-  lng: 2.1769
+  lng: 2.1769,
 };
 
 const barcelonaVenezuela: Coordinates = {
   lat: 10.1403,
-  lng: -64.6833
+  lng: -64.6833,
 };
 
 const barcelonaPhilippines: Coordinates = {
   lat: 12.8694,
-  lng: 124.1419
+  lng: 124.1419,
 };
 
 // Calculate distances

@@ -16,9 +16,7 @@ export async function calculateLocalTransportCost(
     }
 
     // Calculate average trip cost using taxi rates
-    const averageTripCost =
-      taxiRates.base_fare +
-      (taxiRates.per_km_rate * taxiRates.typical_trip_km);
+    const averageTripCost = taxiRates.base_fare + taxiRates.per_km_rate * taxiRates.typical_trip_km;
 
     // Assume 2 trips per day (to and from conference)
     const dailyCost = averageTripCost * 2;

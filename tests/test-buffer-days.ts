@@ -15,20 +15,10 @@ if (!fs.existsSync(outputDir)) {
 }
 
 // Helper function to run CLI with different parameters and save output
-async function runTest(
-  description: string,
-  location: string,
-  conferenceStart: string,
-  daysBefore?: number,
-  daysAfter?: number
-): Promise<void> {
+async function runTest(description: string, location: string, conferenceStart: string, daysBefore?: number, daysAfter?: number): Promise<void> {
   return new Promise((resolve) => {
     // Build command with parameters
-    const args = [
-      "src/travel-stipend-cli.ts",
-      location,
-      "--conference-start", conferenceStart,
-    ];
+    const args = ["src/travel-stipend-cli.ts", location, "--conference-start", conferenceStart];
 
     // Add optional parameters
     if (daysBefore !== undefined) {
@@ -86,26 +76,21 @@ async function main() {
   const conferenceStart = "1 April";
 
   // Run different buffer day configurations
-  await runTest("Default buffer (1 day before, 1 day after)",
-                location, conferenceStart);
+  await runTest("Default buffer (1 day before, 1 day after)", location, conferenceStart);
 
-  await runTest("2 days before, 1 day after",
-                location, conferenceStart, 2);
+  await runTest("2 days before, 1 day after", location, conferenceStart, 2);
 
-  await runTest("1 day before, 3 days after",
-                location, conferenceStart, 1, 3);
+  await runTest("1 day before, 3 days after", location, conferenceStart, 1, 3);
 
-  await runTest("3 days before, 2 days after",
-                location, conferenceStart, 3, 2);
+  await runTest("3 days before, 2 days after", location, conferenceStart, 3, 2);
 
-  await runTest("0 days before, 0 days after (same-day travel)",
-                location, conferenceStart, 0, 0);
+  await runTest("0 days before, 0 days after (same-day travel)", location, conferenceStart, 0, 0);
 
   console.log("\nAll tests completed");
 }
 
 // Run main function
-main().catch(err => {
+main().catch((err) => {
   console.error("Error running tests:", err);
   process.exit(1);
 });

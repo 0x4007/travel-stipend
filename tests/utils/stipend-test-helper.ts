@@ -19,14 +19,14 @@ export async function calculateTestStipend(
     description: "",
     ticket_price: "",
     buffer_days_before: 1,
-    buffer_days_after: 1
+    buffer_days_after: 1,
   };
 
   // Merge provided record with defaults
   const finalRecord: Conference & { origin: string } = {
     ...defaultRecord,
     ...record,
-    origin
+    origin,
   };
 
   return calculateStipend(finalRecord);
@@ -35,10 +35,7 @@ export async function calculateTestStipend(
 /**
  * Helper function to generate a test conference record
  */
-export function createTestConferenceRecord(
-  location: string,
-  options: Partial<Conference & { origin?: string }> = {}
-): Conference & { origin: string } {
+export function createTestConferenceRecord(location: string, options: Partial<Conference & { origin?: string }> = {}): Conference & { origin: string } {
   return {
     conference: options.conference ?? `Business Trip to ${location}`,
     location,
@@ -49,17 +46,14 @@ export function createTestConferenceRecord(
     description: options.description ?? "",
     ticket_price: options.ticket_price ?? "",
     buffer_days_before: options.buffer_days_before ?? 1,
-    buffer_days_after: options.buffer_days_after ?? 1
+    buffer_days_after: options.buffer_days_after ?? 1,
   };
 }
 
 /**
  * Helper function for testing flight prices to multiple destinations
  */
-export async function calculateTestStipends(
-  destinations: string[],
-  origin: string = DEFAULT_TEST_ORIGIN
-): Promise<StipendBreakdown[]> {
+export async function calculateTestStipends(destinations: string[], origin: string = DEFAULT_TEST_ORIGIN): Promise<StipendBreakdown[]> {
   const results: StipendBreakdown[] = [];
 
   for (const destination of destinations) {

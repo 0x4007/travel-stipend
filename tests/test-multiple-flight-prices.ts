@@ -103,7 +103,7 @@ async function testMultipleFlightPrices() {
             actualPrice: null,
             estimatedPrice: 0,
             errorPercent: null,
-            errorMessage: "No coordinates found for destination"
+            errorMessage: "No coordinates found for destination",
           });
           continue;
         }
@@ -121,7 +121,7 @@ async function testMultipleFlightPrices() {
             actualPrice: null,
             estimatedPrice: 0,
             errorPercent: null,
-            errorMessage: "Could not calculate distance"
+            errorMessage: "Could not calculate distance",
           });
           continue;
         }
@@ -140,15 +140,10 @@ async function testMultipleFlightPrices() {
             // Add a delay between attempts
             if (attempt > 1) {
               console.log(`Retry attempt ${attempt}/3...`);
-              await new Promise(resolve => setTimeout(resolve, 3000));
+              await new Promise((resolve) => setTimeout(resolve, 3000));
             }
 
-            flightResult = await scraper.searchFlights(
-              ORIGIN,
-              destination,
-              DEPARTURE_DATE,
-              RETURN_DATE
-            );
+            flightResult = await scraper.searchFlights(ORIGIN, destination, DEPARTURE_DATE, RETURN_DATE);
 
             if (flightResult.success && "price" in flightResult) {
               break;
@@ -165,7 +160,7 @@ async function testMultipleFlightPrices() {
         }
 
         // Process and store results
-        if (flightResult && flightResult.success && "price" in flightResult) {
+        if (flightResult?.success && "price" in flightResult) {
           const actualPrice = flightResult.price;
           const errorPercent = ((estimatedPrice - actualPrice) / actualPrice) * 100;
 
@@ -179,7 +174,7 @@ async function testMultipleFlightPrices() {
             actualPrice,
             estimatedPrice,
             errorPercent,
-            searchUrl: flightResult.searchUrl
+            searchUrl: flightResult.searchUrl,
           });
         } else {
           console.error("Flight search failed");
@@ -190,13 +185,12 @@ async function testMultipleFlightPrices() {
             actualPrice: null,
             estimatedPrice,
             errorPercent: null,
-            errorMessage: errorMessage || "Flight search failed"
+            errorMessage: errorMessage || "Flight search failed",
           });
         }
 
         // Add delay between destinations to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } catch (error) {
         console.error(`Error processing ${destination}:`, error);
         results.push({
@@ -206,7 +200,7 @@ async function testMultipleFlightPrices() {
           actualPrice: null,
           estimatedPrice: 0,
           errorPercent: null,
-          errorMessage: error instanceof Error ? error.message : String(error)
+          errorMessage: error instanceof Error ? error.message : String(error),
         });
       }
     }
@@ -215,24 +209,23 @@ async function testMultipleFlightPrices() {
     console.log("\n=== Test Results Summary ===");
     console.log(`Total destinations tested: ${DESTINATIONS_TO_TEST.length}`);
 
-    const successfulResults = results.filter(r => r.actualPrice !== null);
+    const successfulResults = results.filter((r) => r.actualPrice !== null);
     console.log(`Successful price lookups: ${successfulResults.length}`);
     console.log(`Failed price lookups: ${results.length - successfulResults.length}`);
 
     if (successfulResults.length > 0) {
-      const avgError = successfulResults.reduce((sum, r) => sum + Math.abs(r.errorPercent!), 0) /
-                      successfulResults.length;
+      const avgError = successfulResults.reduce((sum, r) => sum + Math.abs(r.errorPercent!), 0) / successfulResults.length;
       console.log(`Average error: ${avgError.toFixed(2)}%`);
 
       console.log("\nIndividual results:");
-      successfulResults.forEach(r => {
+      successfulResults.forEach((r) => {
         console.log(`${r.destination}: Estimated $${r.estimatedPrice.toFixed(2)} vs. Actual $${r.actualPrice} (${r.errorPercent!.toFixed(2)}% error)`);
       });
     }
 
     // Save results to CSV
     const csvHeader = "Origin,Destination,Distance (km),Actual Price,Estimated Price,Error %,Search URL,Error Message";
-    const csvRows = results.map(r => {
+    const csvRows = results.map((r) => {
       return [
         r.origin,
         r.destination,
@@ -241,7 +234,7 @@ async function testMultipleFlightPrices() {
         r.estimatedPrice.toFixed(2),
         r.errorPercent === null ? "N/A" : r.errorPercent.toFixed(2),
         r.searchUrl || "",
-        r.errorMessage || ""
+        r.errorMessage || "",
       ].join(",");
     });
 
@@ -250,7 +243,6 @@ async function testMultipleFlightPrices() {
     const csvFilePath = join(outputDir, `flight-test-results-${timestamp}.csv`);
     writeFileSync(csvFilePath, csvContent);
     console.log(`\nResults saved to: ${csvFilePath}`);
-
   } catch (error) {
     console.error("Test failed:", error instanceof Error ? error.message : String(error));
   } finally {

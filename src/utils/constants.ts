@@ -2,9 +2,9 @@
 export const DEFAULT_CONFERENCE_DAYS = 1;
 
 // Default costs (in USD)
-export const DEFAULT_TICKET_PRICE = 1000;  // Conference ticket
-export const DEFAULT_HOTEL_COST = 150;     // Hotel per night
-export const DEFAULT_DAILY_MEALS = 65;     // Food per day
+export const DEFAULT_TICKET_PRICE = 1000; // Conference ticket
+export const DEFAULT_HOTEL_COST = 150; // Hotel per night
+export const DEFAULT_DAILY_MEALS = 65; // Food per day
 export const DEFAULT_DAILY_TRANSPORT = 35; // Local transport per day
 export const DEFAULT_DAILY_INCIDENTALS = 25; // Incidentals per day
 export const BUSINESS_ENTERTAINMENT_PER_DAY = 50; // Business entertainment allowance
@@ -15,7 +15,7 @@ export const BASE_LODGING_PER_NIGHT = DEFAULT_HOTEL_COST;
 export const INCIDENTALS_PER_DAY = DEFAULT_DAILY_INCIDENTALS;
 
 // Buffer days for travel
-export const PRE_CONFERENCE_DAYS = 1;  // Days to arrive before conference
+export const PRE_CONFERENCE_DAYS = 1; // Days to arrive before conference
 export const POST_CONFERENCE_DAYS = 1; // Days to stay after conference
 
 // Other constants

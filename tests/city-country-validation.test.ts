@@ -13,7 +13,7 @@ describe("City and Country Validation", () => {
     expect(result.isValid).toBe(true);
     expect(result.validatedDestination).toContain("ES");
     expect(result.suggestions).toBeDefined();
-    expect(result.suggestions?.some(s => s.includes("ES"))).toBe(true);
+    expect(result.suggestions?.some((s) => s.includes("ES"))).toBe(true);
   });
 
   test("should reject Barcelona, Philippines", async () => {
@@ -21,7 +21,7 @@ describe("City and Country Validation", () => {
     expect(result.isValid).toBe(false);
     expect(result.error).toBeDefined();
     expect(result.suggestions).toBeDefined();
-    expect(result.suggestions?.some(s => s.includes("ES"))).toBe(true);
+    expect(result.suggestions?.some((s) => s.includes("ES"))).toBe(true);
   });
 
   test("should handle empty input", async () => {

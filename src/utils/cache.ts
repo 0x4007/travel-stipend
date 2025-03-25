@@ -6,7 +6,7 @@ import path from "path";
  * Creates a hash key for caching values based on input parameters
  */
 export function createHashKey(values: (string | number | undefined)[]): string {
-  const stringValues = values.map(v => v?.toString() ?? "undefined").join("|");
+  const stringValues = values.map((v) => v?.toString() ?? "undefined").join("|");
   return crypto.createHash("sha256").update(stringValues).digest("hex");
 }
 

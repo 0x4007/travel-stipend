@@ -10,25 +10,25 @@
  * This file is kept for reference purposes only.
  */
 
-import { build } from 'esbuild';
-import { resolve } from 'path';
-import { mkdir } from 'fs/promises';
+import { build } from "esbuild";
+import { resolve } from "path";
+import { mkdir } from "fs/promises";
 
 async function buildAction() {
-  console.warn('WARNING: This script is deprecated. The travel stipend calculator now runs directly via GitHub workflows.');
-  console.warn('See .github/workflows/calculate-stipend.yml for the current implementation.');
-  console.warn('Running this script is not necessary and may create confusion with duplicate implementations.');
+  console.warn("WARNING: This script is deprecated. The travel stipend calculator now runs directly via GitHub workflows.");
+  console.warn("See .github/workflows/calculate-stipend.yml for the current implementation.");
+  console.warn("Running this script is not necessary and may create confusion with duplicate implementations.");
 
   // Ask for confirmation before proceeding
-  if (process.env.FORCE_BUILD !== 'true') {
-    console.error('Aborting build. Set FORCE_BUILD=true to override if you really need to build this.');
+  if (process.env.FORCE_BUILD !== "true") {
+    console.error("Aborting build. Set FORCE_BUILD=true to override if you really need to build this.");
     process.exit(1);
   }
 
-  console.log('Proceeding with build as FORCE_BUILD=true...');
+  console.log("Proceeding with build as FORCE_BUILD=true...");
   try {
     // First ensure the output directory exists
-    const outputDir = resolve(process.cwd(), '.github/actions/calculate-stipend');
+    const outputDir = resolve(process.cwd(), ".github/actions/calculate-stipend");
 
     // Create directory structure recursively
     try {
@@ -41,17 +41,17 @@ async function buildAction() {
 
     // Build the action
     await build({
-      entryPoints: [resolve(process.cwd(), 'src/github-action-handler.ts')],
+      entryPoints: [resolve(process.cwd(), "src/github-action-handler.ts")],
       bundle: true,
-      platform: 'node',
-      target: 'node20',
-      outfile: resolve(outputDir, 'index.js'),
-      external: ['@actions/core', 'puppeteer-core'],
+      platform: "node",
+      target: "node20",
+      outfile: resolve(outputDir, "index.js"),
+      external: ["@actions/core", "puppeteer-core"],
       sourcemap: true,
-      format: 'esm',
+      format: "esm",
       define: {
-        'process.env.NODE_ENV': '"production"'
-      }
+        "process.env.NODE_ENV": '"production"',
+      },
     });
 
     // Create action.yml file
@@ -91,7 +91,7 @@ runs:
 `.trim();
 
     // Write action.yml
-    await Bun.write(resolve(outputDir, 'action.yml'), actionYml);
+    await Bun.write(resolve(outputDir, "action.yml"), actionYml);
 
     // Write README
     const readmeContent = `
@@ -138,16 +138,16 @@ This action calculates travel stipends for conferences and business trips.
 `.trim();
 
     // Write README.md
-    await Bun.write(resolve(outputDir, 'README.md'), readmeContent);
+    await Bun.write(resolve(outputDir, "README.md"), readmeContent);
 
-    console.log('GitHub Action built successfully in .github/actions/calculate-stipend/');
+    console.log("GitHub Action built successfully in .github/actions/calculate-stipend/");
   } catch (error) {
-    console.error('Build failed:', error);
+    console.error("Build failed:", error);
     process.exit(1);
   }
 }
 
-buildAction().catch(error => {
-  console.error('Failed to build action:', error);
+buildAction().catch((error) => {
+  console.error("Failed to build action:", error);
   process.exit(1);
 });

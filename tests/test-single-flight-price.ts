@@ -1,7 +1,7 @@
 import { GoogleFlightsScraper } from "../src/utils/google-flights-scraper";
 
 const ORIGIN = "Seoul, South Korea";
-const DESTINATION = "Tokyo, Japan";  // A relatively close destination for quick testing
+const DESTINATION = "Tokyo, Japan"; // A relatively close destination for quick testing
 const DEPARTURE_DATE = "2025-05-25";
 const RETURN_DATE = "2025-06-01";
 
@@ -47,12 +47,7 @@ async function testSingleFlightPrice() {
 
     // Search for flights
     console.log("\nSearching for flights...");
-    const result = await scraper.searchFlights(
-      ORIGIN,
-      DESTINATION,
-      DEPARTURE_DATE,
-      RETURN_DATE
-    );
+    const result = await scraper.searchFlights(ORIGIN, DESTINATION, DEPARTURE_DATE, RETURN_DATE);
 
     if (result.success && "price" in result) {
       console.log("\nFlight search successful!");
@@ -64,7 +59,6 @@ async function testSingleFlightPrice() {
       console.error("\nFlight search failed");
       console.error("Result:", JSON.stringify(result, null, 2));
     }
-
   } catch (error) {
     console.error("Test failed:", error instanceof Error ? error.message : String(error));
   } finally {

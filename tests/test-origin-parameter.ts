@@ -21,10 +21,7 @@ async function testOriginParameter() {
   try {
     const customOrigin = "London, GB";
     console.log("2. Testing with custom origin:");
-    const result = await calculateTestStipend(
-      { location: DEFAULT_TEST_DESTINATIONS[0] },
-      customOrigin
-    );
+    const result = await calculateTestStipend({ location: DEFAULT_TEST_DESTINATIONS[0] }, customOrigin);
     console.log(`- Origin: ${customOrigin}`);
     console.log(`- Destination: ${result.location}`);
     console.log(`- Flight cost: $${result.flight_cost}`);
@@ -36,10 +33,7 @@ async function testOriginParameter() {
   // Test same origin and destination
   try {
     console.log("3. Testing same origin and destination:");
-    const result = await calculateTestStipend(
-      { location: DEFAULT_TEST_ORIGIN },
-      DEFAULT_TEST_ORIGIN
-    );
+    const result = await calculateTestStipend({ location: DEFAULT_TEST_ORIGIN }, DEFAULT_TEST_ORIGIN);
     console.log(`- Origin: ${DEFAULT_TEST_ORIGIN}`);
     console.log(`- Destination: ${result.location}`);
     console.log(`- Flight cost: $${result.flight_cost}`);

@@ -18,11 +18,11 @@ const MISSING_CITIES: Record<string, Coordinates> = {
   // Europe
   "Florence, Italy": { lat: 43.7696, lng: 11.2558 },
   "Cannes, France": { lat: 43.5528, lng: 7.0174 },
-  "Milan, Italy": { lat: 45.4642, lng: 9.1900 },
+  "Milan, Italy": { lat: 45.4642, lng: 9.19 },
 
   // Asia
-  "Taipei, Taiwan": { lat: 25.0330, lng: 121.5654 },
-  "Kyoto, Japan": { lat: 35.0116, lng: 135.7681 }
+  "Taipei, Taiwan": { lat: 25.033, lng: 121.5654 },
+  "Kyoto, Japan": { lat: 35.0116, lng: 135.7681 },
 };
 
 /**

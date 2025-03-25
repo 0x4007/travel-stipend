@@ -54,7 +54,6 @@ async function debugCityMatching() {
     console.log("2. City names without country are matched to the most common/relevant entry");
     console.log("3. Legacy country names (e.g., 'Korea' vs 'KR') are supported but not preferred");
     console.log("4. GB vs UK: GB (Great Britain) is the official ISO code");
-
   } catch (error) {
     console.error("\nError:", (error as Error).message);
   } finally {

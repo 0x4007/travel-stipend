@@ -1,9 +1,9 @@
-import { parse } from 'csv-parse';
-import fs from 'fs';
-import path from 'path';
-import { Database, open } from 'sqlite';
-import sqlite3 from 'sqlite3';
-import { Conference } from '../types';
+import { parse } from "csv-parse";
+import fs from "fs";
+import path from "path";
+import { Database, open } from "sqlite";
+import sqlite3 from "sqlite3";
+import { Conference } from "../types";
 
 interface TaxiRates {
   city: string;
@@ -36,43 +36,43 @@ export class DatabaseService {
     if (this._initialized) return;
 
     try {
-      console.log('Initializing database...');
+      console.log("Initializing database...");
 
       // Create database directory if it doesn't exist
-      const dbDir = path.join(process.cwd(), 'db');
+      const dbDir = path.join(process.cwd(), "db");
       if (!fs.existsSync(dbDir)) {
-        console.log('Creating database directory:', dbDir);
+        console.log("Creating database directory:", dbDir);
         fs.mkdirSync(dbDir);
       }
 
       // Use the existing database file in the db directory if it exists
-      const dbPath = path.join(dbDir, 'travel-stipend.db');
+      const dbPath = path.join(dbDir, "travel-stipend.db");
 
       // Open database connection
-      console.log('Opening database connection...');
+      console.log("Opening database connection...");
       this._db = await open({
         filename: dbPath,
-        driver: sqlite3.Database
+        driver: sqlite3.Database,
       });
 
       // Create tables
-      console.log('Creating tables...');
+      console.log("Creating tables...");
       await this._createTables();
 
       // Import data if tables are empty
-      console.log('Importing data if needed...');
+      console.log("Importing data if needed...");
       await this._importDataIfNeeded();
 
       this._initialized = true;
-      console.log('Database initialization complete.');
+      console.log("Database initialization complete.");
     } catch (error) {
-      console.error('Error during database initialization:', error);
+      console.error("Error during database initialization:", error);
       throw error;
     }
   }
 
   private async _createTables(): Promise<void> {
-    if (!this._db) throw new Error('Database not initialized');
+    if (!this._db) throw new Error("Database not initialized");
 
     try {
       await this._db.exec(`
@@ -95,9 +95,9 @@ export class DatabaseService {
           typical_trip_km REAL NOT NULL
         );
       `);
-      console.log('Tables created successfully.');
+      console.log("Tables created successfully.");
     } catch (error) {
-      console.error('Error creating tables:', error);
+      console.error("Error creating tables:", error);
       throw error;
     }
   }
@@ -106,33 +106,37 @@ export class DatabaseService {
     return new Promise((resolve, reject) => {
       const results: CsvRow[] = [];
       fs.createReadStream(filePath)
-        .pipe(parse({
-          columns: true,
-          skip_empty_lines: true,
-          trim: true
-        }))
-        .on('data', (data) => {
+        .pipe(
+          parse({
+            columns: true,
+            skip_empty_lines: true,
+            trim: true,
+          })
+        )
+        .on("data", (data) => {
           results.push(data);
         })
-        .on('end', () => {
+        .on("end", () => {
           console.log(`Imported ${results.length} rows`);
           resolve(results);
         })
-        .on('error', (error) => reject(error));
+        .on("error", (error) => reject(error));
     });
   }
 
   private async _importConferences(rows: CsvRow[]): Promise<void> {
-    if (!this._db) throw new Error('Database not initialized');
+    if (!this._db) throw new Error("Database not initialized");
 
-    const values = rows.map(row => ({
-      category: row.Category ?? row.category ?? '',
-      conference: row.Name ?? row.name ?? row.Conference ?? row.conference ?? '',
-      location: row.Location ?? row.location ?? ''
-    })).filter(v => v.category && v.conference && v.location);
+    const values = rows
+      .map((row) => ({
+        category: row.Category ?? row.category ?? "",
+        conference: row.Name ?? row.name ?? row.Conference ?? row.conference ?? "",
+        location: row.Location ?? row.location ?? "",
+      }))
+      .filter((v) => v.category && v.conference && v.location);
 
     try {
-      await this._db.run('BEGIN TRANSACTION');
+      await this._db.run("BEGIN TRANSACTION");
       for (const value of values) {
         await this._db.run(
           `INSERT OR REPLACE INTO conferences (category, conference, location)
@@ -140,30 +144,30 @@ export class DatabaseService {
           [value.category, value.conference, value.location]
         );
       }
-      await this._db.run('COMMIT');
+      await this._db.run("COMMIT");
     } catch (error) {
-      await this._db.run('ROLLBACK');
+      await this._db.run("ROLLBACK");
       throw error;
     }
   }
 
   private async _importCostOfLiving(rows: CsvRow[]): Promise<void> {
-    if (!this._db) throw new Error('Database not initialized');
+    if (!this._db) throw new Error("Database not initialized");
 
-    const values = rows.map(row => {
-      const location = row.Location ?? '';
-      const city = location.split(',')[0].trim();
-      const costIndexRaw = row.Index ?? '';
-      const costIndex = costIndexRaw && !isNaN(parseFloat(costIndexRaw))
-        ? parseFloat(costIndexRaw)
-        : null;
+    const values = rows
+      .map((row) => {
+        const location = row.Location ?? "";
+        const city = location.split(",")[0].trim();
+        const costIndexRaw = row.Index ?? "";
+        const costIndex = costIndexRaw && !isNaN(parseFloat(costIndexRaw)) ? parseFloat(costIndexRaw) : null;
 
-      return { city, cost_index: costIndex };
-    }).filter(v => v.city);
+        return { city, cost_index: costIndex };
+      })
+      .filter((v) => v.city);
 
     try {
-      console.log('Importing cost of living, filtered values:', values.length);
-      await this._db.run('BEGIN TRANSACTION');
+      console.log("Importing cost of living, filtered values:", values.length);
+      await this._db.run("BEGIN TRANSACTION");
       for (const value of values) {
         try {
           await this._db.run(
@@ -172,39 +176,41 @@ export class DatabaseService {
             [value.city, value.cost_index]
           );
         } catch (error) {
-          console.error('Error inserting cost of living:', error);
-          console.error('Value:', value);
+          console.error("Error inserting cost of living:", error);
+          console.error("Value:", value);
         }
       }
-      await this._db.run('COMMIT');
-      console.log('Cost of living import completed');
+      await this._db.run("COMMIT");
+      console.log("Cost of living import completed");
     } catch (error) {
-      await this._db.run('ROLLBACK');
+      await this._db.run("ROLLBACK");
       throw error;
     }
   }
 
   private async _importTaxis(rows: CsvRow[]): Promise<void> {
-    if (!this._db) throw new Error('Database not initialized');
+    if (!this._db) throw new Error("Database not initialized");
 
-    const values = rows.map(row => {
-      const country = row.Country ?? '';
-      const baseFareRaw = row['Start Price (USD)'] ?? '0';
-      const perKmRateRaw = row['Price per km (USD)'] ?? '0';
-      const baseFare = parseFloat(baseFareRaw);
-      const perKmRate = parseFloat(perKmRateRaw);
+    const values = rows
+      .map((row) => {
+        const country = row.Country ?? "";
+        const baseFareRaw = row["Start Price (USD)"] ?? "0";
+        const perKmRateRaw = row["Price per km (USD)"] ?? "0";
+        const baseFare = parseFloat(baseFareRaw);
+        const perKmRate = parseFloat(perKmRateRaw);
 
-      return {
-        city: country, // Using country as city for now
-        base_fare: baseFare,
-        per_km_rate: perKmRate,
-        typical_trip_km: 10 // Default value
-      };
-    }).filter(v => v.city && !isNaN(v.base_fare) && !isNaN(v.per_km_rate));
+        return {
+          city: country, // Using country as city for now
+          base_fare: baseFare,
+          per_km_rate: perKmRate,
+          typical_trip_km: 10, // Default value
+        };
+      })
+      .filter((v) => v.city && !isNaN(v.base_fare) && !isNaN(v.per_km_rate));
 
     try {
-      console.log('Importing taxi rates, filtered values:', values.length);
-      await this._db.run('BEGIN TRANSACTION');
+      console.log("Importing taxi rates, filtered values:", values.length);
+      await this._db.run("BEGIN TRANSACTION");
       for (const value of values) {
         try {
           await this._db.run(
@@ -214,30 +220,30 @@ export class DatabaseService {
             [value.city, value.base_fare, value.per_km_rate, value.typical_trip_km]
           );
         } catch (error) {
-          console.error('Error inserting taxi rates:', error);
-          console.error('Value:', value);
+          console.error("Error inserting taxi rates:", error);
+          console.error("Value:", value);
         }
       }
-      await this._db.run('COMMIT');
-      console.log('Taxi rates import completed');
+      await this._db.run("COMMIT");
+      console.log("Taxi rates import completed");
     } catch (error) {
-      await this._db.run('ROLLBACK');
+      await this._db.run("ROLLBACK");
       throw error;
     }
   }
 
   private async _importCsvToTable(table: string): Promise<void> {
-    if (!this._db) throw new Error('Database not initialized');
+    if (!this._db) throw new Error("Database not initialized");
 
     try {
-      const filename = table === 'cost_of_living' ? 'cost_of_living.csv' : `${table.replace('_', '-')}.csv`;
+      const filename = table === "cost_of_living" ? "cost_of_living.csv" : `${table.replace("_", "-")}.csv`;
 
       // Try all possible locations for the CSV files
       const possiblePaths = [
-        path.join(process.cwd(), 'fixtures', filename),
-        path.join(process.cwd(), 'fixtures', 'csv', filename),
+        path.join(process.cwd(), "fixtures", filename),
+        path.join(process.cwd(), "fixtures", "csv", filename),
         path.join(process.cwd(), filename),
-        path.join('/Users/nv/repos/0x4007/travel-stipend/fixtures', filename)
+        path.join("/Users/nv/repos/0x4007/travel-stipend/fixtures", filename),
       ];
 
       // Find the first path that exists
@@ -260,13 +266,13 @@ export class DatabaseService {
       const rows = await this._parseCsv(csvPath);
 
       switch (table) {
-        case 'conferences':
+        case "conferences":
           await this._importConferences(rows);
           break;
-        case 'cost_of_living':
+        case "cost_of_living":
           await this._importCostOfLiving(rows);
           break;
-        case 'taxis':
+        case "taxis":
           await this._importTaxis(rows);
           break;
         default:
@@ -279,14 +285,14 @@ export class DatabaseService {
   }
 
   private async _importDataIfNeeded(): Promise<void> {
-    if (!this._db) throw new Error('Database not initialized');
+    if (!this._db) throw new Error("Database not initialized");
 
     // Check if tables need importing
-    const tables = ['conferences', 'cost_of_living', 'taxis'];
+    const tables = ["conferences", "cost_of_living", "taxis"];
     let hasAllTablesPopulated = true;
 
     // First phase: just check table counts
-    console.log('Checking if tables have data...');
+    console.log("Checking if tables have data...");
     for (const table of tables) {
       try {
         const result = await this._db.get<{ count: number }>(`SELECT COUNT(*) as count FROM ${table}`);
@@ -304,12 +310,12 @@ export class DatabaseService {
 
     // If all tables have some data, skip the import
     if (hasAllTablesPopulated) {
-      console.log('All tables already have data. Skipping import phase.');
+      console.log("All tables already have data. Skipping import phase.");
       return;
     }
 
     // Second phase: import data for empty tables
-    console.log('Starting data import for empty tables...');
+    console.log("Starting data import for empty tables...");
     for (const table of tables) {
       try {
         console.log(`Checking table ${table} for import...`);
@@ -329,35 +335,29 @@ export class DatabaseService {
       }
     }
 
-    console.log('Data import process completed');
+    console.log("Data import process completed");
   }
 
   public async getConferences(): Promise<Conference[]> {
     await this._init();
-    if (!this._db) throw new Error('Database not initialized');
+    if (!this._db) throw new Error("Database not initialized");
 
-    return this._db.all<Conference[]>('SELECT * FROM conferences');
+    return this._db.all<Conference[]>("SELECT * FROM conferences");
   }
 
   public async getCostOfLiving(city: string): Promise<number | null> {
     await this._init();
-    if (!this._db) throw new Error('Database not initialized');
+    if (!this._db) throw new Error("Database not initialized");
 
-    const result = await this._db.get<{ cost_index: number | null }>(
-      'SELECT cost_index FROM cost_of_living WHERE city = ?',
-      [city]
-    );
+    const result = await this._db.get<{ cost_index: number | null }>("SELECT cost_index FROM cost_of_living WHERE city = ?", [city]);
     return result?.cost_index ?? null;
   }
 
   public async getTaxiRates(city: string): Promise<TaxiRates | undefined> {
     await this._init();
-    if (!this._db) throw new Error('Database not initialized');
+    if (!this._db) throw new Error("Database not initialized");
 
-    return this._db.get<TaxiRates>(
-      'SELECT city, base_fare, per_km_rate, typical_trip_km FROM taxis WHERE city = ?',
-      [city]
-    );
+    return this._db.get<TaxiRates>("SELECT city, base_fare, per_km_rate, typical_trip_km FROM taxis WHERE city = ?", [city]);
   }
 
   public async close(): Promise<void> {

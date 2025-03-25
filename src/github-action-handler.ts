@@ -1,16 +1,16 @@
 #!/usr/bin/env bun
-import * as core from '@actions/core';
+import * as core from "@actions/core";
 import { calculateStipend } from "./travel-stipend-calculator";
 import { Conference } from "./types";
 import { DatabaseService } from "./utils/database";
 import { appendFileSync } from "fs";
 
 // Allow script to run both as GitHub Action and directly via workflow
-function getInput(name: string, options?: { required: boolean; }): string {
+function getInput(name: string, options?: { required: boolean }): string {
   // When run directly via workflow, inputs are passed via environment variables
-  const envName = `INPUT_${name.replace(/ /g, '_').toUpperCase()}`;
+  const envName = `INPUT_${name.replace(/ /g, "_").toUpperCase()}`;
   if (process.env[envName]) {
-    return process.env[envName] ?? '';
+    return process.env[envName] ?? "";
   }
   // When run as a GitHub Action, inputs are accessed via @actions/core
   return core.getInput(name, options);
@@ -56,7 +56,7 @@ async function getBusinessTripDefaults(location: string): Promise<{ name: string
   return {
     name: `Business Trip to ${location}`,
     category: "GitHub Action",
-    description: ""
+    description: "",
   };
 }
 
@@ -73,13 +73,13 @@ async function run(): Promise<void> {
 
     // Safety check: require at least 1 day before AND 1 day after for flights
     if (daysBefore < 1) {
-      logWarning('Cannot fly on conference start day - you would miss the beginning!');
-      logWarning('Using minimum 1 day before conference');
+      logWarning("Cannot fly on conference start day - you would miss the beginning!");
+      logWarning("Using minimum 1 day before conference");
     }
 
     if (daysAfter < 1) {
-      logWarning('Cannot fly on conference end day - you would miss the conclusion!');
-      logWarning('Using minimum 1 day after conference');
+      logWarning("Cannot fly on conference end day - you would miss the conclusion!");
+      logWarning("Using minimum 1 day after conference");
     }
 
     // Get conference details (use simple business trip defaults)
@@ -96,7 +96,7 @@ async function run(): Promise<void> {
       category,
       description,
       buffer_days_before: daysBefore,
-      buffer_days_after: daysAfter
+      buffer_days_after: daysAfter,
     };
 
     // Detect environment
@@ -110,16 +110,16 @@ async function run(): Promise<void> {
     const timeout = parseInt(process.env.PUPPETEER_TIMEOUT ?? "60000", 10);
 
     // Determine screenshot mode
-    let screenshotMode = 'Disabled';
+    let screenshotMode = "Disabled";
     if (shouldCaptureScreenshots) {
-      screenshotMode = 'Enabled';
+      screenshotMode = "Enabled";
     } else if (process.env.ENABLE_ERROR_SCREENSHOTS === "true") {
-      screenshotMode = 'Error-only';
+      screenshotMode = "Error-only";
     }
 
     // Log environment and configuration
-    logInfo(`Environment: ${isGitHubActions ? 'GitHub Actions' : 'Local'}`);
-    logInfo(`Debug mode: ${isDebugMode ? 'Enabled' : 'Disabled'}`);
+    logInfo(`Environment: ${isGitHubActions ? "GitHub Actions" : "Local"}`);
+    logInfo(`Debug mode: ${isDebugMode ? "Enabled" : "Disabled"}`);
     logInfo(`Screenshots: ${screenshotMode}`);
     logInfo(`Timeout: ${timeout}ms`);
 
@@ -145,51 +145,48 @@ async function run(): Promise<void> {
       total_stipend: result.total_stipend,
       stay_duration: {
         nights,
-        days
-      }
+        days,
+      },
     };
 
     // Set outputs
-    setOutput('stipend', stipendResult);
+    setOutput("stipend", stipendResult);
 
     // Build summary table
     const summaryTable = [
       [
-        { data: 'Item', header: true },
-        { data: 'Details', header: true },
-        { data: 'Cost', header: true }
+        { data: "Item", header: true },
+        { data: "Details", header: true },
+        { data: "Cost", header: true },
       ],
-      ['Conference', `${result.conference} in ${result.location}`, ''],
-      ['Dates', `${result.conference_start} to ${result.conference_end}`, ''],
-      ['Travel', `${result.flight_departure} to ${result.flight_return}`, ''],
-      ['Flight', result.flight_price_source, `$${result.flight_cost}`],
-      ['Lodging', `${nights} nights`, `$${result.lodging_cost}`],
-      ['Meals', `${days} days`, `$${result.meals_cost}`],
-      ['Local Transport', `${days} days`, `$${result.local_transport_cost}`],
-      ['Conference Ticket', '', `$${result.ticket_price}`],
-      ['Total Stipend', '', `$${result.total_stipend}`]
+      ["Conference", `${result.conference} in ${result.location}`, ""],
+      ["Dates", `${result.conference_start} to ${result.conference_end}`, ""],
+      ["Travel", `${result.flight_departure} to ${result.flight_return}`, ""],
+      ["Flight", result.flight_price_source, `$${result.flight_cost}`],
+      ["Lodging", `${nights} nights`, `$${result.lodging_cost}`],
+      ["Meals", `${days} days`, `$${result.meals_cost}`],
+      ["Local Transport", `${days} days`, `$${result.local_transport_cost}`],
+      ["Conference Ticket", "", `$${result.ticket_price}`],
+      ["Total Stipend", "", `$${result.total_stipend}`],
     ];
 
     // Log results to console in table format (for direct workflow run)
-    console.log('\nTravel Stipend Calculation:');
-    console.table(summaryTable.slice(1).map(row => {
-      return { Item: row[0], Details: row[1], Cost: row[2] };
-    }));
+    console.log("\nTravel Stipend Calculation:");
+    console.table(
+      summaryTable.slice(1).map((row) => {
+        return { Item: row[0], Details: row[1], Cost: row[2] };
+      })
+    );
 
     // Write GitHub summary if in GitHub Actions environment
     if (process.env.GITHUB_STEP_SUMMARY) {
-      await core.summary
-        .addHeading('Travel Stipend Calculation')
-        .addTable(summaryTable)
-        .addBreak()
-        .write();
+      await core.summary.addHeading("Travel Stipend Calculation").addTable(summaryTable).addBreak().write();
     }
-
   } catch (error) {
     if (error instanceof Error) {
       setFailed(error.message);
     } else {
-      setFailed('An unexpected error occurred');
+      setFailed("An unexpected error occurred");
     }
   } finally {
     await DatabaseService.getInstance().close();
@@ -197,6 +194,6 @@ async function run(): Promise<void> {
 }
 
 // Handle errors in the top-level async function
-run().catch(error => {
+run().catch((error) => {
   setFailed(`Unhandled error in run(): ${error}`);
 });

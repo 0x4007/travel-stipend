@@ -3,44 +3,44 @@ on:
   # Run on every push to test with default values
   push:
     branches:
-      - '**'  # Run on any branch push
+      - "**" # Run on any branch push
 
   # Manual dispatch with custom inputs
   workflow_dispatch:
     inputs:
       use_test_defaults:
-        description: 'Use default test values (Barcelona, May 20-22, 2025)'
+        description: "Use default test values (Barcelona, May 20-22, 2025)"
         required: false
         type: boolean
         default: false
       location:
         description: 'Destination location (e.g. "Singapore")'
-        required: false  # Not required if using defaults
+        required: false # Not required if using defaults
         type: string
       conference_start:
         description: 'Conference start date (e.g. "20 May 2025")'
-        required: false  # Not required if using defaults
+        required: false # Not required if using defaults
         type: string
       conference_end:
-        description: 'Conference end date'
+        description: "Conference end date"
         required: false
         type: string
       conference_name:
-        description: 'Conference name'
+        description: "Conference name"
         required: false
         type: string
       days_before:
-        description: 'Days to arrive before conference (minimum 1 required)'
+        description: "Days to arrive before conference (minimum 1 required)"
         required: false
         type: number
-        default: 2
+        default: 1
       days_after:
-        description: 'Days to leave after conference (minimum 1 required)'
+        description: "Days to leave after conference (minimum 1 required)"
         required: false
         type: number
         default: 1
       ticket_price:
-        description: 'Conference ticket price'
+        description: "Conference ticket price"
         required: false
         type: number
 
@@ -86,12 +86,12 @@ jobs:
           INPUT_CONFERENCE_START: ${{ (github.event_name == 'push' || github.event.inputs.use_test_defaults) && '20 May 2025' || github.event.inputs.conference_start }}
           INPUT_CONFERENCE_END: ${{ (github.event_name == 'push' || github.event.inputs.use_test_defaults) && '22 May 2025' || github.event.inputs.conference_end || github.event.inputs.conference_start }}
           INPUT_CONFERENCE_NAME: ${{ (github.event_name == 'push' || github.event.inputs.use_test_defaults) && 'Test Conference 2025' || github.event.inputs.conference_name }}
-          INPUT_DAYS_BEFORE: ${{ (github.event_name == 'push' || github.event.inputs.use_test_defaults) && '2' || github.event.inputs.days_before }}
+          INPUT_DAYS_BEFORE: ${{ (github.event_name == 'push' || github.event.inputs.use_test_defaults) && '1' || github.event.inputs.days_before }}
           INPUT_DAYS_AFTER: ${{ (github.event_name == 'push' || github.event.inputs.use_test_defaults) && '1' || github.event.inputs.days_after }}
           INPUT_TICKET_PRICE: ${{ (github.event_name == 'push' || github.event.inputs.use_test_defaults) && '750' || github.event.inputs.ticket_price }}
           # Pass through GitHub secrets to the script
-          AMADEUS_API_KEY: ${{ secrets.AMADEUS_API_KEY }}
-          AMADEUS_API_SECRET: ${{ secrets.AMADEUS_API_SECRET }}
+          # AMADEUS_API_KEY: ${{ secrets.AMADEUS_API_KEY }}
+          # AMADEUS_API_SECRET: ${{ secrets.AMADEUS_API_SECRET }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Run with targeted error logging only

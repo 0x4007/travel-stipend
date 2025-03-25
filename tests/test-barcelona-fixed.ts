@@ -10,7 +10,7 @@ async function testBarcelonaPricingFixed() {
 
   // Use IATA airport codes for Amadeus API
   const originCode = "ICN"; // Incheon International Airport (Seoul)
-  const destCode = "BCN";   // Barcelona El Prat Airport
+  const destCode = "BCN"; // Barcelona El Prat Airport
 
   // Use a date range a few months in the future
   const departureDate = "2025-06-15";
@@ -61,8 +61,8 @@ async function testBarcelonaPricingFixed() {
     console.log("Searching for flights with major carriers only...");
     const amadeusWithMajor = new AmadeusApi(apiKey, apiSecret, true);
     const resultMajor = await amadeusWithMajor.searchFlights(
-      originCode,  // Using airport code instead of city name
-      destCode,    // Using airport code instead of city name
+      originCode, // Using airport code instead of city name
+      destCode, // Using airport code instead of city name
       departureDate,
       returnDate
     );
@@ -98,7 +98,7 @@ async function testBarcelonaPricingFixed() {
         console.log(`Number of flights filtered out: ${resultMajor.allPrices.length - (resultMajor.prices?.length || 0)}`);
 
         // Calculate filtering impact percentage
-        const filterPercentage = Math.round((resultMajor.allPrices.length - (resultMajor.prices?.length || 0)) / resultMajor.allPrices.length * 100);
+        const filterPercentage = Math.round(((resultMajor.allPrices.length - (resultMajor.prices?.length || 0)) / resultMajor.allPrices.length) * 100);
         console.log(`Percentage of flights filtered out: ${filterPercentage}%`);
       }
     } else {
@@ -114,8 +114,8 @@ async function testBarcelonaPricingFixed() {
     console.log("Searching for flights with all carriers (including budget)...");
     const amadeusAllCarriers = new AmadeusApi(apiKey, apiSecret, false);
     const resultAll = await amadeusAllCarriers.searchFlights(
-      originCode,  // Using airport code instead of city name
-      destCode,    // Using airport code instead of city name
+      originCode, // Using airport code instead of city name
+      destCode, // Using airport code instead of city name
       departureDate,
       returnDate
     );
@@ -155,11 +155,11 @@ async function testBarcelonaPricingFixed() {
           const distanceBasedPrice = calculateFlightCost(distanceKm, destination, origin);
 
           console.log(`\nComparison to Distance-Based Price ($${distanceBasedPrice}):`);
-          const amadeusVsDistance = Math.round((avgPrice - distanceBasedPrice) / distanceBasedPrice * 100);
-          console.log(`- Amadeus average is ${amadeusVsDistance}% ${amadeusVsDistance >= 0 ? 'higher' : 'lower'} than distance-based`);
+          const amadeusVsDistance = Math.round(((avgPrice - distanceBasedPrice) / distanceBasedPrice) * 100);
+          console.log(`- Amadeus average is ${amadeusVsDistance}% ${amadeusVsDistance >= 0 ? "higher" : "lower"} than distance-based`);
 
-          const lowestVsDistance = Math.round((lowestPrice - distanceBasedPrice) / distanceBasedPrice * 100);
-          console.log(`- Amadeus lowest is ${lowestVsDistance}% ${lowestVsDistance >= 0 ? 'higher' : 'lower'} than distance-based`);
+          const lowestVsDistance = Math.round(((lowestPrice - distanceBasedPrice) / distanceBasedPrice) * 100);
+          console.log(`- Amadeus lowest is ${lowestVsDistance}% ${lowestVsDistance >= 0 ? "higher" : "lower"} than distance-based`);
         }
       }
     } else {

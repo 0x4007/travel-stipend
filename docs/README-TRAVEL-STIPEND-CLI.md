@@ -30,28 +30,30 @@ bun run src/travel-stipend-cli.ts --batch
 
 ## Options
 
-| Option | Description |
-|--------|-------------|
-| `[location]` | Destination location (positional argument) |
-| `-c, --conference <name>` | Conference name (optional) |
-| `--start-date <date>` | Conference start date (required for single mode) |
-| `--end-date <date>` | Conference end date (defaults to start date) |
-| `--ticket-price <price>` | Conference ticket price (defaults to standard price) |
-| `-o, --output <format>` | Output format: json, csv, table (default: table) |
-| `-b, --batch` | Process all upcoming conferences (batch mode) |
-| `--sort <field>` | Sort results by field (for batch mode) |
-| `-r, --reverse` | Reverse sort order |
-| `-v, --verbose` | Show detailed output including flight pricing info |
+| Option                    | Description                                          |
+| ------------------------- | ---------------------------------------------------- |
+| `[location]`              | Destination location (positional argument)           |
+| `-c, --conference <name>` | Conference name (optional)                           |
+| `--start-date <date>`     | Conference start date (required for single mode)     |
+| `--end-date <date>`       | Conference end date (defaults to start date)         |
+| `--ticket-price <price>`  | Conference ticket price (defaults to standard price) |
+| `-o, --output <format>`   | Output format: json, csv, table (default: table)     |
+| `-b, --batch`             | Process all upcoming conferences (batch mode)        |
+| `--sort <field>`          | Sort results by field (for batch mode)               |
+| `-r, --reverse`           | Reverse sort order                                   |
+| `-v, --verbose`           | Show detailed output including flight pricing info   |
 
 ## Architecture
 
 This CLI implements multiple strategies for flight pricing:
 
 1. **Google Flights Strategy** - Used in single destination mode
+
    - Scrapes real-time pricing information from Google Flights
    - Most accurate for immediate calculations
 
 2. **Hybrid Strategy** - Used in batch mode
+
    - Combines Amadeus API and distance-based calculation
    - More efficient for batch processing
 

@@ -23,7 +23,6 @@ async function main() {
     // Test getting taxi rates
     const taxi = await db.getTaxiRates("London");
     console.log("London taxi rates:", taxi);
-
   } catch (error) {
     console.error("Test failed:", error);
   } finally {

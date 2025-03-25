@@ -8,12 +8,12 @@ import { getRegion } from "../src/utils/flights";
 function generateTestLocations() {
   // Sample countries from each continent
   const continentMap: Record<string, string> = {
-    "EU": "Europe",
-    "AS": "Asia",
-    "NA": "North America",
-    "SA": "South America",
-    "AF": "Africa",
-    "OC": "Australia"
+    EU: "Europe",
+    AS: "Asia",
+    NA: "North America",
+    SA: "South America",
+    AF: "Africa",
+    OC: "Australia",
   };
 
   const testLocations = [];
@@ -32,7 +32,7 @@ function generateTestLocations() {
     const location = `Capital of ${country.name}, ${country.name}`;
     testLocations.push({
       location,
-      expectedRegion: continentName || "Other"
+      expectedRegion: continentName || "Other",
     });
 
     usedContinents.add(continentName);
@@ -61,8 +61,6 @@ for (const { location, expectedRegion } of testLocations) {
 }
 
 // Count correct results
-const correctCount = testLocations.filter(
-  ({ location, expectedRegion }) => getRegion(location) === expectedRegion
-).length;
+const correctCount = testLocations.filter(({ location, expectedRegion }) => getRegion(location) === expectedRegion).length;
 
-console.log(`\nSummary: ${correctCount}/${testLocations.length} correct (${Math.round(correctCount / testLocations.length * 100)}%)`);
+console.log(`\nSummary: ${correctCount}/${testLocations.length} correct (${Math.round((correctCount / testLocations.length) * 100)}%)`);

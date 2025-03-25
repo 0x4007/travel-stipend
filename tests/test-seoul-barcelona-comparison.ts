@@ -17,7 +17,7 @@ async function main() {
   // Define coordinates
   const coordinates: Record<string, Coordinates> = {
     "Seoul, South Korea": { lat: 37.5665, lng: 126.978 },
-    "Barcelona, Spain": { lat: 41.3851, lng: 2.1734 }
+    "Barcelona, Spain": { lat: 41.3851, lng: 2.1734 },
   };
 
   // Calculate distance
@@ -98,7 +98,6 @@ async function main() {
     if (flightResult.searchUrl) {
       console.log(`\nGoogle Flights URL: ${flightResult.searchUrl}`);
     }
-
   } catch (error) {
     console.error("Error during analysis:", error);
     throw error;

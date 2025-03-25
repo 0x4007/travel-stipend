@@ -10,7 +10,7 @@ describe("Single Conference Complete Calculation Test", () => {
 
     // Get the first upcoming conference
     const currentDate = new Date();
-    const conference = conferences.find(conf => {
+    const conference = conferences.find((conf) => {
       const startDate = new Date(`${conf.start_date} ${currentDate.getFullYear()}`);
       const nextYearDate = new Date(`${conf.start_date} ${currentDate.getFullYear() + 1}`);
       const conferenceDate = startDate < currentDate ? nextYearDate : startDate;
@@ -24,7 +24,7 @@ describe("Single Conference Complete Calculation Test", () => {
     // Add origin for testing
     const conferenceWithOrigin = {
       ...conference,
-      origin: "Seoul, South Korea" // Test with fixed origin
+      origin: "Seoul, South Korea", // Test with fixed origin
     };
 
     console.log("\nNext conference details:");
@@ -62,15 +62,17 @@ describe("Single Conference Complete Calculation Test", () => {
     expect(result.ticket_price).toBeGreaterThanOrEqual(0);
 
     // Total stipend includes all costs
-    const calculatedTotal = parseFloat((
-      result.flight_cost +
-      result.lodging_cost +
-      result.meals_cost +
-      result.local_transport_cost +
-      result.ticket_price +
-      result.internet_data_allowance +
-      result.incidentals_allowance
-    ).toFixed(2));
+    const calculatedTotal = parseFloat(
+      (
+        result.flight_cost +
+        result.lodging_cost +
+        result.meals_cost +
+        result.local_transport_cost +
+        result.ticket_price +
+        result.internet_data_allowance +
+        result.incidentals_allowance
+      ).toFixed(2)
+    );
 
     expect(result.total_stipend).toBe(calculatedTotal);
 

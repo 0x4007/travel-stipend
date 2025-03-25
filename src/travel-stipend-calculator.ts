@@ -67,11 +67,7 @@ async function calculateFlightDetails(
   };
 }
 
-function calculateNights(
-  startDate: string,
-  totalDays: number,
-  preConferenceDays: number
-): { weekdayNights: number; weekendNights: number } {
+function calculateNights(startDate: string, totalDays: number, preConferenceDays: number): { weekdayNights: number; weekendNights: number } {
   const start = new Date(startDate);
   let weekendNights = 0;
   const numberOfNights = totalDays - 1; // One less night than days
@@ -79,7 +75,8 @@ function calculateNights(
   for (let i = 0; i < numberOfNights; i++) {
     const currentDate = new Date(start);
     currentDate.setDate(start.getDate() - preConferenceDays + i);
-    if ([0, 6].includes(currentDate.getDay())) { // 0 = Sunday, 6 = Saturday
+    if ([0, 6].includes(currentDate.getDay())) {
+      // 0 = Sunday, 6 = Saturday
       weekendNights++;
     }
   }
@@ -90,11 +87,7 @@ function calculateNights(
   };
 }
 
-function calculateMealsCosts(
-  totalDays: number,
-  conferenceDays: number,
-  colFactor: number
-): MealCosts {
+function calculateMealsCosts(totalDays: number, conferenceDays: number, colFactor: number): MealCosts {
   let basicMealsCost = 0;
   for (let i = 0; i < totalDays; i++) {
     // Apply duration-based scaling (100% for days 1-3, 85% for days 4+)
@@ -135,12 +128,7 @@ export async function calculateStipend(record: Conference & { origin?: string })
   const isOriginCity = origin === destination;
 
   // Get flight details
-  const { flightCost, flightPriceSource, flightDates } = await calculateFlightDetails(
-    origin,
-    destination,
-    isOriginCity,
-    record
-  );
+  const { flightCost, flightPriceSource, flightDates } = await calculateFlightDetails(origin, destination, isOriginCity, record);
 
   // Get cost-of-living multiplier for the destination
   const colFactor = await getCostOfLivingFactor(destination);
@@ -176,13 +164,7 @@ export async function calculateStipend(record: Conference & { origin?: string })
   const incidentalsAllowance = totalDays * INCIDENTALS_PER_DAY;
 
   // Calculate total stipend
-  const totalStipend = flightCost +
-    lodgingCost +
-    mealsCost +
-    localTransportCost +
-    ticketPrice +
-    internetDataAllowance +
-    incidentalsAllowance;
+  const totalStipend = flightCost + lodgingCost + mealsCost + localTransportCost + ticketPrice + internetDataAllowance + incidentalsAllowance;
 
   // Format dates consistently
   function formatDate(dateStr: string) {
@@ -217,16 +199,27 @@ export async function calculateStipend(record: Conference & { origin?: string })
 function parseArgs(): { sortBy?: keyof StipendBreakdown; reverse: boolean } {
   const args = process.argv.slice(2);
   const validColumns = new Set<keyof StipendBreakdown>([
-    "conference", "location", "conference_start", "conference_end",
-    "flight_departure", "flight_return", "flight_cost", "flight_price_source",
-    "lodging_cost", "basic_meals_cost", "business_entertainment_cost",
-    "local_transport_cost", "ticket_price", "internet_data_allowance",
-    "incidentals_allowance", "total_stipend"
+    "conference",
+    "location",
+    "conference_start",
+    "conference_end",
+    "flight_departure",
+    "flight_return",
+    "flight_cost",
+    "flight_price_source",
+    "lodging_cost",
+    "basic_meals_cost",
+    "business_entertainment_cost",
+    "local_transport_cost",
+    "ticket_price",
+    "internet_data_allowance",
+    "incidentals_allowance",
+    "total_stipend",
   ]);
 
   const options = { reverse: args.includes("-r") || args.includes("--reverse") };
 
-  const sortFlagIndex = args.findIndex(arg => arg === "--sort" || arg === "-s");
+  const sortFlagIndex = args.findIndex((arg) => arg === "--sort" || arg === "-s");
   if (sortFlagIndex !== -1 && sortFlagIndex < args.length - 1) {
     const sortColumn = args[sortFlagIndex + 1] as keyof StipendBreakdown;
     if (validColumns.has(sortColumn)) {
@@ -249,7 +242,7 @@ async function main() {
 
     // Get future conferences
     const currentDate = new Date();
-    const futureRecords = records.filter(record => {
+    const futureRecords = records.filter((record) => {
       try {
         const startDate = new Date(`${record.start_date} ${currentDate.getFullYear()}`);
         const nextYearDate = new Date(`${record.start_date} ${currentDate.getFullYear() + 1}`);
@@ -311,33 +304,58 @@ async function main() {
 
     // Generate CSV
     const header = [
-      "conference", "location", "conference_start", "conference_end",
-      "flight_departure", "flight_return", "flight_cost", "flight_price_source",
-      "lodging_cost", "basic_meals_cost", "business_entertainment_cost",
-      "local_transport_cost", "ticket_price", "internet_data_allowance",
-      "incidentals_allowance", "total_stipend"
+      "conference",
+      "location",
+      "conference_start",
+      "conference_end",
+      "flight_departure",
+      "flight_return",
+      "flight_cost",
+      "flight_price_source",
+      "lodging_cost",
+      "basic_meals_cost",
+      "business_entertainment_cost",
+      "local_transport_cost",
+      "ticket_price",
+      "internet_data_allowance",
+      "incidentals_allowance",
+      "total_stipend",
     ].join(",");
 
-    const rows = results.map(r => ([
-      `"${r.conference}"`, `"${r.location}"`, `"${r.conference_start}"`,
-      `"${r.conference_end ?? ""}"`, `"${r.flight_departure}"`, `"${r.flight_return}"`,
-      r.flight_cost, `"${r.flight_price_source}"`, r.lodging_cost, r.basic_meals_cost,
-      r.business_entertainment_cost, r.local_transport_cost, r.ticket_price,
-      r.internet_data_allowance, r.incidentals_allowance, r.total_stipend
-    ].join(",")));
+    const rows = results.map((r) =>
+      [
+        `"${r.conference}"`,
+        `"${r.location}"`,
+        `"${r.conference_start}"`,
+        `"${r.conference_end ?? ""}"`,
+        `"${r.flight_departure}"`,
+        `"${r.flight_return}"`,
+        r.flight_cost,
+        `"${r.flight_price_source}"`,
+        r.lodging_cost,
+        r.basic_meals_cost,
+        r.business_entertainment_cost,
+        r.local_transport_cost,
+        r.ticket_price,
+        r.internet_data_allowance,
+        r.incidentals_allowance,
+        r.total_stipend,
+      ].join(",")
+    );
 
     fs.writeFileSync(outputFile, [header, ...rows].join("\n"));
     console.log("Calculation complete. Results saved to:", outputFile);
 
-    console.table(results.map(r => ({
-      conference: r.conference,
-      location: r.location,
-      dates: `${r.conference_start} - ${r.conference_end ?? r.conference_start}`,
-      flight_cost: r.flight_cost,
-      lodging_cost: r.lodging_cost,
-      total_stipend: r.total_stipend
-    })));
-
+    console.table(
+      results.map((r) => ({
+        conference: r.conference,
+        location: r.location,
+        dates: `${r.conference_start} - ${r.conference_end ?? r.conference_start}`,
+        flight_cost: r.flight_cost,
+        lodging_cost: r.lodging_cost,
+        total_stipend: r.total_stipend,
+      }))
+    );
   } catch (error) {
     console.error("Error calculating travel stipends:", error);
     process.exit(1);
@@ -345,7 +363,7 @@ async function main() {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch(err => {
+  main().catch((err) => {
     console.error("Execution error:", err);
     process.exit(1);
   });

@@ -12,17 +12,11 @@ const PROBLEMATIC_DESTINATIONS = [
   "Cannes, France",
   "Milan, Italy",
   "Taipei, Taiwan",
-  "Kyoto, Japan"
+  "Kyoto, Japan",
 ];
 
 // Some known working destinations for comparison
-const KNOWN_WORKING_DESTINATIONS = [
-  "New York, USA",
-  "London, UK",
-  "Tokyo, Japan",
-  "Paris, France",
-  "Berlin, Germany"
-];
+const KNOWN_WORKING_DESTINATIONS = ["New York, USA", "London, UK", "Tokyo, Japan", "Paris, France", "Berlin, Germany"];
 
 interface TestResult {
   destination: string;
@@ -85,7 +79,7 @@ async function testImprovedCoordinates() {
   console.log("\n=== Summary ===");
   console.log(`Previously problematic destinations: ${totalProblemDestinations}`);
   console.log(`Now successfully resolved: ${totalSuccess}`);
-  console.log(`Success rate: ${Math.round(totalSuccess / totalProblemDestinations * 100)}%`);
+  console.log(`Success rate: ${Math.round((totalSuccess / totalProblemDestinations) * 100)}%`);
 
   // Save results to CSV
   saveResultsToCsv(results);
@@ -100,7 +94,7 @@ async function testDestination(destination: string): Promise<TestResult> {
     const logMessages: string[] = [];
     const originalConsoleLog = console.log;
     console.log = (...args: any[]) => {
-      logMessages.push(args.join(' '));
+      logMessages.push(args.join(" "));
       originalConsoleLog(...args);
     };
 
@@ -113,9 +107,9 @@ async function testDestination(destination: string): Promise<TestResult> {
     if (coordinates && coordinates.length > 0) {
       // Determine strategy from log messages
       let strategy = "Direct database match";
-      if (logMessages.some(msg => msg.includes("Fuzzy match found"))) {
+      if (logMessages.some((msg) => msg.includes("Fuzzy match found"))) {
         strategy = "Fuzzy matching";
-      } else if (logMessages.some(msg => msg.includes("Using airport coordinates"))) {
+      } else if (logMessages.some((msg) => msg.includes("Using airport coordinates"))) {
         strategy = "Nearest airport";
       }
 
@@ -123,19 +117,19 @@ async function testDestination(destination: string): Promise<TestResult> {
         destination,
         foundCoordinates: true,
         coordinates: coordinates[0],
-        strategy
+        strategy,
       };
     } else {
       return {
         destination,
-        foundCoordinates: false
+        foundCoordinates: false,
       };
     }
   } catch (error) {
     return {
       destination,
       foundCoordinates: false,
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -152,7 +146,7 @@ function saveResultsToCsv(results: TestResult[]) {
 
   // Create CSV content
   const header = "Destination,Success,Latitude,Longitude,Strategy,Error";
-  const rows = results.map(r => {
+  const rows = results.map((r) => {
     const success = r.foundCoordinates ? "Yes" : "No";
     const lat = r.coordinates ? r.coordinates.lat : "";
     const lng = r.coordinates ? r.coordinates.lng : "";

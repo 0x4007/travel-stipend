@@ -3,6 +3,7 @@
 ## Overview of the Issue
 
 Google Flights scraping works locally in headless mode but fails in GitHub Actions environments. The observed errors include:
+
 - `delay is not a function` in the alliance filter handler
 - Date input fields not being detected
 - Protocol errors like `Protocol error (Runtime.callFunctionOn): Argument should belong to the same JavaScript world as target object`
@@ -15,11 +16,13 @@ Google Flights scraping works locally in headless mode but fails in GitHub Actio
 #### Critical Points for Screenshot Capture
 
 - **Initial Navigation**
+
   - After browser launch
   - After navigating to Google Flights
   - After the page is fully loaded
 
 - **Currency Selection**
+
   - Before clicking currency button
   - After clicking currency button
   - After currency dialog appears
@@ -27,6 +30,7 @@ Google Flights scraping works locally in headless mode but fails in GitHub Actio
   - After currency change confirmation
 
 - **Form Interaction**
+
   - Before entering origin/destination
   - After entering origin/destination
   - Before dropdown selection (if applicable)
@@ -34,18 +38,21 @@ Google Flights scraping works locally in headless mode but fails in GitHub Actio
   - All form fields with highlights
 
 - **Date Selection**
+
   - Before clicking date fields
   - After date field dialog opens
   - During date selection process
   - After dates are selected
 
 - **Alliance Filter Process**
+
   - Before clicking airline filter button
   - After airline filter panel opens
   - During alliance checkbox selection
   - After all alliance filters applied
 
 - **Error Conditions**
+
   - At the exact moment when any error occurs
   - State of the page immediately before errors
   - With error details overlaid on screenshot
@@ -74,6 +81,7 @@ async function enhancedScreenshot(
 ```
 
 Improvements to implement:
+
 - Full page vs. viewport screenshots
 - HTML source capture alongside PNG
 - DOM snapshots at critical points
@@ -102,6 +110,7 @@ Improvements to implement:
 ```
 
 Artifact structure:
+
 - Organized by timestamp/sequence
 - Linked HTML and screenshot files
 - Metadata JSON with each screenshot
@@ -133,6 +142,7 @@ jobs:
 ```
 
 Required changes:
+
 - Add debug environment variables
 - Increase timeouts for all Puppeteer operations
 - Add screenshot directory preparation
@@ -150,22 +160,26 @@ try {
     fullPage: true,
     captureHtml: true,
     logDOM: true,
-    dumpConsole: true
+    dumpConsole: true,
   });
 
   // Log additional details
-  log(LOG_LEVEL.ERROR, `Error details: ${JSON.stringify({
-    message: error.message,
-    stack: error.stack,
-    pageUrl: page.url(),
-    timestamp: new Date().toISOString()
-  })}`);
+  log(
+    LOG_LEVEL.ERROR,
+    `Error details: ${JSON.stringify({
+      message: error.message,
+      stack: error.stack,
+      pageUrl: page.url(),
+      timestamp: new Date().toISOString(),
+    })}`
+  );
 
   throw error;
 }
 ```
 
 Error handling improvements:
+
 - Contextual error capturing with screenshots
 - Detailed error information collection
 - Console state at time of error
@@ -175,26 +189,31 @@ Error handling improvements:
 ### 6. Implementation Plan
 
 1. **Modify Screenshot Handler**
+
    - Update `screenshot-handler.ts` to support enhanced options
    - Add HTML source capture functionality
    - Implement metadata JSON generation
 
 2. **Add Screenshot Capture Points**
+
    - Update each step in the Google Flights scraper to capture state
    - Add pre/post condition screenshots for all critical operations
    - Implement error boundary screenshots
 
 3. **Update GitHub Workflow**
+
    - Add environment variables for debugging
    - Configure artifact upload steps
    - Add debug setup steps
 
 4. **Enhance Error Reporting**
+
    - Improve error context collection
    - Add DOM state capture on errors
    - Implement network request logging
 
 5. **Add Helper Utilities**
+
    - Create DOM state inspection utilities
    - Add element highlight functionality for screenshots
    - Implement console log capture mechanism
@@ -209,16 +228,19 @@ Error handling improvements:
 Once we have comprehensive debug information, we can implement targeted fixes:
 
 1. **Browser Configuration Adjustments**
+
    - Modify launch arguments
    - Adjust viewport settings
    - Change user agent
 
 2. **Timing Improvements**
+
    - Add strategic delays
    - Implement better wait conditions
    - Use more reliable element selectors
 
 3. **Fallback Mechanisms**
+
    - Implement multiple selector strategies
    - Add JavaScript execution fallbacks
    - Create DOM traversal alternatives
