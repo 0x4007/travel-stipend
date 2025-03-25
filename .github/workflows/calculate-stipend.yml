@@ -1,6 +1,7 @@
 name: Calculate Travel Stipend
 
 on:
+  push:
   workflow_dispatch:
     inputs:
       location:
