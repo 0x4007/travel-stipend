@@ -14,7 +14,7 @@ on:
         type: boolean
         default: false
       location:
-        description: 'Destination location (e.g. "Singapore, SG")'
+        description: 'Destination location (e.g. "Singapore")'
         required: false  # Not required if using defaults
         type: string
       conference_start:
