@@ -2,7 +2,7 @@
 export const DEFAULT_CONFERENCE_DAYS = 1;
 
 // Default costs (in USD)
-export const DEFAULT_TICKET_PRICE = 1000; // Conference ticket
+export const DEFAULT_TICKET_PRICE = 0; // Conference ticket
 export const DEFAULT_HOTEL_COST = 150; // Hotel per night
 export const DEFAULT_DAILY_MEALS = 65; // Food per day
 export const DEFAULT_DAILY_TRANSPORT = 35; // Local transport per day
