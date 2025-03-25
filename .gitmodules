@@ -1,0 +1,3 @@
+[submodule "src/utils/google-flights-scraper"]
+	path = src/utils/google-flights-scraper
+	url = https://github.com/0x4007/google-flights-scraper.git
