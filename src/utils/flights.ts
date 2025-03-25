@@ -9,6 +9,14 @@ config();
 
 // Initialize flight cache
 
+export async function calculateFlightCost(origin: string, destination: string, departureDate: string, returnDate: string): Promise<number> {
+  const result = await scrapeFlightPrice(origin, destination, {
+    outbound: departureDate,
+    return: returnDate,
+  });
+  return result.price ?? 0;
+}
+
 export async function scrapeFlightPrice(
   origin: string,
   destination: string,

@@ -17,5 +17,4 @@ declare module "src/utils/flights" {
 
   export function findUpcomingConferences(): Promise<Conference[]>;
   export function getRegion(location: string): string;
-  export function extractAirportCode(location: string): string;
 }

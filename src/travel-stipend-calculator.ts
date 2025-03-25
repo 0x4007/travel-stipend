@@ -1,28 +1,13 @@
 #!/usr/bin/env bun
-import fs from "fs";
-import path from "path";
 import { Conference, MealCosts, StipendBreakdown } from "./types";
 import { createHashKey, PersistentCache } from "./utils/cache";
-import {
-  BASE_LOCAL_TRANSPORT_PER_DAY,
-  BASE_LODGING_PER_NIGHT,
-  BASE_MEALS_PER_DAY,
-  BUSINESS_ENTERTAINMENT_PER_DAY,
-  DEFAULT_TICKET_PRICE,
-  INCIDENTALS_PER_DAY,
-  INTERNATIONAL_INTERNET_ALLOWANCE,
-  POST_CONFERENCE_DAYS,
-  PRE_CONFERENCE_DAYS,
-  WEEKEND_RATE_MULTIPLIER,
-} from "./utils/constants";
+import { TRAVEL_STIPEND } from "./utils/constants";
 import { getCostOfLivingFactor } from "./utils/cost-of-living";
-import { DatabaseService } from "./utils/database";
 import { calculateDateDiff, generateFlightDates } from "./utils/dates";
 import { scrapeFlightPrice } from "./utils/flights";
 import { calculateLocalTransportCost } from "./utils/taxi-fares";
 
-// Initialize caches
-const costOfLivingCache = new PersistentCache<number>("fixtures/cache/col-cache.json");
+// Initialize cache
 const stipendCache = new PersistentCache<StipendBreakdown>("fixtures/cache/stipend-cache.json");
 
 // Helper function to calculate flight cost
@@ -91,11 +76,11 @@ function calculateMealsCosts(totalDays: number, conferenceDays: number, colFacto
   let basicMealsCost = 0;
   for (let i = 0; i < totalDays; i++) {
     // Apply duration-based scaling (100% for days 1-3, 85% for days 4+)
-    const dailyMealCost = i < 3 ? BASE_MEALS_PER_DAY * colFactor : BASE_MEALS_PER_DAY * colFactor * 0.85;
+    const dailyMealCost = i < 3 ? TRAVEL_STIPEND.costs.meals * colFactor : TRAVEL_STIPEND.costs.meals * colFactor * 0.85;
     basicMealsCost += dailyMealCost;
   }
 
-  const businessEntertainmentCost = BUSINESS_ENTERTAINMENT_PER_DAY * conferenceDays;
+  const businessEntertainmentCost = TRAVEL_STIPEND.costs.businessEntertainment * conferenceDays;
   return {
     basicMealsCost,
     mealsCost: basicMealsCost + businessEntertainmentCost,
@@ -107,7 +92,6 @@ export async function calculateStipend(record: Conference & { origin?: string })
   if (!record.origin) {
     throw new Error("Origin city is required for travel stipend calculation");
   }
-
   const origin = record.origin;
   const cacheKey = createHashKey([
     record.conference,
@@ -115,9 +99,9 @@ export async function calculateStipend(record: Conference & { origin?: string })
     record.start_date,
     record.end_date,
     origin,
-    BASE_LODGING_PER_NIGHT,
-    BASE_MEALS_PER_DAY,
-    record.ticket_price ?? DEFAULT_TICKET_PRICE,
+    TRAVEL_STIPEND.costs.hotel,
+    TRAVEL_STIPEND.costs.meals,
+    record.ticket_price ?? TRAVEL_STIPEND.costs.ticket,
     "v11",
   ]);
 
@@ -137,8 +121,8 @@ export async function calculateStipend(record: Conference & { origin?: string })
   const conferenceDays = calculateDateDiff(record.start_date, record.end_date) + 1;
 
   // Use custom buffer days if provided, otherwise use defaults
-  const preConferenceDays = isOriginCity ? 0 : (record.buffer_days_before ?? PRE_CONFERENCE_DAYS);
-  const postConferenceDays = isOriginCity ? 0 : (record.buffer_days_after ?? POST_CONFERENCE_DAYS);
+  const preConferenceDays = isOriginCity ? 0 : (record.buffer_days_before ?? TRAVEL_STIPEND.conference.preDays);
+  const postConferenceDays = isOriginCity ? 0 : (record.buffer_days_after ?? TRAVEL_STIPEND.conference.postDays);
   const totalDays = conferenceDays + preConferenceDays + postConferenceDays;
   const numberOfNights = totalDays - 1;
 
@@ -149,19 +133,19 @@ export async function calculateStipend(record: Conference & { origin?: string })
   const { weekdayNights, weekendNights } = calculateNights(record.start_date, totalDays, preConferenceDays);
 
   // Adjust lodging rates with cost of living factor and weekend rates
-  const baseWeekdayRate = BASE_LODGING_PER_NIGHT * colFactor;
-  const baseWeekendRate = baseWeekdayRate * WEEKEND_RATE_MULTIPLIER;
+  const baseWeekdayRate = TRAVEL_STIPEND.costs.hotel * colFactor;
+  const baseWeekendRate = baseWeekdayRate * TRAVEL_STIPEND.rules.weekendRateMultiplier;
 
   // Calculate costs
   const lodgingCost = isOriginCity ? 0 : weekdayNights * baseWeekdayRate + weekendNights * baseWeekendRate;
   const { basicMealsCost, mealsCost, businessEntertainmentCost } = calculateMealsCosts(totalDays, conferenceDays, colFactor);
-  const localTransportCost = await calculateLocalTransportCost(destination, totalDays, colFactor, BASE_LOCAL_TRANSPORT_PER_DAY);
-  const ticketPrice = record.ticket_price ? parseFloat(record.ticket_price.replace("$", "")) : DEFAULT_TICKET_PRICE;
+  const localTransportCost = await calculateLocalTransportCost(destination, totalDays, colFactor, TRAVEL_STIPEND.costs.transport);
+  const ticketPrice = record.ticket_price ? parseFloat(record.ticket_price.replace("$", "")) : TRAVEL_STIPEND.costs.ticket;
 
   // International travel allowances
-  const isInternational = !isOriginCity && origin.toLowerCase().includes("korea") && !destination.toLowerCase().includes("korea");
-  const internetDataAllowance = isInternational ? INTERNATIONAL_INTERNET_ALLOWANCE * totalDays : 0;
-  const incidentalsAllowance = totalDays * INCIDENTALS_PER_DAY;
+  const isInternational = !isOriginCity;
+  const internetDataAllowance = isInternational ? TRAVEL_STIPEND.rules.internationalInternet * totalDays : 0;
+  const incidentalsAllowance = totalDays * TRAVEL_STIPEND.costs.incidentals;
 
   // Calculate total stipend
   const totalStipend = flightCost + lodgingCost + mealsCost + localTransportCost + ticketPrice + internetDataAllowance + incidentalsAllowance;
@@ -194,177 +178,4 @@ export async function calculateStipend(record: Conference & { origin?: string })
 
   stipendCache.set(cacheKey, result);
   return result;
-}
-
-function parseArgs(): { sortBy?: keyof StipendBreakdown; reverse: boolean } {
-  const args = process.argv.slice(2);
-  const validColumns = new Set<keyof StipendBreakdown>([
-    "conference",
-    "location",
-    "conference_start",
-    "conference_end",
-    "flight_departure",
-    "flight_return",
-    "flight_cost",
-    "flight_price_source",
-    "lodging_cost",
-    "basic_meals_cost",
-    "business_entertainment_cost",
-    "local_transport_cost",
-    "ticket_price",
-    "internet_data_allowance",
-    "incidentals_allowance",
-    "total_stipend",
-  ]);
-
-  const options = { reverse: args.includes("-r") || args.includes("--reverse") };
-
-  const sortFlagIndex = args.findIndex((arg) => arg === "--sort" || arg === "-s");
-  if (sortFlagIndex !== -1 && sortFlagIndex < args.length - 1) {
-    const sortColumn = args[sortFlagIndex + 1] as keyof StipendBreakdown;
-    if (validColumns.has(sortColumn)) {
-      return { ...options, sortBy: sortColumn };
-    }
-    console.warn(`Invalid sort column: ${sortColumn}. Valid columns are: ${Array.from(validColumns).join(", ")}`);
-  }
-
-  return options;
-}
-
-async function main() {
-  console.log("Starting travel stipend calculation...");
-
-  try {
-    const options = parseArgs();
-    console.log("Reading conferences from database...");
-    const records = await DatabaseService.getInstance().getConferences();
-    console.log(`Loaded ${records.length} conference records`);
-
-    // Get future conferences
-    const currentDate = new Date();
-    const futureRecords = records.filter((record) => {
-      try {
-        const startDate = new Date(`${record.start_date} ${currentDate.getFullYear()}`);
-        const nextYearDate = new Date(`${record.start_date} ${currentDate.getFullYear() + 1}`);
-        const conferenceDate = startDate < currentDate ? nextYearDate : startDate;
-        return conferenceDate >= currentDate;
-      } catch (error) {
-        console.error(`Error parsing date for conference "${record.conference}":`, error);
-        return false;
-      }
-    });
-
-    console.log(`Found ${futureRecords.length} upcoming conferences`);
-
-    const results: StipendBreakdown[] = [];
-    for (const record of futureRecords) {
-      try {
-        results.push(await calculateStipend(record));
-      } catch (error) {
-        console.error(`Error processing conference "${record.conference}":`, error);
-      }
-    }
-
-    if (options.sortBy) {
-      const sortDirection = options.reverse ? "descending" : "ascending";
-      console.log(`Sorting results by ${options.sortBy} (${sortDirection})`);
-
-      results.sort((a, b) => {
-        if (!options.sortBy) return 0;
-        const valueA = a[options.sortBy];
-        const valueB = b[options.sortBy];
-        let comparison = 0;
-        if (typeof valueA === "string" && typeof valueB === "string") {
-          comparison = valueA.localeCompare(valueB);
-        } else {
-          comparison = (valueA as number) - (valueB as number);
-        }
-        return options.reverse ? -comparison : comparison;
-      });
-    }
-
-    // Save caches
-    costOfLivingCache.saveToDisk();
-    stipendCache.saveToDisk();
-
-    // Create output directory
-    const outputsDir = "outputs";
-    if (!fs.existsSync(outputsDir)) {
-      fs.mkdirSync(outputsDir);
-    }
-
-    // Generate filename with timestamp and sort info
-    const timestamp = Math.floor(Date.now() / 1000);
-    let sortInfo = "";
-    if (options.sortBy) {
-      const direction = options.reverse ? "_desc" : "_asc";
-      sortInfo = `_sorted_by_${options.sortBy}${direction}`;
-    }
-    const outputFile = path.join(outputsDir, `stipends_${timestamp}${sortInfo}.csv`);
-
-    // Generate CSV
-    const header = [
-      "conference",
-      "location",
-      "conference_start",
-      "conference_end",
-      "flight_departure",
-      "flight_return",
-      "flight_cost",
-      "flight_price_source",
-      "lodging_cost",
-      "basic_meals_cost",
-      "business_entertainment_cost",
-      "local_transport_cost",
-      "ticket_price",
-      "internet_data_allowance",
-      "incidentals_allowance",
-      "total_stipend",
-    ].join(",");
-
-    const rows = results.map((r) =>
-      [
-        `"${r.conference}"`,
-        `"${r.location}"`,
-        `"${r.conference_start}"`,
-        `"${r.conference_end ?? ""}"`,
-        `"${r.flight_departure}"`,
-        `"${r.flight_return}"`,
-        r.flight_cost,
-        `"${r.flight_price_source}"`,
-        r.lodging_cost,
-        r.basic_meals_cost,
-        r.business_entertainment_cost,
-        r.local_transport_cost,
-        r.ticket_price,
-        r.internet_data_allowance,
-        r.incidentals_allowance,
-        r.total_stipend,
-      ].join(",")
-    );
-
-    fs.writeFileSync(outputFile, [header, ...rows].join("\n"));
-    console.log("Calculation complete. Results saved to:", outputFile);
-
-    console.table(
-      results.map((r) => ({
-        conference: r.conference,
-        location: r.location,
-        dates: `${r.conference_start} - ${r.conference_end ?? r.conference_start}`,
-        flight_cost: r.flight_cost,
-        lodging_cost: r.lodging_cost,
-        total_stipend: r.total_stipend,
-      }))
-    );
-  } catch (error) {
-    console.error("Error calculating travel stipends:", error);
-    process.exit(1);
-  }
-}
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch((err) => {
-    console.error("Execution error:", err);
-    process.exit(1);
-  });
 }

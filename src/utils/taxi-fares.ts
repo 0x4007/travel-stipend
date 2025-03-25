@@ -1,11 +1,11 @@
-import { BASE_LOCAL_TRANSPORT_PER_DAY } from "./constants";
+import { TRAVEL_STIPEND } from "./constants";
 import { DatabaseService } from "./database";
 
 export async function calculateLocalTransportCost(
   city: string,
   numberOfDays: number,
   colFactor: number,
-  baseRate = BASE_LOCAL_TRANSPORT_PER_DAY
+  baseRate = TRAVEL_STIPEND.costs.transport
 ): Promise<number> {
   try {
     const taxiRates = await DatabaseService.getInstance().getTaxiRates(city);

@@ -1,5 +1,5 @@
 import { Conference } from "../types";
-import { DEFAULT_CONFERENCE_DAYS } from "./constants";
+import { TRAVEL_STIPEND } from "./constants";
 
 // Parse date string into a Date object, using next year if date has passed
 function parseDate(dateStr: string | undefined | null): Date | null {
@@ -18,7 +18,7 @@ function parseDate(dateStr: string | undefined | null): Date | null {
 // Calculate number of nights between two dates
 export function calculateDateDiff(startDateStr: string, endDateStr: string | undefined | null): number {
   if (!endDateStr?.trim()) {
-    return DEFAULT_CONFERENCE_DAYS - 1; // Default to conference days minus 1 for nights
+    return TRAVEL_STIPEND.conference.defaultDays - 1; // Default to conference days minus 1 for nights
   }
 
   const start = parseDate(startDateStr);
@@ -26,7 +26,7 @@ export function calculateDateDiff(startDateStr: string, endDateStr: string | und
 
   if (!start || !end) {
     console.warn(`Could not parse dates: ${startDateStr} - ${endDateStr}`);
-    return DEFAULT_CONFERENCE_DAYS - 1;
+    return TRAVEL_STIPEND.conference.defaultDays - 1;
   }
 
   const msPerDay = 24 * 60 * 60 * 1000;
@@ -45,8 +45,8 @@ export function generateFlightDates(conference: Conference, isOriginCity = false
 
   // Get buffer days from the conference record, or use defaults
   // Always enforce minimum of 1 day before AND 1 day after to prevent flying on conference days
-  let bufferDaysBefore = conference.buffer_days_before ?? 1; // Default: 1 day before
-  let bufferDaysAfter = conference.buffer_days_after ?? 1; // Default: 1 day after
+  let bufferDaysBefore = conference.buffer_days_before ?? TRAVEL_STIPEND.conference.preDays; // Default: 1 day before
+  let bufferDaysAfter = conference.buffer_days_after ?? TRAVEL_STIPEND.conference.postDays; // Default: 1 day after
 
   // Safety check: require at least 1 day before and 1 day after for flights
   if (bufferDaysBefore === 0) {
