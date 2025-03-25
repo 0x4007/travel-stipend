@@ -1,0 +1,49 @@
+{
+  "name": "puppeteer-on-actions",
+  "version": "1.0.0",
+  "description": "Minimal example of using Puppeteer on GitHub Actions with Bun & TypeScript",
+  "main": "src/index.ts",
+  "scripts": {
+    "postinstall": "npx puppeteer browsers install chrome",
+    "start": "bun run src/index.ts --from Seoul --to Tokyo --departure 2024-04-01 --return 2024-04-15",
+    "dev": "bun --watch run src/index.ts --from Seoul --to Tokyo --departure 2024-04-01 --return 2024-04-15",
+    "screenshot": "bun run src/index.ts --from Seoul --to Tokyo --departure 2024-04-01 --return 2024-04-15",
+    "iterate": "bun --watch run src/index.ts --from Seoul --to Tokyo --departure 2024-04-01 --return 2024-04-15",
+    "test": "bun scripts/run-random-tests.ts --count 3",
+    "test:single": "bun scripts/run-random-tests.ts --count 1",
+    "test:many": "bun scripts/run-random-tests.ts --count 10",
+    "format": "run-s format:*",
+    "format:lint": "eslint --fix .",
+    "format:prettier": "prettier --write .",
+    "format:cspell": "cspell **/*",
+    "utils:rename-to-kebab": "bun scripts/rename-to-kebab-case.ts",
+    "utils:rename-to-kebab:dry-run": "bun scripts/rename-to-kebab-case.ts --dry-run --verbose"
+  },
+  "keywords": [
+    "puppeteer",
+    "github-actions",
+    "bun",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "prettier": "^3.5.3",
+    "puppeteer": "^22.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.23.0",
+    "@types/node": "^20.11.5",
+    "@typescript-eslint/eslint-plugin": "^8.27.0",
+    "@typescript-eslint/parser": "^8.27.0",
+    "bun-types": "^1.0.25",
+    "cspell": "^8.17.5",
+    "eslint": "^9.23.0",
+    "eslint-plugin-check-file": "^3.1.0",
+    "eslint-plugin-sonarjs": "^3.0.2",
+    "globals": "^16.0.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.27.0"
+  }
+}
