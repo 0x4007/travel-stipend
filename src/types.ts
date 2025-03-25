@@ -18,6 +18,22 @@ export interface MealCosts {
   businessEntertainmentCost: number;
 }
 
+export interface FlightResults {
+  best_flights: Array<{
+    price: number;
+    airline: string;
+    flight_number: string;
+    departure_airport: string;
+    arrival_airport: string;
+    departure_time: string;
+    arrival_time: string;
+  }>;
+  price_insights: {
+    typical_price_range: [number, number];
+    price_level: string;
+  };
+}
+
 export interface StipendBreakdown {
   conference: string;
   location: string;
@@ -36,4 +52,12 @@ export interface StipendBreakdown {
   incidentals_allowance: number;
   total_stipend: number;
   meals_cost: number;
+  distance_km?: number;
+}
+
+export interface FlightCostCacheEntry {
+  origin: string;
+  destination: string;
+  price: number;
+  timestamp: number;
 }

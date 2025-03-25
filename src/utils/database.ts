@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { Database, open } from "sqlite";
 import sqlite3 from "sqlite3";
-import { Conference } from "../types";
+import { Conference,  } from "../types";
 
 interface TaxiRates {
   city: string;
@@ -93,6 +93,12 @@ export class DatabaseService {
           base_fare REAL NOT NULL,
           per_km_rate REAL NOT NULL,
           typical_trip_km REAL NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS coordinates (
+          city TEXT PRIMARY KEY,
+          lat REAL NOT NULL,
+          lng REAL NOT NULL
         );
       `);
       console.log("Tables created successfully.");
@@ -288,7 +294,7 @@ export class DatabaseService {
     if (!this._db) throw new Error("Database not initialized");
 
     // Check if tables need importing
-    const tables = ["conferences", "cost_of_living", "taxis"];
+    const tables = ["conferences", "cost_of_living", "taxis", "coordinates"];
     let hasAllTablesPopulated = true;
 
     // First phase: just check table counts
@@ -358,6 +364,29 @@ export class DatabaseService {
     if (!this._db) throw new Error("Database not initialized");
 
     return this._db.get<TaxiRates>("SELECT city, base_fare, per_km_rate, typical_trip_km FROM taxis WHERE city = ?", [city]);
+  }
+
+
+
+  public async addCityCoordinates(
+    city: string,
+    lat: number,
+    lng: number
+  ): Promise<boolean> {
+    await this._init();
+    if (!this._db) throw new Error("Database not initialized");
+
+    try {
+      await this._db.run(
+        `INSERT OR REPLACE INTO coordinates (city, lat, lng)
+         VALUES (?, ?, ?)`,
+        [city, lat, lng]
+      );
+      return true;
+    } catch (error) {
+      console.error("Error adding city coordinates:", error);
+      return false;
+    }
   }
 
   public async close(): Promise<void> {
