@@ -5,14 +5,31 @@ import { TRAVEL_STIPEND } from "./constants";
 function parseDate(dateStr: string | undefined | null): Date | null {
   if (!dateStr?.trim()) return null;
 
-  // Get current year
-  const year = new Date().getFullYear();
+  // First try parsing as ISO format (YYYY-MM-DD)
+  let date = new Date(dateStr);
+  if (!isNaN(date.getTime())) {
+    return date;
+  }
 
-  // Try parsing with current year
-  const date = new Date(`${dateStr} ${year}`);
+  // If that fails, try parsing as "DD Month YYYY" format
+  const parts = dateStr.split(' ');
+  if (parts.length >= 2) {
+    const day = parseInt(parts[0]);
+    const month = parts[1];
+    const year = parts[2] || new Date().getFullYear().toString();
 
-  // If date is in the past, use next year
-  return date < new Date() ? new Date(`${dateStr} ${year + 1}`) : date;
+    date = new Date(`${month} ${day}, ${year}`);
+    if (!isNaN(date.getTime())) {
+      // If date is in the past and no year was specified, use next year
+      if (date < new Date() && parts.length === 2) {
+        date.setFullYear(date.getFullYear() + 1);
+      }
+      return date;
+    }
+  }
+
+  console.warn(`Could not parse date: ${dateStr}`);
+  return null;
 }
 
 // Calculate number of nights between two dates

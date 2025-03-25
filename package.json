@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "GitHub Action for calculating travel stipends for conferences and business trips",
   "main": "build/index.ts",
+  "exports": {
+    ".": "./build/index.ts",
+    "./src/*": "./src/*"
+  },
   "author": "Ubiquity DAO",
   "license": "MIT",
   "repository": {

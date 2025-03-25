@@ -1,19 +1,20 @@
 #!/usr/bin/env bun
 import * as core from "@actions/core";
-import { calculateStipend } from "./travel-stipend-calculator";
-import { Conference } from "./types";
-import { DatabaseService } from "./utils/database";
 import { appendFileSync } from "fs";
+import { calculateStipend } from "./travel-stipend-calculator";
+import { Conference, StipendBreakdown } from "./types";
+import { DatabaseService } from "./utils/database";
 
-// Allow script to run both as GitHub Action and directly via workflow
+// Enhanced input validation matching CLI behavior
 function getInput(name: string, options?: { required: boolean }): string {
-  // When run directly via workflow, inputs are passed via environment variables
   const envName = `INPUT_${name.replace(/ /g, "_").toUpperCase()}`;
-  if (process.env[envName]) {
-    return process.env[envName] ?? "";
+  const value = process.env[envName] ?? core.getInput(name, options);
+
+  if (options?.required && !value) {
+    throw new Error(`Missing required input: ${name}`);
   }
-  // When run as a GitHub Action, inputs are accessed via @actions/core
-  return core.getInput(name, options);
+
+  return value ?? "";
 }
 
 function setOutput(name: string, value: Record<string, unknown>): void {
@@ -51,137 +52,94 @@ function setFailed(message: string): void {
   }
 }
 
-// Gets conference details from the database or returns default values
-async function getBusinessTripDefaults(location: string): Promise<{ name: string; category: string; description: string }> {
+function getInputs() {
+  const location = getInput("destination", { required: true });
+  const origin = getInput("origin", { required: true });
+  const departureDate = getInput("departure_date", { required: true });
+  const returnDate = getInput("return_date") ?? departureDate;
+  const daysBefore = Math.max(1, parseInt(getInput("buffer_before") ?? "1", 10));
+  const daysAfter = Math.max(1, parseInt(getInput("buffer_after") ?? "1", 10));
+  const ticketPrice = getInput("ticket_price") ?? "750";
+  const outputFormat = getInput("output_format") ?? "table";
+
+  console.log("\nTravel stipend calculation inputs:");
+  console.log("--------------------------------");
+  console.log(`Origin: ${origin}`);
+  console.log(`Destination: ${location}`);
+  console.log(`Departure Date: ${departureDate}`);
+  console.log(`Return Date: ${returnDate}`);
+  console.log(`Buffer Days Before: ${daysBefore}`);
+  console.log(`Buffer Days After: ${daysAfter}`);
+  console.log(`Ticket Price: $${ticketPrice}`);
+  console.log(`Output Format: ${outputFormat}`);
+  console.log("--------------------------------\n");
+
+  return { location, origin, departureDate, returnDate, daysBefore, daysAfter, ticketPrice, outputFormat };
+}
+
+function validateBufferDays(daysBefore: number, daysAfter: number) {
+  if (daysBefore < 1) {
+    logWarning("Cannot fly on conference start day - you would miss the beginning!");
+    logWarning("Using minimum 1 day before conference");
+  }
+
+  if (daysAfter < 1) {
+    logWarning("Cannot fly on conference end day - you would miss the conclusion!");
+    logWarning("Using minimum 1 day after conference");
+  }
+}
+
+function createConferenceRecord(
+  location: string,
+  origin: string,
+  departureDate: string,
+  returnDate: string,
+  daysBefore: number,
+  daysAfter: number,
+  ticketPrice: string
+): Conference & { origin: string } {
   return {
-    name: `Business Trip to ${location}`,
+    conference: getInput("conference") || `Business Trip to ${location.split(",")[0]}`,
+    location,
+    origin,
+    start_date: departureDate,
+    end_date: returnDate,
+    ticket_price: ticketPrice ? `$${ticketPrice}` : undefined,
     category: "GitHub Action",
     description: "",
+    buffer_days_before: daysBefore,
+    buffer_days_after: daysAfter,
   };
+}
+
+function logEnvironmentConfig() {
+  const isGitHubActions = !!process.env.GITHUB_ACTIONS;
+  const isDebugMode = process.env.DEBUG_GOOGLE_FLIGHTS === "true";
+  const shouldCaptureScreenshots = process.env.CAPTURE_SCREENSHOTS === "true";
+  const timeout = parseInt(process.env.PUPPETEER_TIMEOUT ?? "60000", 10);
+
+  let screenshotMode = "Disabled";
+  if (shouldCaptureScreenshots) {
+    screenshotMode = "Enabled";
+  } else if (process.env.ENABLE_ERROR_SCREENSHOTS === "true") {
+    screenshotMode = "Error-only";
+  }
+
+  logInfo(`Environment: ${isGitHubActions ? "GitHub Actions" : "Local"}`);
+  logInfo(`Debug mode: ${isDebugMode ? "Enabled" : "Disabled"}`);
+  logInfo(`Screenshots: ${screenshotMode}`);
+  logInfo(`Timeout: ${timeout}ms`);
 }
 
 async function run(): Promise<void> {
   try {
-    // Get inputs
-    const location = getInput("location", { required: true });
-    const origin = getInput("origin", { required: true });
-    const conferenceStart = getInput("conference_start", { required: true });
-    const conferenceEnd = getInput("conference_end") ?? conferenceStart;
-    const daysBefore = Math.max(1, parseInt(getInput("days_before") ?? "1", 10));
-    const daysAfter = Math.max(1, parseInt(getInput("days_after") ?? "1", 10));
-    const ticketPrice = getInput("ticket_price");
+    const { location, origin, departureDate, returnDate, daysBefore, daysAfter, ticketPrice, outputFormat } = getInputs();
+    validateBufferDays(daysBefore, daysAfter);
+    const conference = createConferenceRecord(location, origin, departureDate, returnDate, daysBefore, daysAfter, ticketPrice);
+    logEnvironmentConfig();
 
-    // Safety check: require at least 1 day before AND 1 day after for flights
-    if (daysBefore < 1) {
-      logWarning("Cannot fly on conference start day - you would miss the beginning!");
-      logWarning("Using minimum 1 day before conference");
-    }
-
-    if (daysAfter < 1) {
-      logWarning("Cannot fly on conference end day - you would miss the conclusion!");
-      logWarning("Using minimum 1 day after conference");
-    }
-
-    // Get conference details (use simple business trip defaults)
-    const { name, category, description } = await getBusinessTripDefaults(location);
-
-    // Create conference record
-    const conference: Conference & { origin: string } = {
-      conference: name,
-      location,
-      origin,
-      start_date: conferenceStart,
-      end_date: conferenceEnd,
-      ticket_price: ticketPrice ? `$${ticketPrice}` : "",
-      category,
-      description,
-      buffer_days_before: daysBefore,
-      buffer_days_after: daysAfter,
-    };
-
-    // Detect environment
-    const isGitHubActions = !!process.env.GITHUB_ACTIONS;
-
-    // Get debug settings - only enable in GitHub Actions if explicitly set
-    const isDebugMode = process.env.DEBUG_GOOGLE_FLIGHTS === "true";
-    const shouldCaptureScreenshots = process.env.CAPTURE_SCREENSHOTS === "true";
-
-    // Configure timeout
-    const timeout = parseInt(process.env.PUPPETEER_TIMEOUT ?? "60000", 10);
-
-    // Determine screenshot mode
-    let screenshotMode = "Disabled";
-    if (shouldCaptureScreenshots) {
-      screenshotMode = "Enabled";
-    } else if (process.env.ENABLE_ERROR_SCREENSHOTS === "true") {
-      screenshotMode = "Error-only";
-    }
-
-    // Log environment and configuration
-    logInfo(`Environment: ${isGitHubActions ? "GitHub Actions" : "Local"}`);
-    logInfo(`Debug mode: ${isDebugMode ? "Enabled" : "Disabled"}`);
-    logInfo(`Screenshots: ${screenshotMode}`);
-    logInfo(`Timeout: ${timeout}ms`);
-
-    // Calculate stipend
     const result = await calculateStipend(conference);
-    const nights = Math.ceil((new Date(result.flight_return).getTime() - new Date(result.flight_departure).getTime()) / (1000 * 60 * 60 * 24));
-    const days = nights + 1;
-
-    // Create results object
-    const stipendResult = {
-      conference: result.conference,
-      location: result.location,
-      conference_start: result.conference_start,
-      conference_end: result.conference_end,
-      flight_departure: result.flight_departure,
-      flight_return: result.flight_return,
-      flight_cost: result.flight_cost,
-      flight_price_source: result.flight_price_source,
-      lodging_cost: result.lodging_cost,
-      meals_cost: result.meals_cost,
-      local_transport_cost: result.local_transport_cost,
-      ticket_price: result.ticket_price,
-      total_stipend: result.total_stipend,
-      stay_duration: {
-        nights,
-        days,
-      },
-    };
-
-    // Set outputs
-    setOutput("stipend", stipendResult);
-
-    // Build summary table
-    const summaryTable = [
-      [
-        { data: "Item", header: true },
-        { data: "Details", header: true },
-        { data: "Cost", header: true },
-      ],
-      ["Conference", `${result.conference} in ${result.location}`, ""],
-      ["Dates", `${result.conference_start} to ${result.conference_end}`, ""],
-      ["Travel", `${result.flight_departure} to ${result.flight_return}`, ""],
-      ["Flight", result.flight_price_source, `$${result.flight_cost}`],
-      ["Lodging", `${nights} nights`, `$${result.lodging_cost}`],
-      ["Meals", `${days} days`, `$${result.meals_cost}`],
-      ["Local Transport", `${days} days`, `$${result.local_transport_cost}`],
-      ["Conference Ticket", "", `$${result.ticket_price}`],
-      ["Total Stipend", "", `$${result.total_stipend}`],
-    ];
-
-    // Log results to console in table format (for direct workflow run)
-    console.log("\nTravel Stipend Calculation:");
-    console.table(
-      summaryTable.slice(1).map((row) => {
-        return { Item: row[0], Details: row[1], Cost: row[2] };
-      })
-    );
-
-    // Write GitHub summary if in GitHub Actions environment
-    if (process.env.GITHUB_STEP_SUMMARY) {
-      await core.summary.addHeading("Travel Stipend Calculation").addTable(summaryTable).addBreak().write();
-    }
+    await handleOutput(result, outputFormat);
   } catch (error) {
     if (error instanceof Error) {
       setFailed(error.message);
@@ -193,7 +151,71 @@ async function run(): Promise<void> {
   }
 }
 
-// Handle errors in the top-level async function
-run().catch((error) => {
-  setFailed(`Unhandled error in run(): ${error}`);
-});
+function formatStipendResult(result: StipendBreakdown) {
+  const nights = Math.ceil((new Date(result.flight_return).getTime() - new Date(result.flight_departure).getTime()) / (1000 * 60 * 60 * 24));
+  const days = nights + 1;
+
+  return {
+    ...result,
+    stay_duration: { nights, days },
+    internet_data_allowance: result.internet_data_allowance || 0,
+    incidentals_allowance: result.incidentals_allowance || 0,
+  };
+}
+
+async function handleOutput(result: StipendBreakdown, outputFormat: string) {
+  const stipendResult = formatStipendResult(result);
+
+  // Set outputs
+  setOutput("stipend", stipendResult);
+
+  // Handle different output formats
+  if (outputFormat === "json") {
+    console.log(JSON.stringify(stipendResult, null, 2));
+  } else if (outputFormat === "csv") {
+    const csv = [
+      "conference,location,conference_start,conference_end,flight_departure,flight_return,flight_cost,flight_price_source,lodging_cost,meals_cost,local_transport_cost,ticket_price,total_stipend",
+      `"${stipendResult.conference}","${stipendResult.location}","${stipendResult.conference_start}","${stipendResult.conference_end}","${stipendResult.flight_departure}","${stipendResult.flight_return}",${stipendResult.flight_cost},"${stipendResult.flight_price_source}",${stipendResult.lodging_cost},${stipendResult.meals_cost},${stipendResult.local_transport_cost},${stipendResult.ticket_price},${stipendResult.total_stipend}`
+    ].join("\n");
+    console.log(csv);
+  } else {
+    await outputTable(stipendResult);
+  }
+}
+
+async function outputTable(result: StipendBreakdown) {
+  const nights = Math.ceil((new Date(result.flight_return).getTime() - new Date(result.flight_departure).getTime()) / (1000 * 60 * 60 * 24));
+  const days = nights + 1;
+
+  const summaryTable = [
+    [
+      { data: "Item", header: true },
+      { data: "Details", header: true },
+      { data: "Cost", header: true },
+    ],
+    ["Conference", `${result.conference} in ${result.location}`, ""],
+    ["Dates", `${result.conference_start} to ${result.conference_end}`, ""],
+    ["Travel", `${result.flight_departure} to ${result.flight_return}`, ""],
+    ["Flight", result.flight_price_source, `$${result.flight_cost}`],
+    ["Lodging", `${nights} nights`, `$${result.lodging_cost}`],
+    ["Meals", `${days} days`, `$${result.meals_cost}`],
+    ["Local Transport", `${days} days`, `$${result.local_transport_cost}`],
+    ["Internet", `${days} days`, `$${result.internet_data_allowance}`],
+    ["Incidentals", `${days} days`, `$${result.incidentals_allowance}`],
+    ["Conference Ticket", "", `$${result.ticket_price}`],
+    ["Total Stipend", "", `$${result.total_stipend}`],
+  ];
+
+  console.log("\nTravel Stipend Calculation:");
+  console.table(
+    summaryTable.slice(1).map((row) => {
+      return { Item: row[0], Details: row[1], Cost: row[2] };
+    })
+  );
+
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    await core.summary.addHeading("Travel Stipend Calculation").addTable(summaryTable).addBreak().write();
+  }
+}
+// Export the run function as the entry point
+export { run };
