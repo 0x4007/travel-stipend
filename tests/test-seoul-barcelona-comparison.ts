@@ -1,9 +1,9 @@
 import { writeFileSync } from "fs";
 import { join } from "path";
+import { Coordinates } from "../src/types";
 import { getDistanceKmFromCities } from "../src/utils/distance";
 import { calculateFlightCost } from "../src/utils/flights";
 import { GoogleFlightsScraper } from "../src/utils/google-flights-scraper";
-import { Coordinates } from "../src/utils/types";
 
 async function main() {
   console.log("Starting Seoul to Barcelona flight price analysis...");

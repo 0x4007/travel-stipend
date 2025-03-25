@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { Database, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
-import { Conference, Coordinates } from './types';
+import { Conference, Coordinates } from '../types';
 
 export interface AirportCode {
   code: string;

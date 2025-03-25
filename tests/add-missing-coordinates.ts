@@ -1,5 +1,5 @@
+import { Coordinates } from "../src/types";
 import { DatabaseService } from "../src/utils/database";
-import { Coordinates } from "../src/utils/types";
 
 /**
  * This script adds missing coordinates for cities that our system currently can't locate

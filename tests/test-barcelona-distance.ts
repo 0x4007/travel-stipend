@@ -1,5 +1,5 @@
+import { Coordinates } from "../src/types";
 import { haversineDistance } from "../src/utils/distance";
-import { Coordinates } from "../src/utils/types";
 
 // Seoul coordinates from constants.ts (ORIGIN = "Seoul, Korea")
 const seoul: Coordinates = {

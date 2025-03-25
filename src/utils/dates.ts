@@ -1,5 +1,5 @@
+import { Conference } from "../types";
 import { DEFAULT_CONFERENCE_DAYS } from "./constants";
-import { Conference } from "./types";
 
 // Parse date strings like "18 February" to a Date object
 function parseDate(dateStr: string, year = new Date().getFullYear()): Date | null {
@@ -7,11 +7,18 @@ function parseDate(dateStr: string, year = new Date().getFullYear()): Date | nul
     return null;
   }
 
-  // Add the year to the date string
-  const fullDateStr = `${dateStr} ${year}`;
+  // Try current year first
+  let fullDateStr = `${dateStr} ${year}`;
+  let date = new Date(fullDateStr);
+
+  // If date is in the past, try next year
+  if (date < new Date()) {
+    fullDateStr = `${dateStr} ${year + 1}`;
+    date = new Date(fullDateStr);
+  }
 
   try {
-    return new Date(fullDateStr);
+    return date;
   } catch (error) {
     console.error(`Error parsing date: ${dateStr}`, error);
     return null;

@@ -5,9 +5,9 @@ import { FlightPricingContextImpl } from "./strategies/flight-pricing-context";
 import { GoogleFlightsStrategy } from "./strategies/google-flights-strategy";
 import { HybridStrategy } from "./strategies/hybrid-strategy";
 import { calculateStipend } from "./travel-stipend-calculator";
+import { Conference, StipendBreakdown } from "./types";
 import { findBestMatchingConference } from "./utils/conference-matcher";
 import { DatabaseService } from "./utils/database";
-import { Conference, StipendBreakdown } from "./utils/types";
 
 // Program definition with examples
 const program = new Command()

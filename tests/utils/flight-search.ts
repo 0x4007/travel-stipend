@@ -1,8 +1,8 @@
 import { getJson } from "serpapi";
+import { Conference, FlightResults } from "../../src/types";
 import { DEFAULT_DEPARTURE_AIRPORT } from "../../src/utils/constants";
 import { generateFlightDates } from "../../src/utils/dates";
 import { extractAirportCode } from "../../src/utils/flights";
-import { Conference, FlightResults } from "../../src/utils/types";
 
 export async function searchFlights(conference: Conference): Promise<FlightResults> {
   const dates = generateFlightDates(conference);

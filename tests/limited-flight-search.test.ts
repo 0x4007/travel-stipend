@@ -1,5 +1,5 @@
+import { FlightResults } from "../src/types";
 import { findUpcomingConferences } from "../src/utils/flights";
-import { FlightResults } from "../src/utils/types";
 import { searchFlights } from "./utils/flight-search";
 
 describe("Limited Flight Search Test", () => {

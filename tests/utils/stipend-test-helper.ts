@@ -1,5 +1,5 @@
-import { Conference, StipendBreakdown } from "../../src/utils/types";
 import { calculateStipend } from "../../src/travel-stipend-calculator";
+import { Conference, StipendBreakdown } from "../../src/types";
 import { DEFAULT_TEST_ORIGIN } from "./test-constants";
 
 /**

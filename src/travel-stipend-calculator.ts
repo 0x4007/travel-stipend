@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { Conference, Coordinates, MealCosts, StipendBreakdown } from "./types";
 import { createHashKey, PersistentCache } from "./utils/cache";
 import {
   BASE_LOCAL_TRANSPORT_PER_DAY,
@@ -20,7 +21,6 @@ import { calculateDateDiff, generateFlightDates } from "./utils/dates";
 import { haversineDistance } from "./utils/distance";
 import { calculateFlightCost, scrapeFlightPrice } from "./utils/flights";
 import { calculateLocalTransportCost } from "./utils/taxi-fares";
-import { Conference, Coordinates, MealCosts, StipendBreakdown } from "./utils/types";
 
 // Initialize caches
 const distanceCache = new PersistentCache<number>("fixtures/cache/distance-cache.json");
@@ -339,8 +339,17 @@ async function main() {
   // Filter out past conferences
   const currentDate = new Date();
   const futureRecords = records.filter((record) => {
-    const endDate = record.end_date ? new Date(`${record.end_date} 2025`) : new Date(`${record.start_date} 2025`);
-    return endDate >= currentDate;
+    try {
+      // Parse dates with proper year handling
+      const startDate = new Date(`${record.start_date} 2025`);
+      const endDate = record.end_date ? new Date(`${record.end_date} 2025`) : startDate;
+
+      // Check if conference is in the future (either start or end date is after current date)
+      return startDate >= currentDate || endDate >= currentDate;
+    } catch (e) {
+      console.error(`Error parsing dates for conference ${record.conference}:`, e);
+      return false;
+    }
   });
   console.log(`Filtered to ${futureRecords.length} upcoming conferences`);
 

@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 import * as core from '@actions/core';
-import { Conference } from "./utils/types";
-import { calculateStipend } from "./travel-stipend-calculator";
-import { DatabaseService } from "./utils/database";
 import { GoogleFlightsStrategy } from "./strategies/google-flights-strategy";
+import { calculateStipend } from "./travel-stipend-calculator";
+import { Conference } from "./types";
+import { DatabaseService } from "./utils/database";
 // Note: We keep the distance strategy available in case we need to fallback if Google Flights fails
+import { appendFileSync } from "fs";
 import { FlightPricingContextImpl } from "./strategies/flight-pricing-context";
 import { findBestMatchingConference } from "./utils/conference-matcher";
-import { appendFileSync } from "fs";
 
 // Allow script to run both as GitHub Action and directly via workflow
 function getInput(name: string, options?: { required: boolean; }): string {
