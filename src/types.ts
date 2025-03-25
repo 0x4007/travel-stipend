@@ -1,15 +1,10 @@
-export interface Coordinates {
-  lat: number;
-  lng: number;
-}
-
 export interface Conference {
   category: string;
   start_date: string;
-  end_date: string;
+  end_date?: string;  // Optional: defaults to start_date if not provided
   conference: string;
   location: string;
-  ticket_price: string;
+  ticket_price?: string;  // Optional: defaults to DEFAULT_TICKET_PRICE if not provided
   description: string;
 
   // Optional buffer days for more precise travel planning
@@ -30,7 +25,6 @@ export interface StipendBreakdown {
   conference_end: string;
   flight_departure: string;
   flight_return: string;
-  distance_km: number;
   flight_cost: number;
   flight_price_source: string;
   lodging_cost: number;

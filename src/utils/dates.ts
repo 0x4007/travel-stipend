@@ -1,71 +1,47 @@
 import { Conference } from "../types";
 import { DEFAULT_CONFERENCE_DAYS } from "./constants";
 
-// Parse date strings like "18 February" to a Date object
-function parseDate(dateStr: string, year = new Date().getFullYear()): Date | null {
-  if (!dateStr || dateStr.trim() === "") {
-    return null;
-  }
+// Parse date string into a Date object, using next year if date has passed
+function parseDate(dateStr: string | undefined | null): Date | null {
+  if (!dateStr?.trim()) return null;
 
-  // Try current year first
-  let fullDateStr = `${dateStr} ${year}`;
-  let date = new Date(fullDateStr);
+  // Get current year
+  const year = new Date().getFullYear();
 
-  // If date is in the past, try next year
-  if (date < new Date()) {
-    fullDateStr = `${dateStr} ${year + 1}`;
-    date = new Date(fullDateStr);
-  }
+  // Try parsing with current year
+  const date = new Date(`${dateStr} ${year}`);
 
-  try {
-    return date;
-  } catch (error) {
-    console.error(`Error parsing date: ${dateStr}`, error);
-    return null;
-  }
+  // If date is in the past, use next year
+  return date < new Date() ? new Date(`${dateStr} ${year + 1}`) : date;
 }
 
-// Calculate the difference in days between two dates
-export function calculateDateDiff(startDateStr: string, endDateStr: string): number {
-  const start = parseDate(startDateStr);
-
-  // If end date is empty, assume the conference is defaultDays days long
-  if (!endDateStr || endDateStr.trim() === "") {
-    if (start) {
-      const end = new Date(start);
-      end.setDate(end.getDate() + DEFAULT_CONFERENCE_DAYS - 1); // -1 because the start day counts as day 1
-      return DEFAULT_CONFERENCE_DAYS - 1; // Return nights (days - 1)
-    }
-    return DEFAULT_CONFERENCE_DAYS - 1; // Default to defaultDays - 1 nights
+// Calculate number of nights between two dates
+export function calculateDateDiff(startDateStr: string, endDateStr: string | undefined | null): number {
+  if (!endDateStr?.trim()) {
+    return DEFAULT_CONFERENCE_DAYS - 1; // Default to conference days minus 1 for nights
   }
 
+  const start = parseDate(startDateStr);
   const end = parseDate(endDateStr);
 
   if (!start || !end) {
-    console.warn(`Could not parse dates: ${startDateStr} - ${endDateStr}, using default of ${DEFAULT_CONFERENCE_DAYS} days`);
-    return DEFAULT_CONFERENCE_DAYS - 1; // Default to defaultDays - 1 nights
+    console.warn(`Could not parse dates: ${startDateStr} - ${endDateStr}`);
+    return DEFAULT_CONFERENCE_DAYS - 1;
   }
 
   const msPerDay = 24 * 60 * 60 * 1000;
-  const diffInMs = end.getTime() - start.getTime();
-  const diffInDays = Math.round(diffInMs / msPerDay) + 1; // +1 because both start and end days are inclusive
-
-  return diffInDays - 1; // Convert days to nights
+  return Math.round((end.getTime() - start.getTime()) / msPerDay);
 }
 
-// Calculate meal allowance based on day index (for duration-based scaling) - removed as unused
-
-// Generate flight dates for a conference (with customizable buffer days)
+// Generate travel dates for a conference with buffer days
 export function generateFlightDates(conference: Conference, isOriginCity = false): { outbound: string; return: string } {
   const startDate = parseDate(conference.start_date);
   if (!startDate) {
     throw new Error("Invalid start date");
   }
 
-  const endDate = conference.end_date ? parseDate(conference.end_date) : new Date(startDate);
-  if (!endDate) {
-    throw new Error("Invalid conference dates");
-  }
+  const endDateParsed = parseDate(conference.end_date);
+  const endDate = endDateParsed ?? startDate;
 
   // Get buffer days from the conference record, or use defaults
   // Always enforce minimum of 1 day before AND 1 day after to prevent flying on conference days
@@ -83,29 +59,23 @@ export function generateFlightDates(conference: Conference, isOriginCity = false
     bufferDaysAfter = 1; // Force at least one buffer day after
   }
 
-  // For origin city conferences, use the actual conference dates
-  // For non-origin city conferences, add buffer days
+  // Set departure to day before conference (or same day for local events)
   const outboundDate = new Date(startDate);
   if (!isOriginCity && bufferDaysBefore > 0) {
     outboundDate.setDate(startDate.getDate() - bufferDaysBefore);
   }
 
-  // Set return date to specified days after conference (or same day for origin city)
+  // Set return to day after conference (or same day for local events)
   const returnDate = new Date(endDate);
   if (!isOriginCity && bufferDaysAfter > 0) {
     returnDate.setDate(endDate.getDate() + bufferDaysAfter);
   }
 
-  // Format dates as YYYY-MM-DD in local timezone
-  function formatDate(date: Date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
+  // Format dates as YYYY-MM-DD
+  const formatDate = (date: Date) => date.toISOString().split("T")[0];
 
   return {
     outbound: formatDate(outboundDate),
-    return: formatDate(returnDate),
+    return: formatDate(returnDate)
   };
 }

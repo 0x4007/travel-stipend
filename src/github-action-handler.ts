@@ -1,20 +1,16 @@
 #!/usr/bin/env bun
 import * as core from '@actions/core';
-import { GoogleFlightsStrategy } from "./strategies/google-flights-strategy";
 import { calculateStipend } from "./travel-stipend-calculator";
 import { Conference } from "./types";
 import { DatabaseService } from "./utils/database";
-// Note: We keep the distance strategy available in case we need to fallback if Google Flights fails
 import { appendFileSync } from "fs";
-import { FlightPricingContextImpl } from "./strategies/flight-pricing-context";
-import { findBestMatchingConference } from "./utils/conference-matcher";
 
 // Allow script to run both as GitHub Action and directly via workflow
 function getInput(name: string, options?: { required: boolean; }): string {
   // When run directly via workflow, inputs are passed via environment variables
   const envName = `INPUT_${name.replace(/ /g, '_').toUpperCase()}`;
   if (process.env[envName]) {
-    return process.env[envName] || '';
+    return process.env[envName] ?? '';
   }
   // When run as a GitHub Action, inputs are accessed via @actions/core
   return core.getInput(name, options);
@@ -55,55 +51,24 @@ function setFailed(message: string): void {
   }
 }
 
-// Split into smaller functions to reduce cognitive complexity
-async function getConferenceDetails(
-  conferenceName: string | undefined,
-  location: string
-): Promise<{ name: string; category: string; description: string }> {
-  const defaultName = `Business Trip to ${location}`;
-  const defaultCategory = "Github Action";
-  const defaultDescription = "";
-
-  if (!conferenceName) {
-    return { name: defaultName, category: defaultCategory, description: defaultDescription };
-  }
-
-  const matchResult = await findBestMatchingConference(conferenceName);
-
-  if (matchResult.found) {
-    if (matchResult.similarity && matchResult.similarity < 1.0) {
-      logInfo(`Using closest matching conference: "${matchResult.conference?.conference}" (${Math.round(matchResult.similarity * 100)}% match)`);
-    }
-    return {
-      name: matchResult.conference?.conference ?? conferenceName,
-      category: matchResult.conference?.category ?? defaultCategory,
-      description: matchResult.conference?.description ?? defaultDescription
-    };
-  }
-
-  if (matchResult.suggestions?.length) {
-    logInfo('Conference not found in database. Similar conferences:');
-    matchResult.suggestions.forEach((conf, i) => {
-      logInfo(`  ${i + 1}. ${conf.conference}`);
-    });
-    logInfo('Using provided conference name.');
-  }
-
-  return { name: conferenceName, category: defaultCategory, description: defaultDescription };
+// Gets conference details from the database or returns default values
+async function getBusinessTripDefaults(location: string): Promise<{ name: string; category: string; description: string }> {
+  return {
+    name: `Business Trip to ${location}`,
+    category: "GitHub Action",
+    description: ""
+  };
 }
 
 async function run(): Promise<void> {
-  let flightContext: FlightPricingContextImpl | undefined;
-
   try {
     // Get inputs
     const location = getInput("location", { required: true });
     const origin = getInput("origin", { required: true });
     const conferenceStart = getInput("conference_start", { required: true });
-    const conferenceEnd = getInput("conference_end") || conferenceStart;
-    const conferenceName = getInput("conference_name");
-    const daysBefore = parseInt(getInput("days_before") || "1", 10);
-    const daysAfter = parseInt(getInput("days_after") || "1", 10);
+    const conferenceEnd = getInput("conference_end") ?? conferenceStart;
+    const daysBefore = Math.max(1, parseInt(getInput("days_before") ?? "1", 10));
+    const daysAfter = Math.max(1, parseInt(getInput("days_after") ?? "1", 10));
     const ticketPrice = getInput("ticket_price");
 
     // Safety check: require at least 1 day before AND 1 day after for flights
@@ -117,8 +82,8 @@ async function run(): Promise<void> {
       logWarning('Using minimum 1 day after conference');
     }
 
-    // Get conference details using helper function
-    const { name, category, description } = await getConferenceDetails(conferenceName, location);
+    // Get conference details (use simple business trip defaults)
+    const { name, category, description } = await getBusinessTripDefaults(location);
 
     // Create conference record
     const conference: Conference & { origin: string } = {
@@ -130,8 +95,8 @@ async function run(): Promise<void> {
       ticket_price: ticketPrice ? `$${ticketPrice}` : "",
       category,
       description,
-      buffer_days_before: Math.max(1, daysBefore),
-      buffer_days_after: Math.max(1, daysAfter)
+      buffer_days_before: daysBefore,
+      buffer_days_after: daysAfter
     };
 
     // Detect environment
@@ -157,10 +122,6 @@ async function run(): Promise<void> {
     logInfo(`Debug mode: ${isDebugMode ? 'Enabled' : 'Disabled'}`);
     logInfo(`Screenshots: ${screenshotMode}`);
     logInfo(`Timeout: ${timeout}ms`);
-
-    // Set up default strategy
-    const strategy = new GoogleFlightsStrategy();
-    flightContext = new FlightPricingContextImpl(strategy);
 
     // Calculate stipend
     const result = await calculateStipend(conference);
@@ -231,10 +192,6 @@ async function run(): Promise<void> {
       setFailed('An unexpected error occurred');
     }
   } finally {
-    // Clean up resources
-    if (flightContext) {
-      await flightContext.cleanup();
-    }
     await DatabaseService.getInstance().close();
   }
 }
