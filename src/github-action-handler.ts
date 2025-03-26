@@ -53,28 +53,47 @@ function setFailed(message: string): void {
 }
 
 function getInputs() {
-  const location = getInput("destination", { required: true });
-  const origin = getInput("origin", { required: true });
-  const departureDate = getInput("departure_date", { required: true });
-  const returnDate = getInput("return_date") ?? departureDate;
-  const daysBefore = Math.max(1, parseInt(getInput("buffer_before") ?? "1", 10));
-  const daysAfter = Math.max(1, parseInt(getInput("buffer_after") ?? "1", 10));
-  const ticketPrice = getInput("ticket_price") ?? "750";
-  const outputFormat = getInput("output_format") ?? "table";
+  // Use input names matching the workflow file
+  const location = getInput("location", { required: true });
+  const origin = getInput("origin", { required: false }) || "Seoul, Korea"; // Default origin if not provided
+  const conferenceStart = getInput("conference_start", { required: true });
+  const conferenceEnd = getInput("conference_end", { required: true });
+  const conferenceName = getInput("conference_name", { required: true });
+  const daysBefore = Math.max(1, parseInt(getInput("days_before") ?? "1", 10)); // Use workflow input name
+  const daysAfter = Math.max(1, parseInt(getInput("days_after") ?? "1", 10)); // Use workflow input name
+  const ticketPrice = getInput("ticket_price") ?? "0"; // Use workflow input name, default 0
+  const outputFormat = getInput("output_format") ?? "table"; // Optional output format
 
   console.log("\nTravel stipend calculation inputs:");
   console.log("--------------------------------");
   console.log(`Origin: ${origin}`);
   console.log(`Destination: ${location}`);
-  console.log(`Departure Date: ${departureDate}`);
-  console.log(`Return Date: ${returnDate}`);
+  console.log(`Conference: ${conferenceName}`);
+  console.log(`Conference Start: ${conferenceStart}`);
+  console.log(`Conference End: ${conferenceEnd}`);
   console.log(`Buffer Days Before: ${daysBefore}`);
   console.log(`Buffer Days After: ${daysAfter}`);
   console.log(`Ticket Price: $${ticketPrice}`);
   console.log(`Output Format: ${outputFormat}`);
   console.log("--------------------------------\n");
 
-  return { location, origin, departureDate, returnDate, daysBefore, daysAfter, ticketPrice, outputFormat };
+  // Return values using the correct names
+  // Return values using the correct names, grouped logically
+  return {
+    location,
+    origin,
+    conference: {
+      name: conferenceName,
+      start: conferenceStart,
+      end: conferenceEnd,
+      ticketPrice,
+    },
+    travel: {
+      daysBefore,
+      daysAfter,
+    },
+    outputFormat,
+  };
 }
 
 function validateBufferDays(daysBefore: number, daysAfter: number) {
@@ -89,26 +108,36 @@ function validateBufferDays(daysBefore: number, daysAfter: number) {
   }
 }
 
-function createConferenceRecord(
-  location: string,
-  origin: string,
-  departureDate: string,
-  returnDate: string,
-  daysBefore: number,
-  daysAfter: number,
-  ticketPrice: string
-): Conference & { origin: string } {
+// Define an interface for the input object structure
+interface ActionInputs {
+  location: string;
+  origin: string;
+  conference: {
+    name: string;
+    start: string;
+    end: string;
+    ticketPrice: string;
+  };
+  travel: {
+    daysBefore: number;
+    daysAfter: number;
+  };
+  outputFormat: string;
+}
+
+// Modify createConferenceRecord to accept the input object
+function createConferenceRecord(inputs: ActionInputs): Conference & { origin: string } {
   return {
-    conference: getInput("conference") || `Business Trip to ${location.split(",")[0]}`,
-    location,
-    origin,
-    start_date: departureDate,
-    end_date: returnDate,
-    ticket_price: ticketPrice ? `$${ticketPrice}` : undefined,
+    conference: inputs.conference.name,
+    location: inputs.location,
+    origin: inputs.origin,
+    start_date: inputs.conference.start,
+    end_date: inputs.conference.end,
+    ticket_price: inputs.conference.ticketPrice && inputs.conference.ticketPrice !== "0" ? `$${inputs.conference.ticketPrice}` : undefined,
     category: "GitHub Action",
     description: "",
-    buffer_days_before: daysBefore,
-    buffer_days_after: daysAfter,
+    buffer_days_before: inputs.travel.daysBefore,
+    buffer_days_after: inputs.travel.daysAfter,
   };
 }
 
@@ -133,13 +162,16 @@ function logEnvironmentConfig() {
 
 async function run(): Promise<void> {
   try {
-    const { location, origin, departureDate, returnDate, daysBefore, daysAfter, ticketPrice, outputFormat } = getInputs();
-    validateBufferDays(daysBefore, daysAfter);
-    const conference = createConferenceRecord(location, origin, departureDate, returnDate, daysBefore, daysAfter, ticketPrice);
+    // Get the structured inputs object
+    const inputs = getInputs();
+    validateBufferDays(inputs.travel.daysBefore, inputs.travel.daysAfter);
+    // Pass the inputs object to createConferenceRecord
+    const conference = createConferenceRecord(inputs);
     logEnvironmentConfig();
 
     const result = await calculateStipend(conference);
-    await handleOutput(result, outputFormat);
+    // Pass outputFormat from the inputs object
+    await handleOutput(result, inputs.outputFormat);
   } catch (error) {
     if (error instanceof Error) {
       setFailed(error.message);
