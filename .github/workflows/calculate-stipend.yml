@@ -4,101 +4,113 @@ on:
   workflow_dispatch:
     inputs:
       location:
-        description: 'Conference Location'
+        description: 'Destination location (e.g. "Singapore, SG")'
         required: true
         type: string
       conference_start:
-        description: 'Conference Start Date'
+        description: 'Conference start date (e.g. "20 May 2025")'
         required: true
         type: string
       conference_end:
-        description: 'Conference End Date'
+        description: 'Conference end date'
         required: true
         type: string
       conference_name:
-        description: 'Conference Name'
+        description: 'Conference name'
         required: true
         type: string
       days_before:
-        description: 'Days Before Conference'
+        description: 'Days to arrive before conference'
         required: false
         default: '1'
         type: string
       days_after:
-        description: 'Days After Conference'
+        description: 'Days to leave after conference'
         required: false
         default: '1'
         type: string
       ticket_price:
-        description: 'Conference Ticket Price'
+        description: 'Conference ticket price'
         required: false
         default: '0'
         type: string
-      origin:
-        description: 'Origin Location'
+      output_format:
+        description: 'Output format (table, json, csv)'
         required: false
-        default: 'Seoul, Korea'
+        default: 'table'
         type: string
 
 jobs:
   calculate:
     runs-on: ubuntu-latest
+    env:
+      DEBUG_GOOGLE_FLIGHTS: "true"
+      CAPTURE_SCREENSHOTS: "true"
+      PUPPETEER_TIMEOUT: "60000"
+      DETAILED_LOGGING: "true"
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          submodules: 'recursive'  # Initialize and update submodules
+          submodules: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install Chrome
-        uses: browser-actions/setup-chrome@v1
-        with:
-          chrome-version: stable
 
       - name: Install dependencies
-        run: |
-          bun install
-          cd src/utils/google-flights-scraper
-          bun install
-          cd ../../..
+        run: bun install
 
-      # Run with targeted error logging only
-      - name: Calculate stipend
-        if: github.event_name == 'workflow_dispatch'
+      - name: Setup debug directories
         run: |
-          echo "Running travel stipend calculator with reduced logging"
-          echo "Using Chrome path: $(which google-chrome)"
+          mkdir -p test-screenshots
+          mkdir -p debug-logs
+          mkdir -p html-captures
 
-          # Run the GitHub Action handler with proper input environment variables
+      - name: Calculate travel stipend
+        run: |
           bun run src/github-action-handler.ts
-
-          # Display completion message
-          echo "✅ Travel stipend calculation completed"
         env:
-          # GitHub Action inputs
-          INPUT_LOCATION: ${{ inputs.location }}
-          INPUT_CONFERENCE_START: ${{ inputs.conference_start }}
-          INPUT_CONFERENCE_END: ${{ inputs.conference_end }}
-          INPUT_CONFERENCE_NAME: ${{ inputs.conference_name }}
-          INPUT_DAYS_BEFORE: ${{ inputs.days_before }}
-          INPUT_DAYS_AFTER: ${{ inputs.days_after }}
-          INPUT_TICKET_PRICE: ${{ inputs.ticket_price }}
-          INPUT_ORIGIN: ${{ inputs.origin }}
+          INPUT_LOCATION: ${{ github.event.inputs.location }}
+          INPUT_CONFERENCE_START: ${{ github.event.inputs.conference_start }}
+          INPUT_CONFERENCE_END: ${{ github.event.inputs.conference_end }}
+          INPUT_CONFERENCE_NAME: ${{ github.event.inputs.conference_name }}
+          INPUT_DAYS_BEFORE: ${{ github.event.inputs.days_before }}
+          INPUT_DAYS_AFTER: ${{ github.event.inputs.days_after }}
+          INPUT_TICKET_PRICE: ${{ github.event.inputs.ticket_price }}
+          INPUT_OUTPUT_FORMAT: ${{ github.event.inputs.output_format }}
 
-          # System configuration
-          PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome
-          PUPPETEER_TIMEOUT: 60000
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-screenshots
+          path: |
+            test-screenshots/
+            html-captures/
+          retention-days: 5
 
-          # Logging and debugging
-          DEBUG_GOOGLE_FLIGHTS: true
-          ENABLE_ERROR_SCREENSHOTS: true
-          CAPTURE_SCREENSHOTS: true
-          SCREENSHOT_QUALITY: medium
-          LOG_LEVEL: info
+      - name: Upload debug logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-logs
+          path: debug-logs/
+          retention-days: 5
 
-          # GitHub token for API access if needed
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            ./**/*-error.png
+            ./**/*-error.json
+            ./**/*-error.txt
+            ./**/*-error.html
+          retention-days: 5
