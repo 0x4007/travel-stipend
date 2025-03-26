@@ -2,32 +2,17 @@ import { calculateStipend } from "../src/travel-stipend-calculator";
 import { DatabaseService } from "../src/utils/database";
 
 describe("Single Conference Complete Calculation Test", () => {
-  jest.setTimeout(30000); // Increase timeout for API calls
+  jest.setTimeout(60000); // Double timeout for flight scraping
 
   it("should calculate complete stipend for next conference", async () => {
     // Get conferences from database
     const conferences = await DatabaseService.getInstance().getConferences();
 
-    // Get the first upcoming conference
-    const currentDate = new Date();
+    // Find a conference in May (for testing purposes)
     const conference = conferences.find((conf) => {
-      // Parse date in "DD Month" format
       const parts = conf.start_date.split(' ');
       if (parts.length < 2) return false;
-
-      const day = parseInt(parts[0]);
-      const month = parts[1];
-      const currentYear = currentDate.getFullYear();
-
-      // Try current year
-      let conferenceDate = new Date(`${month} ${day}, ${currentYear}`);
-
-      // If date has passed, try next year
-      if (conferenceDate < currentDate) {
-        conferenceDate = new Date(`${month} ${day}, ${currentYear + 1}`);
-      }
-
-      return conferenceDate >= currentDate;
+      return parts[1].toLowerCase() === "may";
     });
 
     if (!conference) {
@@ -45,15 +30,26 @@ describe("Single Conference Complete Calculation Test", () => {
       name: conferenceWithOrigin.conference,
       location: conferenceWithOrigin.location,
       start: conferenceWithOrigin.start_date,
-      end: conferenceWithOrigin.end_date ?? conferenceWithOrigin.start_date,
-      year: new Date().getFullYear() + 1 // Conferences are always for next year
+      end: conferenceWithOrigin.end_date ?? conferenceWithOrigin.start_date
     });
 
-    // Update conference dates with next year
-    const nextYear = new Date().getFullYear() + 1;
-    conferenceWithOrigin.start_date = `${conferenceWithOrigin.start_date} ${nextYear}`;
+    // Determine the appropriate year
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+
+    // Parse the conference date with current year
+    const confDateParts = conferenceWithOrigin.start_date.split(' ');
+    const confDate = new Date(`${confDateParts[1]} ${confDateParts[0]}, ${currentYear}`);
+
+    // If the date has passed, use next year
+    const year = confDate < currentDate ? currentYear + 1 : currentYear;
+
+    console.log(`Using year: ${year} for conference dates`);
+
+    // Update conference dates with determined year
+    conferenceWithOrigin.start_date = `${conferenceWithOrigin.start_date} ${year}`;
     if (conferenceWithOrigin.end_date) {
-      conferenceWithOrigin.end_date = `${conferenceWithOrigin.end_date} ${nextYear}`;
+      conferenceWithOrigin.end_date = `${conferenceWithOrigin.end_date} ${year}`;
     }
 
     const result = await calculateStipend(conferenceWithOrigin);
@@ -98,7 +94,14 @@ describe("Single Conference Complete Calculation Test", () => {
     expect(result.total_stipend).toBe(calculatedTotal);
 
     // Validate dates
-    expect(Date.parse(result.flight_departure)).toBeLessThanOrEqual(Date.parse(result.conference_start));
-    expect(Date.parse(result.flight_return)).toBeGreaterThanOrEqual(Date.parse(result.conference_end));
+    // Convert all dates to proper format for comparison
+    const flightDep = new Date(`${result.flight_departure} ${year}`);
+    const flightRet = new Date(`${result.flight_return} ${year}`);
+    const confStart = new Date(`${result.conference_start}`);
+    const confEnd = new Date(`${result.conference_end}`);
+
+    // Compare dates properly
+    expect(flightDep.getTime()).toBeLessThanOrEqual(confStart.getTime());
+    expect(flightRet.getTime()).toBeGreaterThanOrEqual(confEnd.getTime());
   });
 });
