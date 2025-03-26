@@ -16,6 +16,7 @@ interface ActionInputs {
   daysAfter: number;
   ticketPrice: string;
   outputFormat: string;
+  includeBudget: boolean;
 }
 
 function getActionInputs(): ActionInputs {
@@ -27,22 +28,24 @@ function getActionInputs(): ActionInputs {
     daysBefore: parseInt(process.env.INPUT_DAYS_BEFORE ?? "1"),
     daysAfter: parseInt(process.env.INPUT_DAYS_AFTER ?? "1"),
     ticketPrice: process.env.INPUT_TICKET_PRICE ?? "0",
-    outputFormat: process.env.INPUT_OUTPUT_FORMAT ?? "table"
+    outputFormat: process.env.INPUT_OUTPUT_FORMAT ?? "table",
+    includeBudget: process.env.INPUT_INCLUDE_BUDGET === "true"
   };
 }
 
 async function constructConference(inputs: ActionInputs): Promise<Conference> {
-  return {
-    category: "Custom", // For one-off calculations
-    conference: inputs.conferenceName,
-    location: inputs.location,
-    start_date: inputs.conferenceStart,
-    end_date: inputs.conferenceEnd,
-    buffer_days_before: inputs.daysBefore,
-    buffer_days_after: inputs.daysAfter,
-    ticket_price: inputs.ticketPrice,
-    origin: process.env.ORIGIN ?? "Seoul, South Korea", // Default origin
-  };
+    return {
+      category: "Custom", // For one-off calculations
+      conference: inputs.conferenceName,
+      location: inputs.location,
+      start_date: inputs.conferenceStart,
+      end_date: inputs.conferenceEnd,
+      buffer_days_before: inputs.daysBefore,
+      buffer_days_after: inputs.daysAfter,
+      ticket_price: inputs.ticketPrice,
+      origin: process.env.ORIGIN ?? "Seoul, South Korea", // Default origin
+      includeBudget: inputs.includeBudget
+    };
 }
 
 function formatOutput(result: StipendBreakdown, format: string): string {

@@ -182,8 +182,12 @@ function outputResults(results: StipendBreakdown[], format = "table"): void {
         "flight_cost",
         "flight_price_source",
         "lodging_cost",
+        "basic_meals_cost",
+        "business_entertainment_cost",
         "meals_cost",
         "local_transport_cost",
+        "internet_data_allowance",
+        "incidentals_allowance",
         "ticket_price",
         "total_stipend",
       ].join(",");
@@ -199,8 +203,12 @@ function outputResults(results: StipendBreakdown[], format = "table"): void {
           r.flight_cost,
           `"${r.flight_price_source}"`,
           r.lodging_cost,
+          r.basic_meals_cost,
+          r.business_entertainment_cost,
           r.meals_cost,
           r.local_transport_cost,
+          r.internet_data_allowance,
+          r.incidentals_allowance,
           r.ticket_price,
           r.total_stipend,
         ].join(",")
@@ -220,7 +228,9 @@ function outputResults(results: StipendBreakdown[], format = "table"): void {
         console.log(`\nConference: ${r.conference}`);
         console.log(`Flight cost: ${r.flight_cost}`);
         console.log(`Lodging cost: ${r.lodging_cost}`);
-        console.log(`Meals cost: ${r.meals_cost}`);
+        console.log(`Basic meals cost: ${r.basic_meals_cost}`);
+        console.log(`Business entertainment: ${r.business_entertainment_cost}`);
+        console.log(`Total meals cost: ${r.meals_cost}`);
         console.log(`Transport cost: ${r.local_transport_cost}`);
         console.log(`Internet allowance: ${r.internet_data_allowance}`);
         console.log(`Incidentals allowance: ${r.incidentals_allowance}`);
@@ -241,7 +251,9 @@ function outputResults(results: StipendBreakdown[], format = "table"): void {
           dates: `${r.conference_start} - ${r.conference_end ?? r.conference_start}`,
           flight: Number(r.flight_cost).toFixed(2),
           lodging: Number(r.lodging_cost).toFixed(2),
-          meals: Number(r.meals_cost).toFixed(2),
+          basicMeals: Number(r.basic_meals_cost).toFixed(2),
+          bizMeals: Number(r.business_entertainment_cost).toFixed(2),
+          totalMeals: Number(r.meals_cost).toFixed(2),
           transport: Number(r.local_transport_cost).toFixed(2),
           internet: Number(r.internet_data_allowance).toFixed(2),
           incidentals: Number(r.incidentals_allowance).toFixed(2),

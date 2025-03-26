@@ -43,6 +43,11 @@ on:
           - json
           - csv
         default: 'table'
+      include_budget:
+        description: 'Include budget airlines in flight search'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   calculate:
@@ -76,6 +81,7 @@ jobs:
           INPUT_DAYS_AFTER: ${{ inputs.days_after }}
           INPUT_TICKET_PRICE: ${{ inputs.ticket_price }}
           INPUT_OUTPUT_FORMAT: ${{ inputs.output_format }}
+          INPUT_INCLUDE_BUDGET: ${{ inputs.include_budget }}
           ORIGIN: 'Seoul, South Korea'
           CHROME_PATH: /usr/bin/chromium-browser
           DISPLAY: ':99.0'

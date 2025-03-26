@@ -13,11 +13,17 @@ import { launchBrowser, navigateToFlights, scrapeFlightPrices } from "./google-f
 // Load environment variables
 config();
 
-export async function calculateFlightCost(origin: string, destination: string, departureDate: string, returnDate: string): Promise<number> {
+export async function calculateFlightCost(
+  origin: string,
+  destination: string,
+  departureDate: string,
+  returnDate: string,
+  includeBudget: boolean = false
+): Promise<number> {
   const result = await scrapeFlightPrice(origin, destination, {
     outbound: departureDate,
     return: returnDate,
-  });
+  }, includeBudget);
   return result.price ?? 0;
 }
 
@@ -62,7 +68,8 @@ async function handleFlightScraping(page: Page) {
 export async function scrapeFlightPrice(
   origin: string,
   destination: string,
-  dates: { outbound: string; return: string }
+  dates: { outbound: string; return: string },
+  includeBudget: boolean = false
 ): Promise<{ price: number | null; source: string }> {
   console.log(`Scraping flight prices from ${origin} to ${destination}`);
   console.log(`Dates: ${dates.outbound} to ${dates.return}`);
@@ -87,7 +94,7 @@ export async function scrapeFlightPrice(
       to: destination,
       departureDate: dates.outbound,
       returnDate: dates.return,
-      includeBudget: true,
+      includeBudget,
     };
 
     // Log parameters for debugging

@@ -18,6 +18,7 @@ export interface Conference {
 
   // For travel stipend calculations
   origin?: string; // Added during calculations
+  includeBudget?: boolean; // Whether to include budget airlines in flight search
 }
 
 export interface MealCosts {

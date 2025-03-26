@@ -15,14 +15,15 @@ async function calculateFlightCostForConference(
   origin: string,
   destination: string,
   flightDates: { outbound: string; return: string },
-  isOriginCity: boolean
+  isOriginCity: boolean,
+  includeBudget: boolean = false
 ): Promise<{ cost: number; source: string }> {
   if (isOriginCity) {
     console.log(`No flight cost for ${destination} (same as origin)`);
     return { cost: 0, source: "No flight needed" };
   }
 
-  const scrapedResult = await scrapeFlightPrice(origin, destination, flightDates);
+  const scrapedResult = await scrapeFlightPrice(origin, destination, flightDates, includeBudget);
 
   if (scrapedResult.price === null) {
     throw new Error(`Failed to get flight price for ${destination} from Google Flights`);
@@ -36,14 +37,14 @@ async function calculateFlightDetails(
   origin: string,
   destination: string,
   isOriginCity: boolean,
-  record: Conference
+  record: Conference & { includeBudget?: boolean }
 ): Promise<{
   flightCost: number;
   flightPriceSource: string;
   flightDates: { outbound: string; return: string };
 }> {
   const flightDates = generateFlightDates(record, isOriginCity);
-  const flightResult = await calculateFlightCostForConference(origin, destination, flightDates, isOriginCity);
+  const flightResult = await calculateFlightCostForConference(origin, destination, flightDates, isOriginCity, record.includeBudget);
 
   return {
     flightCost: flightResult.cost,
