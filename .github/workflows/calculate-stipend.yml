@@ -74,12 +74,12 @@ jobs:
           echo "Using Chrome path: $(which google-chrome)"
           bun src/github-action-handler.ts
         env:
-          DEBUG_GOOGLE_FLIGHTS: false
+          DEBUG_GOOGLE_FLIGHTS: true
           ENABLE_ERROR_SCREENSHOTS: true
           CAPTURE_SCREENSHOTS: true
           SCREENSHOT_QUALITY: medium
           PUPPETEER_TIMEOUT: 60000
-          LOG_LEVEL: error,warning
+          LOG_LEVEL: info
           PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome
           INPUT_LOCATION: ${{ inputs.location }}
           INPUT_CONFERENCE_START: ${{ inputs.conference_start }}
