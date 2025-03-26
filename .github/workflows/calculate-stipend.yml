@@ -72,15 +72,11 @@ jobs:
         run: |
           echo "Running travel stipend calculator with reduced logging"
           echo "Using Chrome path: $(which google-chrome)"
-          bun src/github-action-handler.ts
+
+          # Run the GitHub Action handler with proper input environment variables
+          bun run src/github-action-handler.ts
         env:
-          DEBUG_GOOGLE_FLIGHTS: true
-          ENABLE_ERROR_SCREENSHOTS: true
-          CAPTURE_SCREENSHOTS: true
-          SCREENSHOT_QUALITY: medium
-          PUPPETEER_TIMEOUT: 60000
-          LOG_LEVEL: info
-          PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome
+          # GitHub Action inputs
           INPUT_LOCATION: ${{ inputs.location }}
           INPUT_CONFERENCE_START: ${{ inputs.conference_start }}
           INPUT_CONFERENCE_END: ${{ inputs.conference_end }}
@@ -89,4 +85,17 @@ jobs:
           INPUT_DAYS_AFTER: ${{ inputs.days_after }}
           INPUT_TICKET_PRICE: ${{ inputs.ticket_price }}
           INPUT_ORIGIN: ${{ inputs.origin }}
+
+          # System configuration
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome
+          PUPPETEER_TIMEOUT: 60000
+
+          # Logging and debugging
+          DEBUG_GOOGLE_FLIGHTS: true
+          ENABLE_ERROR_SCREENSHOTS: true
+          CAPTURE_SCREENSHOTS: true
+          SCREENSHOT_QUALITY: medium
+          LOG_LEVEL: info
+
+          # GitHub token for API access if needed
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
