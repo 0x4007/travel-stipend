@@ -1,15 +1,23 @@
 export interface Conference {
+  id?: number;
   category: string;
   start_date: string;
   end_date?: string; // Optional: defaults to start_date if not provided
   conference: string;
   location: string;
   ticket_price?: string; // Optional: defaults to DEFAULT_TICKET_PRICE if not provided
-  description: string;
+  description?: string;
 
   // Optional buffer days for more precise travel planning
   buffer_days_before?: number; // Days to arrive before conference (default: 1)
   buffer_days_after?: number; // Days to stay after conference (default: 1)
+
+  // Flags for conference priority and status
+  priority?: boolean; // Marked with ❗️ in CSV
+  tentative?: boolean; // Marked with ❓ in CSV
+
+  // For travel stipend calculations
+  origin?: string; // Added during calculations
 }
 
 export interface MealCosts {

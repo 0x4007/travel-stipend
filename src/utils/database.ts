@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { Database, open } from "sqlite";
 import sqlite3 from "sqlite3";
-import { Conference,  } from "../types";
+import { Conference, } from "../types";
 
 interface TaxiRates {
   city: string;
@@ -80,7 +80,30 @@ export class DatabaseService {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           category TEXT NOT NULL,
           conference TEXT NOT NULL,
-          location TEXT NOT NULL
+          location TEXT NOT NULL,
+          start_date TEXT,
+          end_date TEXT,
+          description TEXT,
+          buffer_days_before INTEGER DEFAULT 1,
+          buffer_days_after INTEGER DEFAULT 1,
+          ticket_price TEXT
+        );
+
+        -- Drop and recreate conferences table with new schema if needed
+        DROP TABLE IF EXISTS conferences;
+        CREATE TABLE conferences (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          category TEXT NOT NULL,
+          conference TEXT NOT NULL,
+          location TEXT NOT NULL,
+          start_date TEXT,
+          end_date TEXT,
+          description TEXT,
+          buffer_days_before INTEGER DEFAULT 1,
+          buffer_days_after INTEGER DEFAULT 1,
+          ticket_price TEXT,
+          priority BOOLEAN DEFAULT FALSE,
+          tentative BOOLEAN DEFAULT FALSE
         );
 
         CREATE TABLE IF NOT EXISTS cost_of_living (
@@ -135,9 +158,17 @@ export class DatabaseService {
 
     const values = rows
       .map((row) => ({
-        category: row.Category ?? row.category ?? "",
-        conference: row.Name ?? row.name ?? row.Conference ?? row.conference ?? "",
-        location: row.Location ?? row.location ?? "",
+        category: row.Category ?? "",
+        conference: row.Conference ?? "",
+        location: row.Location ?? "",
+        start_date: row.Start ?? "",
+        end_date: row.End ?? "",
+        description: row.Description ?? "",
+        buffer_days_before: parseInt(row.BufferDaysBefore ?? "1"),
+        buffer_days_after: parseInt(row.BufferDaysAfter ?? "1"),
+        ticket_price: row.TicketPrice ?? row["Ticket Price"] ?? "0",
+        priority: row["❗️"]?.toLowerCase() === "true",
+        tentative: row["❓"]?.toLowerCase() === "true"
       }))
       .filter((v) => v.category && v.conference && v.location);
 
@@ -145,9 +176,15 @@ export class DatabaseService {
       await this._db.run("BEGIN TRANSACTION");
       for (const value of values) {
         await this._db.run(
-          `INSERT OR REPLACE INTO conferences (category, conference, location)
-           VALUES (?, ?, ?)`,
-          [value.category, value.conference, value.location]
+          `INSERT OR REPLACE INTO conferences (
+            category, conference, location, start_date, end_date, description,
+            buffer_days_before, buffer_days_after, ticket_price, priority, tentative
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            value.category, value.conference, value.location, value.start_date,
+            value.end_date, value.description, value.buffer_days_before,
+            value.buffer_days_after, value.ticket_price, value.priority, value.tentative
+          ]
         );
       }
       await this._db.run("COMMIT");
