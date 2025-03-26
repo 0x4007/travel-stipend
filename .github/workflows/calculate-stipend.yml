@@ -1,7 +1,6 @@
 name: Calculate Travel Stipend
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       location:
@@ -69,12 +68,16 @@ jobs:
 
       # Run with targeted error logging only
       - name: Calculate stipend
+        if: github.event_name == 'workflow_dispatch'
         run: |
           echo "Running travel stipend calculator with reduced logging"
           echo "Using Chrome path: $(which google-chrome)"
 
           # Run the GitHub Action handler with proper input environment variables
           bun run src/github-action-handler.ts
+
+          # Display completion message
+          echo "✅ Travel stipend calculation completed"
         env:
           # GitHub Action inputs
           INPUT_LOCATION: ${{ inputs.location }}
