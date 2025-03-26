@@ -251,3 +251,6 @@ async function outputTable(result: StipendBreakdown) {
 }
 // Export the run function as the entry point
 export { run };
+
+// Execute the run function
+run().catch(console.error);
