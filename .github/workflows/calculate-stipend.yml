@@ -4,113 +4,88 @@ on:
   workflow_dispatch:
     inputs:
       location:
-        description: 'Destination location (e.g. "Singapore, SG")'
-        required: true
-        type: string
-      conference_start:
-        description: 'Conference start date (e.g. "20 May 2025")'
-        required: true
-        type: string
-      conference_end:
-        description: 'Conference end date'
+        description: 'Conference location'
         required: true
         type: string
       conference_name:
         description: 'Conference name'
         required: true
         type: string
+      conference_start:
+        description: 'Conference start date (YYYY-MM-DD)'
+        required: true
+        type: string
+      conference_end:
+        description: 'Conference end date (YYYY-MM-DD)'
+        required: false
+        type: string
       days_before:
-        description: 'Days to arrive before conference'
+        description: 'Buffer days before conference'
         required: false
-        default: '1'
-        type: string
+        type: number
+        default: 1
       days_after:
-        description: 'Days to leave after conference'
+        description: 'Buffer days after conference'
         required: false
-        default: '1'
-        type: string
+        type: number
+        default: 1
       ticket_price:
         description: 'Conference ticket price'
         required: false
-        default: '0'
         type: string
+        default: '0'
       output_format:
         description: 'Output format (table, json, csv)'
         required: false
+        type: choice
+        options:
+          - table
+          - json
+          - csv
         default: 'table'
-        type: string
 
 jobs:
   calculate:
     runs-on: ubuntu-latest
-    env:
-      DEBUG_GOOGLE_FLIGHTS: "true"
-      CAPTURE_SCREENSHOTS: "true"
-      PUPPETEER_TIMEOUT: "60000"
-      DETAILED_LOGGING: "true"
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          submodules: true
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+          submodules: recursive
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: bun install
 
-      - name: Setup debug directories
-        run: |
-          mkdir -p test-screenshots
-          mkdir -p debug-logs
-          mkdir -p html-captures
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
 
-      - name: Calculate travel stipend
-        run: |
-          bun run src/github-action-handler.ts
+      - name: Calculate Stipend
         env:
-          INPUT_LOCATION: ${{ github.event.inputs.location }}
-          INPUT_CONFERENCE_START: ${{ github.event.inputs.conference_start }}
-          INPUT_CONFERENCE_END: ${{ github.event.inputs.conference_end }}
-          INPUT_CONFERENCE_NAME: ${{ github.event.inputs.conference_name }}
-          INPUT_DAYS_BEFORE: ${{ github.event.inputs.days_before }}
-          INPUT_DAYS_AFTER: ${{ github.event.inputs.days_after }}
-          INPUT_TICKET_PRICE: ${{ github.event.inputs.ticket_price }}
-          INPUT_OUTPUT_FORMAT: ${{ github.event.inputs.output_format }}
+          INPUT_LOCATION: ${{ inputs.location }}
+          INPUT_CONFERENCE_NAME: ${{ inputs.conference_name }}
+          INPUT_CONFERENCE_START: ${{ inputs.conference_start }}
+          INPUT_CONFERENCE_END: ${{ inputs.conference_end }}
+          INPUT_DAYS_BEFORE: ${{ inputs.days_before }}
+          INPUT_DAYS_AFTER: ${{ inputs.days_after }}
+          INPUT_TICKET_PRICE: ${{ inputs.ticket_price }}
+          INPUT_OUTPUT_FORMAT: ${{ inputs.output_format }}
+          ORIGIN: 'Seoul, South Korea'
+        run: |
+          bun src/github-action-handler.ts
 
-      - name: Upload screenshots
+      - name: Upload Screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: debug-screenshots
           path: |
-            test-screenshots/
-            html-captures/
-          retention-days: 5
-
-      - name: Upload debug logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-logs
-          path: debug-logs/
-          retention-days: 5
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: |
-            ./**/*-error.png
-            ./**/*-error.json
-            ./**/*-error.txt
-            ./**/*-error.html
+            screenshots/
+            dom-captures/
           retention-days: 5

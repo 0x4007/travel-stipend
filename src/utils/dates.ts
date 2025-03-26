@@ -16,14 +16,21 @@ function parseDate(dateStr: string | undefined | null): Date | null {
   if (parts.length >= 2) {
     const day = parseInt(parts[0]);
     const month = parts[1];
-    const year = parts[2] || new Date().getFullYear().toString();
+    // Default to next year if not specified and date would be in past
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    let year = parts[2] ? parseInt(parts[2]) : currentYear;
 
+    // Create date with current/specified year
     date = new Date(`${month} ${day}, ${year}`);
+
+    // If no year was specified and date would be in past, use next year
+    if (!parts[2] && date < currentDate) {
+      year = currentYear + 1;
+      date = new Date(`${month} ${day}, ${year}`);
+    }
+
     if (!isNaN(date.getTime())) {
-      // If date is in the past and no year was specified, use next year
-      if (date < new Date() && parts.length === 2) {
-        date.setFullYear(date.getFullYear() + 1);
-      }
       return date;
     }
   }

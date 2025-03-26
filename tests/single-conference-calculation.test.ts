@@ -11,9 +11,22 @@ describe("Single Conference Complete Calculation Test", () => {
     // Get the first upcoming conference
     const currentDate = new Date();
     const conference = conferences.find((conf) => {
-      const startDate = new Date(`${conf.start_date} ${currentDate.getFullYear()}`);
-      const nextYearDate = new Date(`${conf.start_date} ${currentDate.getFullYear() + 1}`);
-      const conferenceDate = startDate < currentDate ? nextYearDate : startDate;
+      // Parse date in "DD Month" format
+      const parts = conf.start_date.split(' ');
+      if (parts.length < 2) return false;
+
+      const day = parseInt(parts[0]);
+      const month = parts[1];
+      const currentYear = currentDate.getFullYear();
+
+      // Try current year
+      let conferenceDate = new Date(`${month} ${day}, ${currentYear}`);
+
+      // If date has passed, try next year
+      if (conferenceDate < currentDate) {
+        conferenceDate = new Date(`${month} ${day}, ${currentYear + 1}`);
+      }
+
       return conferenceDate >= currentDate;
     });
 
@@ -33,7 +46,15 @@ describe("Single Conference Complete Calculation Test", () => {
       location: conferenceWithOrigin.location,
       start: conferenceWithOrigin.start_date,
       end: conferenceWithOrigin.end_date ?? conferenceWithOrigin.start_date,
+      year: new Date().getFullYear() + 1 // Conferences are always for next year
     });
+
+    // Update conference dates with next year
+    const nextYear = new Date().getFullYear() + 1;
+    conferenceWithOrigin.start_date = `${conferenceWithOrigin.start_date} ${nextYear}`;
+    if (conferenceWithOrigin.end_date) {
+      conferenceWithOrigin.end_date = `${conferenceWithOrigin.end_date} ${nextYear}`;
+    }
 
     const result = await calculateStipend(conferenceWithOrigin);
 
