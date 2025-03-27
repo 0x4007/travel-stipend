@@ -37,13 +37,14 @@ if ! git diff --staged --quiet; then
       sleep 15 # Wait for GitHub Actions to detect the push and start the run
 
       COMMIT_SHA=$(git rev-parse HEAD)
-      echo "Fetching latest workflow run for commit $COMMIT_SHA..."
+      TARGET_WORKFLOW="batch-travel-stipend.yml" # Specify the workflow file name
+      echo "Fetching latest '$TARGET_WORKFLOW' run for commit $COMMIT_SHA..."
 
-      # Fetch the latest run ID associated with the commit SHA
-      RUN_ID=$(gh run list --commit "$COMMIT_SHA" --limit 1 --json databaseId --jq '.[0].databaseId')
+      # Fetch the latest run ID for the specific workflow associated with the commit SHA
+      RUN_ID=$(gh run list --workflow "$TARGET_WORKFLOW" --commit "$COMMIT_SHA" --limit 1 --json databaseId --jq '.[0].databaseId')
 
       if [ -z "$RUN_ID" ] || [ "$RUN_ID" == "null" ]; then
-          echo "Could not find a recent run ID for commit '$COMMIT_SHA'."
+          echo "Could not find a recent run ID for workflow '$TARGET_WORKFLOW' on commit '$COMMIT_SHA'."
           echo "Please check GitHub Actions manually."
           # Don't exit, as the push itself was successful
       else
