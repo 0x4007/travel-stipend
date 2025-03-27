@@ -168,15 +168,16 @@ jobs:
 
       - name: Prepare Upload
         run: |
-          echo "Preparing to upload result artifact: result-${{ matrix.destination }}-${{ matrix.startDate }}"
-          ls -la results-${{ matrix.destination }}-${{ matrix.startDate }}.json
-          echo "File size: $(wc -c <results-${{ matrix.destination }}-${{ matrix.startDate }}.json) bytes"
+          FILENAME="results-${{ matrix.destination }}-${{ matrix.startDate }}.json"
+          echo "Preparing to upload result artifact: $FILENAME"
+          ls -la "$FILENAME"
+          echo "File size: $(wc -c < "$FILENAME") bytes"
 
       - name: Upload Result
         uses: actions/upload-artifact@v4
         with:
-          name: result-${{ matrix.destination }}-${{ matrix.startDate }}
-          path: results-${{ matrix.destination }}-${{ matrix.startDate }}.json
+          name: "result-${{ matrix.destination }}-${{ matrix.startDate }}"
+          path: "results-${{ matrix.destination }}-${{ matrix.startDate }}.json"
           retention-days: 5
 
   consolidate:
@@ -214,7 +215,8 @@ jobs:
       - name: Create Sample Results Directory
         run: |
           mkdir -p sample-results
-          cp matrix-results/results-*.json sample-results/ || true
+          # Use find to handle filenames with spaces safely
+          find matrix-results -name 'results-*.json' -exec cp {} sample-results/ \; || true
 
       - name: Consolidate Results
         run: |
