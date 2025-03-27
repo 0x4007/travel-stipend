@@ -85,9 +85,9 @@ jobs:
           INPUT_OUTPUT_FORMAT: "table"
         id: calculate
         run: |
-          output_file="results-${{ matrix.destination }}-${{ matrix.startDate }}.json"
-          bun src/github-action-handler.ts | sed -n '/^{/,/}$/p' > "$output_file"
-          echo "result_file=$output_file" >> "$GITHUB_OUTPUT"
+          bun src/github-action-handler.ts
+          # The handler now writes a clean result.json file
+          mv result.json "results-${{ matrix.destination }}-${{ matrix.startDate }}.json"
 
       - name: Upload Result
         uses: actions/upload-artifact@v4

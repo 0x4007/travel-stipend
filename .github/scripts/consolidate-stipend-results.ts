@@ -172,18 +172,21 @@ async function consolidateResults() {
       const workflowJsonPath = process.env.GITHUB_OUTPUT || "";
 
       if (fs.existsSync(workflowJsonPath)) {
-        const content = fs.readFileSync(workflowJsonPath, 'utf8');
-
-        // Parse the results from the output
-        const lines = content.split('\n');
-        for (const line of lines) {
-          if (line.startsWith('result=')) {
-            const jsonStr = line.substring('result='.length);
+        const files = fs.readdirSync(path.join(process.cwd(), "matrix-results"));
+        for (const file of files) {
+          if (file.endsWith('.json')) {
             try {
-              const result = JSON.parse(jsonStr) as StipendBreakdown;
-              results.push(result);
+              const content = fs.readFileSync(path.join(process.cwd(), "matrix-results", file), 'utf8');
+              const result = JSON.parse(content) as StipendBreakdown;
+
+              // Validate that this is a StipendBreakdown object
+              if (result.conference && result.location && typeof result.total_stipend === 'number') {
+                results.push(result);
+              } else {
+                console.error(`File ${file} does not contain valid StipendBreakdown data`);
+              }
             } catch (e) {
-              console.error("Failed to parse result JSON:", e);
+              console.error(`Failed to parse ${file}:`, e);
             }
           }
         }

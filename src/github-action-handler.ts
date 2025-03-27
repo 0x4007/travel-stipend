@@ -148,12 +148,17 @@ async function main() {
     const result = await calculateStipend(conference);
 
     // Format and output results
+    // Write JSON to file first to ensure we have a clean JSON output
+    const outputJson = JSON.stringify(result, null, 2);
+    fs.writeFileSync('result.json', outputJson);
+
+    // Then show the formatted output
     const output = formatOutput(result, inputs.outputFormat);
     console.log(output);
 
     // Set GitHub Actions output
     if (process.env.GITHUB_OUTPUT) {
-      fs.appendFileSync(process.env.GITHUB_OUTPUT, `result=${JSON.stringify(result)}\n`);
+      fs.appendFileSync(process.env.GITHUB_OUTPUT, `result=${outputJson}\n`);
     }
   } catch (error) {
     console.error("Error calculating travel stipend:", error);
