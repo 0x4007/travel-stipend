@@ -8,10 +8,10 @@ import { scrapeFlightPrice } from "./utils/flights";
 import { calculateLocalTransportCost } from "./utils/taxi-fares";
 
 // Setup debug logging based on CLI verbose flag
-const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v');
+const isVerbose = process.argv.includes("--verbose") || process.argv.includes("-v");
 const log = {
   debug: (message: string) => isVerbose && console.log(`[DEBUG] ${message}`),
-  info: (message: string) => console.log(message)
+  info: (message: string) => console.log(message),
 };
 
 // Initialize cache
@@ -98,7 +98,6 @@ function calculateMealsCosts(totalDays: number, conferenceDays: number, colFacto
   const businessEntertainmentCost = TRAVEL_STIPEND.costs.businessEntertainment * conferenceDays;
   return {
     basicMealsCost,
-    mealsCost: basicMealsCost + businessEntertainmentCost,
     businessEntertainmentCost,
   };
 }
@@ -159,7 +158,7 @@ export async function calculateStipend(record: Conference & { origin?: string })
 
   // Calculate costs
   const lodgingCost = isOriginCity ? 0 : weekdayNights * baseWeekdayRate + weekendNights * baseWeekendRate;
-  const { basicMealsCost, mealsCost, businessEntertainmentCost } = calculateMealsCosts(totalDays, conferenceDays, colFactor);
+  const { basicMealsCost, businessEntertainmentCost } = calculateMealsCosts(totalDays, conferenceDays, colFactor);
   const localTransportCost = await calculateLocalTransportCost(destination, totalDays, colFactor, TRAVEL_STIPEND.costs.transport);
   const ticketPrice = record.ticket_price ? parseFloat(record.ticket_price.replace("$", "")) : TRAVEL_STIPEND.costs.ticket;
 
@@ -169,7 +168,7 @@ export async function calculateStipend(record: Conference & { origin?: string })
   const incidentalsAllowance = totalDays * TRAVEL_STIPEND.costs.incidentals;
 
   // Calculate total stipend
-  const totalStipend = flightCost + lodgingCost + mealsCost + localTransportCost + ticketPrice + internetDataAllowance + incidentalsAllowance;
+  const totalStipend = flightCost + lodgingCost + localTransportCost + ticketPrice + internetDataAllowance + incidentalsAllowance;
 
   // Format dates consistently
   function formatDate(dateStr: string) {
@@ -196,10 +195,9 @@ export async function calculateStipend(record: Conference & { origin?: string })
     internet_data_allowance: internetDataAllowance,
     incidentals_allowance: incidentalsAllowance,
     total_stipend: parseFloat(totalStipend.toFixed(2)),
-    meals_cost: parseFloat(mealsCost.toFixed(2)),
   };
 
-  log.debug('Final stipend breakdown:');
+  log.debug("Final stipend breakdown:");
   log.debug(JSON.stringify(result, null, 2));
 
   stipendCache.set(cacheKey, result);
