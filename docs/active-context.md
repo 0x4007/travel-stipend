@@ -39,7 +39,7 @@ The most recent development has focused on:
    - Added flight price source tracking in the output
    - Implemented average price calculation for multiple flights
    - Enhanced caching for scraped flight prices
-   - Improved error handling and fallback mechanisms
+   - Improved error handling: Implemented `try...catch` around the scraper call in `travel-stipend-calculator.ts` to return 0 flight cost on failure (including null price results) instead of throwing an error.
 
 ## Current Focus
 
@@ -49,7 +49,7 @@ The current development focus is on:
 
    - Enhancing the Google Flights scraper reliability
    - Handling edge cases for less common destinations
-   - Improving error handling and recovery
+   - Improving error handling and recovery (partially addressed by recent `try...catch` implementation)
    - Optimizing scraper performance
 
 2. **Enhancing the cost-of-living adjustments** for better accuracy:
@@ -110,7 +110,7 @@ Current known issues that need attention:
 4. **Scraper Reliability**:
    - Google Flights UI can change, breaking selectors
    - Some destinations fail to scrape consistently
-   - Need for more robust error handling and recovery
+   - Need for more robust error handling and recovery (partially addressed by recent `try...catch` implementation, but underlying scraper issues may persist)
 
 ## Next Steps
 

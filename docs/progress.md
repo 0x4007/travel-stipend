@@ -84,7 +84,7 @@
 - Multi-approach element selection strategy
 - Fallback mechanisms for UI variations
 - Detailed logging and screenshots
-- Error handling and recovery
+- Error handling and recovery (Improved: `try...catch` added in calculator to return 0 on failure)
 
 ## In Progress
 
@@ -92,7 +92,7 @@
 
 - Enhancing scraper reliability
 - Handling edge cases for less common destinations
-- Improving error handling and recovery
+- Improving error handling and recovery (Partially addressed: `try...catch` added in calculator)
 - Optimizing scraper performance
 
 🔄 **Data Expansion**
@@ -207,7 +207,7 @@
 
 - Google Flights UI can change, breaking selectors
 - Some destinations fail to scrape consistently
-- Need for more robust error handling and recovery
+- Need for more robust error handling and recovery (Partially addressed: `try...catch` added in calculator)
 
 ### Low Priority
 
@@ -245,7 +245,7 @@
 - Added flight price source tracking in the output
 - Implemented average price calculation for multiple flights
 - Enhanced caching for scraped flight prices
-- Improved error handling and fallback mechanisms
+- Improved error handling: Implemented `try...catch` in calculator to return 0 flight cost on scraper failure.
 
 ✅ **Enhanced Output Format**
 
