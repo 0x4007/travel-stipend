@@ -3,7 +3,6 @@ import { Command } from "commander";
 import fs from "fs";
 import { calculateStipend } from "./travel-stipend-calculator";
 import { Conference, StipendBreakdown } from "./types";
-import { DatabaseService } from "./utils/database";
 
 // Program definition with examples
 const program = new Command()
@@ -13,14 +12,11 @@ const program = new Command()
   .requiredOption("--destination <city>", "Destination city (e.g. 'Singapore')")
   .requiredOption("--departure-date <date>", "Departure date (e.g. '15 april')")
   .requiredOption("--return-date <date>", "Return date (e.g. '20 april')")
-  .option("-b, --batch", "Process all upcoming conferences (batch mode)")
   .option("-c, --conference <name>", "Conference name (optional, will use 'Business Trip' if not specified)")
   .option("--buffer-before <days>", "Buffer days before conference (default: 1)")
   .option("--buffer-after <days>", "Buffer days after conference (default: 1)")
   .option("--ticket-price <price>", "Conference ticket price (defaults to standard price)")
   .option("-o, --output <format>", "Output format: json, csv, table (default: table)")
-  .option("--sort <field>", "Sort results by field (for batch mode)")
-  .option("-r, --reverse", "Reverse sort order")
   .option("-v, --verbose", "Show detailed output")
   .addHelpText(
     "after",
@@ -45,11 +41,6 @@ Examples:
       --ticket-price 750 \\
       -o table
 
-  # Batch mode for all upcoming conferences
-  $ bun run src/travel-stipend-cli.ts -b
-
-  # Batch mode with sorting and output format
-  $ bun run src/travel-stipend-cli.ts -b --sort total_stipend -r -o csv
 `
   );
 
@@ -96,62 +87,6 @@ async function processSingleConference(options: {
   }
 
   return calculateStipend(record);
-}
-
-/**
- * Process all upcoming conferences
- */
-async function processBatchConferences(origin: string): Promise<StipendBreakdown[]> {
-  console.log("Starting batch processing of upcoming conferences...");
-
-  // Get conference data from database
-  const records = await DatabaseService.getInstance().getConferences();
-  console.log(`Loaded ${records.length} conference records`);
-
-  // Filter out past conferences
-  const currentDate = new Date();
-  const futureRecords = records.filter((record) => {
-    try {
-      const startDate = new Date(`${record.start_date} ${currentDate.getFullYear()}`);
-      const nextYearDate = new Date(`${record.start_date} ${currentDate.getFullYear() + 1}`);
-      const conferenceDate = startDate < currentDate ? nextYearDate : startDate;
-      return conferenceDate >= currentDate;
-    } catch (error) {
-      console.error(`Error parsing date for "${record.conference}":`, error);
-      return false;
-    }
-  });
-
-  console.log(`Found ${futureRecords.length} upcoming conferences`);
-  const results: StipendBreakdown[] = [];
-
-  for (const record of futureRecords) {
-    try {
-      const result = await calculateStipend({ ...record, origin });
-      results.push(result);
-      console.log(`Processed: ${record.conference} - Total: $${result.total_stipend}`);
-    } catch (error) {
-      console.error(`Error processing "${record.conference}":`, error);
-    }
-  }
-
-  return results;
-}
-
-/**
- * Sort results by the specified field
- */
-function sortResults(results: StipendBreakdown[], options: { sort?: string; reverse?: boolean }): StipendBreakdown[] {
-  if (!options.sort) return results;
-
-  console.log(`Sorting by ${options.sort} (${options.reverse ? "descending" : "ascending"})`);
-
-  return [...results].sort((a, b) => {
-    const valueA = a[options.sort as keyof StipendBreakdown];
-    const valueB = b[options.sort as keyof StipendBreakdown];
-    const comparison = typeof valueA === "string" && typeof valueB === "string" ? valueA.localeCompare(valueB) : (valueA as number) - (valueB as number);
-    return options.reverse ? -comparison : comparison;
-  });
 }
 
 /**
@@ -273,37 +208,28 @@ async function main(): Promise<void> {
     console.log(`Travel Stipend Calculator - Starting from ${options.origin}`);
     let results: StipendBreakdown[] = [];
 
-    if (options.batch) {
-      results = await processBatchConferences(options.origin);
-    } else {
-      if (!options.destination) {
-        throw new Error("Destination is required (use --destination)");
-      }
-
-      if (!options.departureDate) {
-        throw new Error("Departure date is required (use --departure-date)");
-      }
-
-      results = [
-        await processSingleConference({
-          destination: options.destination,
-          conference: options.conference,
-          departureDate: options.departureDate,
-          returnDate: options.returnDate,
-          bufferBefore: options.bufferBefore,
-          bufferAfter: options.bufferAfter,
-          ticketPrice: options.ticketPrice,
-          origin: options.origin,
-        }),
-      ];
+    if (!options.destination) {
+      throw new Error("Destination is required (use --destination)");
     }
 
-    if (options.sort) {
-      results = sortResults(results, options);
+    if (!options.departureDate) {
+      throw new Error("Departure date is required (use --departure-date)");
     }
+
+    results = [
+      await processSingleConference({
+        destination: options.destination,
+        conference: options.conference,
+        departureDate: options.departureDate,
+        returnDate: options.returnDate,
+        bufferBefore: options.bufferBefore,
+        bufferAfter: options.bufferAfter,
+        ticketPrice: options.ticketPrice,
+        origin: options.origin,
+      }),
+    ];
 
     outputResults(results, options.output);
-    await DatabaseService.getInstance().close();
     console.log("Travel Stipend Calculator - Completed");
   } catch (error) {
     console.error("Error:", error);

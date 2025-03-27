@@ -19,11 +19,8 @@
   },
   "scripts": {
     "start" : "bun src/travel-stipend-cli.ts",
-    "create-release": "bun scripts/create-release.ts",
-    "create-stipend-action": "bun scripts/create-stipend-action.ts",
     "db": "sqlite3 travel_data.db",
     "calc": "bun src/travel-stipend-calculator.ts",
-    "calc:historical": "bun src/historical-stipend-calculator.ts",
     "format": "run-s format:*",
     "format:lint": "eslint --fix .",
     "format:prettier": "prettier --write .",
