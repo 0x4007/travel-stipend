@@ -16,19 +16,25 @@ function parseDate(dateStr: string | undefined | null): Date | null {
   if (parts.length >= 2) {
     const day = parseInt(parts[0]);
     const month = parts[1];
-    // Default to next year if not specified and date would be in past
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
+
+    // Get current month and day
+    const currentMonth = currentDate.getMonth(); // 0-11
+    const currentDay = currentDate.getDate();
+
+    // Convert month name to number (0-11)
+    const monthNumber = new Date(`${month} 1, 2000`).getMonth();
+
+    // Use specified year or calculate based on current date
     let year = parts[2] ? parseInt(parts[2]) : currentYear;
 
-    // Create date with current/specified year
-    date = new Date(`${month} ${day}, ${year}`);
-
-    // If no year was specified and date would be in past, use next year
-    if (!parts[2] && date < currentDate) {
+    // If no year specified and the date has passed this year, use next year
+    if (!parts[2] && (monthNumber < currentMonth || (monthNumber === currentMonth && day <= currentDay))) {
       year = currentYear + 1;
-      date = new Date(`${month} ${day}, ${year}`);
     }
+
+    date = new Date(`${month} ${day}, ${year}`);
 
     if (!isNaN(date.getTime())) {
       return date;
