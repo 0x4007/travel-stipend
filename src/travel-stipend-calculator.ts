@@ -54,7 +54,11 @@ async function calculateFlightDetails(
 }
 
 function calculateNights(startDate: string, totalDays: number, preConferenceDays: number): { weekdayNights: number; weekendNights: number } {
+  const currentYear = new Date().getFullYear();
+  // Parse the start date using our custom parseDate function from dates.ts
   const start = new Date(startDate);
+  // Ensure we're using the current or next year
+  start.setFullYear(currentYear);
   let weekendNights = 0;
   const numberOfNights = totalDays - 1; // One less night than days
 
@@ -153,7 +157,9 @@ export async function calculateStipend(record: Conference & { origin?: string })
 
   // Format dates consistently
   function formatDate(dateStr: string) {
+    const currentYear = new Date().getFullYear();
     const date = new Date(dateStr);
+    date.setFullYear(currentYear);
     return date.getDate() + " " + date.toLocaleString("en-US", { month: "long" });
   }
 

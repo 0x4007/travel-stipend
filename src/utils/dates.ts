@@ -8,6 +8,9 @@ function parseDate(dateStr: string | undefined | null): Date | null {
   // First try parsing as ISO format (YYYY-MM-DD)
   let date = new Date(dateStr);
   if (!isNaN(date.getTime())) {
+    // Ensure we're using current year for ISO dates too
+    const currentYear = new Date().getFullYear();
+    date.setFullYear(currentYear);
     return date;
   }
 
@@ -18,13 +21,19 @@ function parseDate(dateStr: string | undefined | null): Date | null {
     const month = parts[1];
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
+    console.log('Parsing date:', { dateStr, currentYear, currentDate: currentDate.toISOString() });
 
     // Get current month and day
     const currentMonth = currentDate.getMonth(); // 0-11
     const currentDay = currentDate.getDate();
 
-    // Convert month name to number (0-11)
-    const monthNumber = new Date(`${month} 1, 2000`).getMonth();
+    // Create a test date with current year to get month number
+    const testDate = new Date(`${month} 1, ${currentYear}`);
+    if (isNaN(testDate.getTime())) {
+      console.warn(`Invalid month name: ${month}`);
+      return null;
+    }
+    const monthNumber = testDate.getMonth();
 
     // Use specified year or calculate based on current date
     let year = parts[2] ? parseInt(parts[2]) : currentYear;
@@ -34,9 +43,15 @@ function parseDate(dateStr: string | undefined | null): Date | null {
       year = currentYear + 1;
     }
 
-    date = new Date(`${month} ${day}, ${year}`);
+    // Create final date using the determined year
+    date = new Date(year, monthNumber, day);
+    console.log('Created date:', { year, monthNumber, day, result: date.toISOString() });
 
     if (!isNaN(date.getTime())) {
+      // Double check year is set correctly
+      if (date.getFullYear() !== year) {
+        date.setFullYear(year);
+      }
       return date;
     }
   }
@@ -103,7 +118,10 @@ export function generateFlightDates(conference: Conference, isOriginCity = false
 
   // Format dates as YYYY-MM-DD
   function formatDate(date: Date) {
-    return date.toISOString().split("T")[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   return {

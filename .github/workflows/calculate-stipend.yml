@@ -8,11 +8,11 @@ on:
         required: true
         type: string
       conference_start:
-        description: 'Conference start date (YYYY-MM-DD)'
+        description: 'Conference start date (i.e. 1 May)'
         required: true
         type: string
       conference_end:
-        description: 'Conference end date (YYYY-MM-DD)'
+        description: 'Conference end date (i.e. 3 May)'
         required: false
         type: string
       days_before:
@@ -25,11 +25,6 @@ on:
         required: false
         type: number
         default: 1
-      ticket_price:
-        description: 'Conference ticket price'
-        required: false
-        type: string
-        default: '0'
       output_format:
         description: 'Output format (table, json, csv)'
         required: false
@@ -43,24 +38,19 @@ on:
 jobs:
   calculate:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: 'recursive'
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: bun install
-
-      - name: Setup Chrome and Xvfb
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb chromium-browser
 
       - name: Calculate Stipend
         env:
@@ -69,15 +59,9 @@ jobs:
           INPUT_CONFERENCE_END: ${{ inputs.conference_end }}
           INPUT_DAYS_BEFORE: ${{ inputs.days_before }}
           INPUT_DAYS_AFTER: ${{ inputs.days_after }}
-          INPUT_TICKET_PRICE: ${{ inputs.ticket_price }}
           INPUT_OUTPUT_FORMAT: ${{ inputs.output_format }}
-          INPUT_INCLUDE_BUDGET: ${{ inputs.include_budget }}
           ORIGIN: 'Seoul, South Korea'
-          CHROME_PATH: /usr/bin/chromium-browser
-          DISPLAY: ':99.0'
-        run: |
-          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-          bun src/github-action-handler.ts
+        run: bun src/github-action-handler.ts
 
       - name: Upload Screenshots
         if: always()
