@@ -44,29 +44,26 @@ function formatMarkdownTable(consolidatedResults: ConsolidatedResults): string {
 
   // Create the main table
   markdown += "## Detailed Results\n\n";
-  markdown += "| Conference | Origin | Destination | Dates | Flight | Lodging | Meals | Transport | Misc. | Total |\n"; // Added Origin column
-  markdown += "|------------|--------|-------------|-------|--------|---------|-------|-----------|-------|-------|\n"; // Adjusted separator lengths
+  markdown += "| Conference | Origin | Destination | Dates | Flight | Lodging | Meals | Transport | Ticket | Internet | Incidentals | Total |\n"; // Replaced Misc. with individual columns
+  markdown += "|------------|--------|-------------|-------|--------|---------|-------|-----------|--------|----------|-------------|-------|\n"; // Adjusted separator lengths
 
   // Add a row for each result
   for (const result of results) {
     const dates = `${result.flight_departure} - ${result.flight_return}`;
-    const misc = formatCurrency(
-      result.ticket_price +
-      result.internet_data_allowance +
-      result.incidentals_allowance
-    );
+    // Removed misc calculation
 
     markdown += `| ${result.conference} | ${result.origin} | ${result.destination} | ${dates} | ` + // Added result.origin
       `${formatCurrency(result.flight_cost)} | ${formatCurrency(result.lodging_cost)} | ` +
       `${formatCurrency(result.meals_cost)} | ${formatCurrency(result.local_transport_cost)} | ` +
-      `${misc} | ${formatCurrency(result.total_stipend)} |\n`;
+      `${formatCurrency(result.ticket_price)} | ${formatCurrency(result.internet_data_allowance)} | ${formatCurrency(result.incidentals_allowance)} | ` + // Added individual columns
+      `${formatCurrency(result.total_stipend)} |\n`;
   }
 
   // Add a totals row
   markdown += `| **TOTALS** | | | | ${formatCurrency(totals.flight_cost)} | ` + // Added empty cell for Origin column
     `${formatCurrency(totals.lodging_cost)} | ${formatCurrency(totals.meals_cost)} | ` +
     `${formatCurrency(totals.local_transport_cost)} | ` +
-    `${formatCurrency(totals.ticket_price + totals.internet_data_allowance + totals.incidentals_allowance)} | ` +
+    `${formatCurrency(totals.ticket_price)} | ${formatCurrency(totals.internet_data_allowance)} | ${formatCurrency(totals.incidentals_allowance)} | ` + // Added individual totals
     `${formatCurrency(totals.total_stipend)} |\n\n`;
 
   // Add detailed section for each trip
