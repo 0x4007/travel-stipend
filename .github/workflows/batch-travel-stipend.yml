@@ -59,8 +59,17 @@ jobs:
           if [ "${{ github.event_name }}" = "push" ]; then
             # Use test events for push triggers
             echo "Using test events for push trigger"
-            echo "${{ env.TEST_EVENTS }}" > test_events.json
+            # Write properly formatted JSON to file
+            echo '${{ env.TEST_EVENTS }}' | jq '.' > test_events.json
+            if [ $? -ne 0 ]; then
+              echo "Error: Failed to create test events JSON file"
+              exit 1
+            fi
             matrix=$(bun .github/scripts/generate-stipend-matrix.ts --test-events test_events.json 2>/dev/null)
+            if [ $? -ne 0 ]; then
+              echo "Error: Failed to generate matrix from test events"
+              exit 1
+            fi
           else
             # Use workflow inputs for manual triggers
             echo "${{ inputs.origins }}" | tr ',' '\n' > origins.txt
