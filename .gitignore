@@ -14,3 +14,4 @@ logs
 test-screenshots
 *.log
 dom-captures
+*.txt

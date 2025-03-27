@@ -4,24 +4,24 @@ on:
   workflow_dispatch:
     inputs:
       origins:
-        description: "List of origin cities (one per line)"
+        description: "List of origin cities (comma-separated)"
         required: true
         type: string
       destinations:
-        description: "List of destination cities (one per line)"
+        description: "List of destination cities (comma-separated)"
         required: true
         type: string
       start_dates:
-        description: "List of conference start dates (one per line)"
+        description: "List of conference start dates (comma-separated)"
         required: true
         type: string
       end_dates:
-        description: "List of conference end dates (one per line), blank = same as start date"
+        description: "List of conference end dates (comma-separated), blank = same as start date"
         required: false
         type: string
         default: ""
       ticket_prices:
-        description: "List of conference ticket prices (one per line), blank = 0"
+        description: "List of conference ticket prices (comma-separated), blank = 0"
         required: false
         type: string
         default: ""
@@ -40,12 +40,12 @@ jobs:
       - name: Process Inputs
         id: set-matrix
         run: |
-          # Save inputs to files
-          echo "${{ inputs.origins }}" > origins.txt
-          echo "${{ inputs.destinations }}" > destinations.txt
-          echo "${{ inputs.start_dates }}" > start_dates.txt
-          echo "${{ inputs.end_dates }}" > end_dates.txt
-          echo "${{ inputs.ticket_prices }}" > ticket_prices.txt
+          # Save inputs to files with commas
+          echo "${{ inputs.origins }}" | tr ',' '\n' > origins.txt
+          echo "${{ inputs.destinations }}" | tr ',' '\n' > destinations.txt
+          echo "${{ inputs.start_dates }}" | tr ',' '\n' > start_dates.txt
+          echo "${{ inputs.end_dates }}" | tr ',' '\n' > end_dates.txt
+          echo "${{ inputs.ticket_prices }}" | tr ',' '\n' > ticket_prices.txt
 
           # Generate matrix from inputs
           matrix=$(bun .github/scripts/generate-stipend-matrix.ts)

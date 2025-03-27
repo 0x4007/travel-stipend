@@ -17,14 +17,19 @@ async function readInputFile(filename: string): Promise<string[]> {
 
     console.log(`Reading ${filename}...`);
     const content = await file.text();
-    const lines = content.split('\n').filter(Boolean);
-    console.log(`Found ${lines.length} entries in ${filename}`);
+    // Split by both newlines and commas
+    const items = content
+      .split(/[,\n]/)
+      .map(item => item.trim())
+      .filter(Boolean);
 
-    if (lines.length === 0) {
+    console.log(`Found ${items.length} entries in ${filename}`);
+
+    if (items.length === 0) {
       throw new Error(`${filename} is empty`);
     }
 
-    return lines;
+    return items;
   } catch (error) {
     console.error(`Error reading ${filename}:`, error);
     throw error;
