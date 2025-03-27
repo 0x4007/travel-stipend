@@ -97,7 +97,7 @@ function formatOutput(result: StipendBreakdown, format: string): string {
       // Conference Details Section
       rows.push(formatSectionHeader("Conference Details", true));
       rows.push(formatTableRow("Name", result.conference));
-      rows.push(formatTableRow("Origin", result.origin)); // Changed location to destination
+      rows.push(formatTableRow("Origin", result.origin)); // Added Origin row
       rows.push(formatTableRow("Destination", result.destination)); // Changed location to destination
       rows.push(formatTableRow("Start Date", result.conference_start));
       rows.push(formatTableRow("End Date", result.conference_end || result.conference_start));
@@ -156,12 +156,8 @@ async function main() {
 
     // Write to file if --output-file specified
     if (outputFile) {
-      // Sanitize the filename to replace potential directory separators like '/'
-      const sanitizedOutputFile = outputFile.replace(/\//g, '-');
-      fs.writeFileSync(sanitizedOutputFile, JSON.stringify(result, null, 2));
-      if (sanitizedOutputFile !== outputFile) {
-        console.log(`Note: Output filename sanitized to: ${sanitizedOutputFile}`);
-      }
+      // Assumes outputFile is a valid path provided by the workflow
+      fs.writeFileSync(outputFile, JSON.stringify(result, null, 2));
     }
 
     // Output to console based on format

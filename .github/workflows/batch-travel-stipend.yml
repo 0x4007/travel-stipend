@@ -146,7 +146,7 @@ jobs:
           INPUT_CONFERENCE_END: ${{ matrix.endDate }}
           INPUT_TICKET_PRICE: ${{ matrix.price }}
           INPUT_OUTPUT_FORMAT: "json"
-        id: calculate
+        id: calculate_step # Changed id for clarity
         run: |
           echo "::group::Starting calculation for ${{ matrix.destination }} (${{ matrix.startDate }})"
           echo "Input parameters:"
@@ -155,9 +155,15 @@ jobs:
           echo "Dates: ${{ matrix.startDate }} to ${{ matrix.endDate }}"
           echo "Ticket price: ${{ matrix.price }}"
 
+          # Sanitize the date for use in filenames
+          SAFE_DATE=$(echo "${{ matrix.startDate }}" | sed 's/\//-/g')
+          OUTPUT_FILENAME="results-${{ matrix.destination }}-${SAFE_DATE}.json"
+          echo "SAFE_DATE=${SAFE_DATE}" >> $GITHUB_ENV # Set ENV var
+          echo "OUTPUT_FILENAME=${OUTPUT_FILENAME}" >> $GITHUB_ENV # Set ENV var
+
           # Run once with JSON output and save to file
-          echo "Running calculation and saving to results-${{ matrix.destination }}-${{ matrix.startDate }}.json"
-          bun src/github-action-handler.ts --output-file "results-${{ matrix.destination }}-${{ matrix.startDate }}.json"
+          echo "Running calculation and saving to $OUTPUT_FILENAME"
+          bun src/github-action-handler.ts --output-file "$OUTPUT_FILENAME"
           echo "Calculation complete, output saved"
 
           # For logs, run again with table format
@@ -168,16 +174,15 @@ jobs:
 
       - name: Prepare Upload
         run: |
-          FILENAME="results-${{ matrix.destination }}-${{ matrix.startDate }}.json"
-          echo "Preparing to upload result artifact: $FILENAME"
-          ls -la "$FILENAME"
-          echo "File size: $(wc -c < "$FILENAME") bytes"
+          echo "Preparing to upload result artifact: $OUTPUT_FILENAME" # Use ENV var
+          ls -la "$OUTPUT_FILENAME"
+          echo "File size: $(wc -c < "$OUTPUT_FILENAME") bytes"
 
       - name: Upload Result
         uses: actions/upload-artifact@v4
         with:
-          name: "result-${{ matrix.destination }}-${{ matrix.startDate }}"
-          path: "results-${{ matrix.destination }}-${{ matrix.startDate }}.json"
+          name: result-${{ matrix.destination }}-${{ env.SAFE_DATE }} # Use SAFE_DATE ENV var
+          path: ${{ env.OUTPUT_FILENAME }} # Use OUTPUT_FILENAME ENV var
           retention-days: 5
 
   consolidate:
