@@ -172,28 +172,49 @@ async function consolidateResults() {
     // Check if running in GitHub Actions
     if (process.env.GITHUB_STEP_SUMMARY) {
       // Get the workflow json
-      const workflowJsonPath = process.env.GITHUB_OUTPUT || "";
+      // This check was incorrect - GITHUB_OUTPUT points to a file for setting outputs,
+      // not the directory containing results. We should always try to read if in Actions.
+      // const workflowJsonPath = process.env.GITHUB_OUTPUT || "";
+      // if (fs.existsSync(workflowJsonPath)) {
 
-      if (fs.existsSync(workflowJsonPath)) {
-        const files = fs.readdirSync(path.join(process.cwd(), "matrix-results"));
+      const resultsDir = path.join(process.cwd(), "matrix-results");
+      if (fs.existsSync(resultsDir)) { // Check if the results directory exists
+        const files = fs.readdirSync(resultsDir);
         for (const file of files) {
           if (file.endsWith('.json')) {
+            const filePath = path.join(resultsDir, file); // Use resultsDir variable
+            console.log(`Processing file: ${filePath}`); // Log file being processed
             try {
-              const content = fs.readFileSync(path.join(process.cwd(), "matrix-results", file), 'utf8');
-              const result = JSON.parse(content) as StipendBreakdown;
+              const content = fs.readFileSync(filePath, 'utf8');
+              const result = JSON.parse(content); // Parse first, then validate type
 
-              // Validate that this is a StipendBreakdown object
-              if (result.conference && result.destination && typeof result.total_stipend === 'number') { // Changed result.location to result.destination
-                results.push(result);
+              // More detailed validation
+              const isValid = result &&
+                              typeof result.conference === 'string' &&
+                              typeof result.origin === 'string' &&
+                              typeof result.destination === 'string' &&
+                              typeof result.total_stipend === 'number';
+
+              if (isValid) {
+                console.log(`Validation PASSED for ${file}`);
+                results.push(result as StipendBreakdown);
               } else {
-                console.error(`File ${file} does not contain valid StipendBreakdown data`);
+                console.error(`Validation FAILED for ${file}. Missing/invalid fields:`);
+                if (!result) console.error(' - Result object is null or undefined');
+                if (typeof result?.conference !== 'string') console.error(' - Invalid or missing conference');
+                if (typeof result?.origin !== 'string') console.error(' - Invalid or missing origin');
+                if (typeof result?.destination !== 'string') console.error(' - Invalid or missing destination');
+                if (typeof result?.total_stipend !== 'number') console.error(' - Invalid or missing total_stipend');
               }
             } catch (e) {
-              console.error(`Failed to parse ${file}:`, e);
+              console.error(`Failed to read or parse ${file}:`, e);
             }
           }
         }
+      } else {
+        console.warn(`Warning: Results directory not found at ${resultsDir}`);
       }
+      // } // End of original incorrect if block
     } else {
       // Dev/test mode - check for files in a specific directory
       console.log("Running in development/testing mode");
