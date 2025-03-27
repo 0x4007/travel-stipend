@@ -3,8 +3,12 @@ name: Calculate Travel Stipend
 on:
   workflow_dispatch:
     inputs:
-      location:
-        description: 'Conference location'
+      origin:
+        description: 'Origin city for travel calculations'
+        required: true
+        type: string
+      destination:
+        description: 'Conference destination city (i.e. Singapore)'
         required: true
         type: string
       conference_start:
@@ -16,12 +20,12 @@ on:
         required: false
         type: string
       days_before:
-        description: 'Buffer days before conference'
+        description: 'Travel days before conference'
         required: false
         type: number
         default: 1
       days_after:
-        description: 'Buffer days after conference'
+        description: 'Travel days after conference'
         required: false
         type: number
         default: 1
@@ -34,6 +38,15 @@ on:
           - json
           - csv
         default: 'table'
+      ticket_price:
+        description: 'Conference ticket price (if applicable)'
+        required: false
+        type: number
+      verbose:
+        description: 'Enable detailed output logging'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   calculate:
@@ -54,13 +67,15 @@ jobs:
 
       - name: Calculate Stipend
         env:
-          INPUT_LOCATION: ${{ inputs.location }}
+          INPUT_ORIGIN: ${{ inputs.origin }}
+          INPUT_DESTINATION: ${{ inputs.destination }}
           INPUT_CONFERENCE_START: ${{ inputs.conference_start }}
           INPUT_CONFERENCE_END: ${{ inputs.conference_end }}
           INPUT_DAYS_BEFORE: ${{ inputs.days_before }}
           INPUT_DAYS_AFTER: ${{ inputs.days_after }}
           INPUT_OUTPUT_FORMAT: ${{ inputs.output_format }}
-          ORIGIN: 'Seoul, South Korea'
+          INPUT_TICKET_PRICE: ${{ inputs.ticket_price }}
+          INPUT_VERBOSE: ${{ inputs.verbose }}
         run: bun src/github-action-handler.ts
 
       - name: Upload Screenshots
