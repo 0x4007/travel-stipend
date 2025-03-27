@@ -56,14 +56,53 @@ jobs:
       - name: Process Inputs
         id: set-matrix
         run: |
+          # Enable command tracing for debugging
+          set -x
+
           if [ "${{ github.event_name }}" = "push" ]; then
             # Use test events for push triggers
-            echo "Using test events from .github/test-events.json"
-            matrix=$(bun .github/scripts/generate-stipend-matrix.ts --test-events .github/test-events.json 2>/dev/null)
-            if [ $? -ne 0 ]; then
-              echo "Error: Failed to generate matrix from test events"
+            echo "--- Push Event Detected: Using Test Events ---"
+            TEST_EVENTS_FILE=".github/test-events.json"
+            MATRIX_SCRIPT=".github/scripts/generate-stipend-matrix.ts"
+
+            echo "Checking if test events file exists: $TEST_EVENTS_FILE"
+            if [ ! -f "$TEST_EVENTS_FILE" ]; then
+              echo "Error: Test events file not found at $TEST_EVENTS_FILE"
               exit 1
             fi
+            echo "Test events file found."
+
+            echo "Checking if matrix script exists: $MATRIX_SCRIPT"
+            if [ ! -f "$MATRIX_SCRIPT" ]; then
+              echo "Error: Matrix generation script not found at $MATRIX_SCRIPT"
+              exit 1
+            fi
+            echo "Matrix script found."
+
+            echo "Running matrix generation script:"
+            echo "$ bun $MATRIX_SCRIPT --test-events $TEST_EVENTS_FILE"
+            # Capture stdout and stderr separately
+            script_output=$(bun $MATRIX_SCRIPT --test-events $TEST_EVENTS_FILE 2> >(tee stderr.log >&2))
+            exit_code=$?
+            script_stderr=$(cat stderr.log)
+            rm stderr.log # Clean up log file
+
+            echo "--- Matrix Generation Script Output ---"
+            echo "Exit Code: $exit_code"
+            echo "STDOUT:"
+            echo "$script_output"
+            echo "STDERR:"
+            echo "$script_stderr"
+            echo "---------------------------------------"
+
+            if [ $exit_code -ne 0 ]; then
+              echo "Error: Matrix generation script failed with exit code $exit_code."
+              # Attempt to print stderr again just in case
+              echo "Captured STDERR during failure:"
+              echo "$script_stderr"
+              exit 1
+            fi
+            matrix=$script_output
           else
             # Use workflow inputs for manual triggers
             echo "${{ inputs.origins }}" | tr ',' '\n' > origins.txt
