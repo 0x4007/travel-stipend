@@ -181,7 +181,7 @@ jobs:
       - name: Upload Result
         uses: actions/upload-artifact@v4
         with:
-          name: result-${{ matrix.destination }}-${{ env.SAFE_DATE }} # Use SAFE_DATE ENV var
+          name: result-${{ matrix.origin }}-${{ matrix.destination }}-${{ env.SAFE_DATE }}-${{ strategy.job-index }} # Added job index for absolute uniqueness
           path: ${{ env.OUTPUT_FILENAME }} # Use OUTPUT_FILENAME ENV var
           retention-days: 5
 
