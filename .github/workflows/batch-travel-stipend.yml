@@ -53,6 +53,9 @@ jobs:
           submodules: "recursive"
       - uses: oven-sh/setup-bun@v1
 
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
       - name: Process Inputs
         id: set-matrix
         run: |
