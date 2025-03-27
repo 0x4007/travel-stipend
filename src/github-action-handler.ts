@@ -49,7 +49,10 @@ async function constructConference(inputs: ActionInputs): Promise<Conference> {
 }
 
 // Helper function to format currency values
-const formatCurrency = (value: number) => `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const formatCurrency = (value: number | undefined) => {
+  if (value === undefined) return "$0.00";
+  return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
 
 // Helper function to create table rows with proper padding and borders
 function formatTableRow(label: string, value: string, isHeader = false, isTotal = false): string {

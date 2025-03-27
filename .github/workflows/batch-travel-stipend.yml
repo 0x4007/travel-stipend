@@ -63,6 +63,8 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false # Continue other jobs if one fails
+    outputs:
+      result: ${{ steps.calculate.outputs.result }}
 
     steps:
       - uses: actions/checkout@v4
@@ -83,8 +85,16 @@ jobs:
           INPUT_OUTPUT_FORMAT: "table"
         id: calculate
         run: |
-          bun src/github-action-handler.ts
-          echo "destination=${{ matrix.destination }}" >> "$GITHUB_OUTPUT"
+          output_file="results-${{ matrix.destination }}-${{ matrix.startDate }}.json"
+          bun src/github-action-handler.ts | sed -n '/^{/,/}$/p' > "$output_file"
+          echo "result_file=$output_file" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ matrix.destination }}-${{ matrix.startDate }}
+          path: results-${{ matrix.destination }}-${{ matrix.startDate }}.json
+          retention-days: 5
 
   consolidate:
     needs: calculate
@@ -98,6 +108,18 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Download All Results
+        uses: actions/download-artifact@v4
+        with:
+          path: matrix-results
+          pattern: result-*
+          merge-multiple: true
+
+      - name: Create Sample Results Directory
+        run: |
+          mkdir -p sample-results
+          cp matrix-results/results-*.json sample-results/ || true
+
       - name: Consolidate Results
         run: bun .github/scripts/consolidate-stipend-results.ts
 
@@ -107,5 +129,5 @@ jobs:
           name: travel-stipend-results
           path: |
             consolidated-results.md
-            consolidated-results/*
+            consolidated-results/
           retention-days: 5

@@ -20,8 +20,10 @@ interface ConsolidatedResults {
 }
 
 // Helper function to format currency values
-const formatCurrency = (value: number) =>
-  `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const formatCurrency = (value: number | undefined) => {
+  if (value === undefined) return "$0.00";
+  return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
 
 // Format consolidated results as a markdown table
 function formatMarkdownTable(consolidatedResults: ConsolidatedResults): string {
