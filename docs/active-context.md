@@ -58,7 +58,8 @@ The current development focus is on:
    - Implementing more nuanced adjustments for different expense types
 
 3. **Improving the output formats** for better usability:
-   - Enhanced CSV output with more detailed breakdowns
+   - Enhanced CSV output with more detailed breakdowns (Added 'Origin', renamed 'Location' to 'Destination')
+   - Updated console table output (Added 'Origin', renamed 'Location' to 'Destination')
    - Potential for additional output formats (JSON, HTML)
 
 ## Active Decisions

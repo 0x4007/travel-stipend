@@ -190,7 +190,8 @@ export async function calculateStipend(record: Conference & { origin?: string })
 
   const result: StipendBreakdown = {
     conference: record.conference,
-    location: destination,
+    origin: origin, // Add origin city
+    destination: destination, // Rename location to destination
     conference_start: record.start_date,
     conference_end: record.end_date ?? record.start_date,
     flight_departure: formatDate(flightDates.outbound),

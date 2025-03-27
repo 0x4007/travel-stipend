@@ -44,8 +44,8 @@
 
 ✅ **Output Generation**
 
-- CSV file output with timestamp
-- Console table display
+- CSV file output with timestamp (Includes 'Origin', 'Destination')
+- Console table display (Includes 'Origin', 'Destination')
 - Detailed cost breakdown
 - Flight price source information
 
@@ -250,8 +250,8 @@
 ✅ **Enhanced Output Format**
 
 - Added clear distinction between conference dates and travel dates
-- Improved table output with more meaningful column names
-- Added flight price source information to CSV output
+- Improved table output with more meaningful column names (Added 'Origin', renamed 'Location' to 'Destination')
+- Added flight price source information to CSV output (Added 'Origin', renamed 'Location' to 'Destination')
 - Updated console table display with source information
 - Improved sorting options to include new fields
 
