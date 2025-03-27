@@ -110,7 +110,8 @@ function formatOutput(result: StipendBreakdown, format: string): string {
       rows.push(formatSectionHeader("Travel Costs"));
       rows.push(formatTableRow("Flight", `${formatCurrency(result.flight_cost)} (${result.flight_price_source})`));
       rows.push(formatTableRow("Lodging", formatCurrency(result.lodging_cost)));
-      rows.push(formatTableRow("Meals", formatCurrency(result.meals_cost)));
+      rows.push(formatTableRow("Regular Meals", formatCurrency(result.basic_meals_cost)));
+      rows.push(formatTableRow("Business Meals", formatCurrency(result.business_entertainment_cost)));
       rows.push(formatTableRow("Local Transport", formatCurrency(result.local_transport_cost)));
 
       // Additional Costs Section
