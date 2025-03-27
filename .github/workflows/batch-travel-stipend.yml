@@ -80,15 +80,32 @@ jobs:
           INPUT_CONFERENCE_START: ${{ matrix.startDate }}
           INPUT_CONFERENCE_END: ${{ matrix.endDate }}
           INPUT_TICKET_PRICE: ${{ matrix.price }}
-          INPUT_OUTPUT_FORMAT: "json"
-        run: bun src/github-action-handler.ts
+          INPUT_OUTPUT_FORMAT: "table"
+        id: calculate
+        run: |
+          bun src/github-action-handler.ts
+          echo "destination=${{ matrix.destination }}" >> "$GITHUB_OUTPUT"
 
-      - name: Upload Screenshots
-        if: always()
+  consolidate:
+    needs: calculate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Consolidate Results
+        run: bun .github/scripts/consolidate-stipend-results.ts
+
+      - name: Upload Consolidated Results
         uses: actions/upload-artifact@v4
         with:
-          name: debug-screenshots-${{ matrix.destination }}-${{ matrix.startDate }}
+          name: travel-stipend-results
           path: |
-            screenshots/
-            dom-captures/
+            consolidated-results.md
+            consolidated-results/*
           retention-days: 5
