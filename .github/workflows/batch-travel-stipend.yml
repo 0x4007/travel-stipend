@@ -1,0 +1,93 @@
+name: Batch Travel Stipend Calculation
+
+on:
+  workflow_dispatch:
+    inputs:
+      origins:
+        description: "List of origin cities (one per line)"
+        required: true
+        type: string
+      destinations:
+        description: "List of destination cities (one per line)"
+        required: true
+        type: string
+      start_dates:
+        description: "List of conference start dates (one per line)"
+        required: true
+        type: string
+      end_dates:
+        description: "List of conference end dates (one per line), blank = same as start date"
+        required: false
+        type: string
+        default: ""
+      ticket_prices:
+        description: "List of conference ticket prices (one per line), blank = 0"
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - uses: oven-sh/setup-bun@v1
+
+      - name: Process Inputs
+        id: set-matrix
+        run: |
+          # Save inputs to files
+          echo "${{ inputs.origins }}" > origins.txt
+          echo "${{ inputs.destinations }}" > destinations.txt
+          echo "${{ inputs.start_dates }}" > start_dates.txt
+          echo "${{ inputs.end_dates }}" > end_dates.txt
+          echo "${{ inputs.ticket_prices }}" > ticket_prices.txt
+
+          # Generate matrix from inputs
+          matrix=$(bun .github/scripts/generate-stipend-matrix.ts)
+
+          # Format output
+          matrix="${matrix//'%'/'%25'}"
+          matrix="${matrix//$'\n'/'%0A'}"
+          matrix="${matrix//$'\r'/'%0D'}"
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
+  calculate:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+      fail-fast: false # Continue other jobs if one fails
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Calculate Stipend
+        env:
+          INPUT_ORIGIN: ${{ matrix.origin }}
+          INPUT_DESTINATION: ${{ matrix.destination }}
+          INPUT_CONFERENCE_START: ${{ matrix.startDate }}
+          INPUT_CONFERENCE_END: ${{ matrix.endDate }}
+          INPUT_TICKET_PRICE: ${{ matrix.price }}
+          INPUT_OUTPUT_FORMAT: "json"
+        run: bun src/github-action-handler.ts
+
+      - name: Upload Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-screenshots-${{ matrix.destination }}-${{ matrix.startDate }}
+          path: |
+            screenshots/
+            dom-captures/
+          retention-days: 5
