@@ -1,6 +1,7 @@
 name: Batch Travel Stipend Calculation
 
 on:
+  push:
   workflow_dispatch:
     inputs:
       origins:
@@ -26,6 +27,21 @@ on:
         type: string
         default: ""
 
+defaults:
+  run:
+    shell: bash
+
+env:
+  TEST_EVENTS: |
+    [
+      {"name": "Asia Blockchain Summit", "origin": "seoul", "destination": "taipei", "start": "Aug 6", "end": "Aug 8", "price": "0"},
+      {"name": "Korea Blockchain Week", "origin": "seoul", "destination": "seoul", "start": "Sep 1", "end": "Sep 7", "price": "0"},
+      {"name": "TOKEN2049 Singapore", "origin": "seoul", "destination": "singapore", "start": "Sep 18", "end": "Sep 19", "price": "0"},
+      {"name": "GitHub Universe", "origin": "seoul", "destination": "san francisco", "start": "Oct 29", "end": "Oct 30", "price": "0"},
+      {"name": "Devcon 7 Bangkok", "origin": "san francisco", "destination": "bangkok", "start": "Nov 12", "end": "Nov 15", "price": "0"},
+      {"name": "Consensus Hong Kong", "origin": "seoul", "destination": "hong kong", "start": "Feb 18", "end": "Feb 20", "price": "0"}
+    ]
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -40,15 +56,20 @@ jobs:
       - name: Process Inputs
         id: set-matrix
         run: |
-          # Save inputs to files with commas
-          echo "${{ inputs.origins }}" | tr ',' '\n' > origins.txt
-          echo "${{ inputs.destinations }}" | tr ',' '\n' > destinations.txt
-          echo "${{ inputs.start_dates }}" | tr ',' '\n' > start_dates.txt
-          echo "${{ inputs.end_dates }}" | tr ',' '\n' > end_dates.txt
-          echo "${{ inputs.ticket_prices }}" | tr ',' '\n' > ticket_prices.txt
-
-          # Generate matrix and store in variable (redirect stderr to avoid logging in output)
-          matrix=$(bun .github/scripts/generate-stipend-matrix.ts 2>/dev/null)
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # Use test events for push triggers
+            echo "Using test events for push trigger"
+            echo "${{ env.TEST_EVENTS }}" > test_events.json
+            matrix=$(bun .github/scripts/generate-stipend-matrix.ts --test-events test_events.json 2>/dev/null)
+          else
+            # Use workflow inputs for manual triggers
+            echo "${{ inputs.origins }}" | tr ',' '\n' > origins.txt
+            echo "${{ inputs.destinations }}" | tr ',' '\n' > destinations.txt
+            echo "${{ inputs.start_dates }}" | tr ',' '\n' > start_dates.txt
+            echo "${{ inputs.end_dates }}" | tr ',' '\n' > end_dates.txt
+            echo "${{ inputs.ticket_prices }}" | tr ',' '\n' > ticket_prices.txt
+            matrix=$(bun .github/scripts/generate-stipend-matrix.ts 2>/dev/null)
+          fi
 
           # Debug output
           echo "Generated matrix:"
