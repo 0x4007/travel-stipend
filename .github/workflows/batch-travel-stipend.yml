@@ -47,13 +47,14 @@ jobs:
           echo "${{ inputs.end_dates }}" | tr ',' '\n' > end_dates.txt
           echo "${{ inputs.ticket_prices }}" | tr ',' '\n' > ticket_prices.txt
 
-          # Generate matrix from inputs
-          matrix=$(bun .github/scripts/generate-stipend-matrix.ts)
+          # Generate matrix and store in variable (redirect stderr to avoid logging in output)
+          matrix=$(bun .github/scripts/generate-stipend-matrix.ts 2>/dev/null)
 
-          # Format output
-          matrix="${matrix//'%'/'%25'}"
-          matrix="${matrix//$'\n'/'%0A'}"
-          matrix="${matrix//$'\r'/'%0D'}"
+          # Debug output
+          echo "Generated matrix:"
+          echo "$matrix"
+
+          # Set the output
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   calculate:

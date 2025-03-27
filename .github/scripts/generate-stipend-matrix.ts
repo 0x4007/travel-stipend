@@ -15,7 +15,7 @@ async function readInputFile(filename: string): Promise<string[]> {
       throw new Error(`File ${filename} does not exist`);
     }
 
-    console.log(`Reading ${filename}...`);
+    console.error(`Reading ${filename}...`);
     const content = await file.text();
     // Split by both newlines and commas
     const items = content
@@ -23,7 +23,7 @@ async function readInputFile(filename: string): Promise<string[]> {
       .map(item => item.trim())
       .filter(Boolean);
 
-    console.log(`Found ${items.length} entries in ${filename}`);
+    console.error(`Found ${items.length} entries in ${filename}`);
 
     if (items.length === 0) {
       throw new Error(`${filename} is empty`);
@@ -55,9 +55,9 @@ async function generateMatrix() {
       return num;
     });
 
-    console.log('\nValidating input lengths...');
+    console.error('\nValidating input lengths...');
     const maxLength = Math.max(origins.length, destinations.length, startDates.length);
-    console.log(`Will generate ${maxLength} combinations`);
+    console.error(`Will generate ${maxLength} combinations`);
 
     const parameters: StipendParameters[] = [];
 
@@ -72,17 +72,24 @@ async function generateMatrix() {
       });
     }
 
-    // Return matrix format
-    const matrix = { include: parameters };
-    console.log('\nGenerated Matrix:');
-    console.log(JSON.stringify(matrix, null, 2));
-
     if (parameters.length === 0) {
       throw new Error('No parameters were generated');
     }
 
-    console.log(`\nSuccessfully generated matrix with ${parameters.length} combinations`);
-    return matrix;
+    console.error(`\nSuccessfully generated matrix with ${parameters.length} combinations`);
+
+    // Only output the properly formatted JSON matrix to stdout
+    const matrix = {
+      include: parameters.map(p => ({
+        origin: p.origin,
+        destination: p.destination,
+        startDate: p.startDate,
+        endDate: p.endDate,
+        price: p.price
+      }))
+    };
+    // Output clean JSON to stdout, no formatting for GitHub Actions
+    console.log(JSON.stringify(matrix));
   } catch (error) {
     console.error('\nError generating matrix:', error);
     process.exit(1);
