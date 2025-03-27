@@ -10,7 +10,7 @@ describe("Single Conference Complete Calculation Test", () => {
 
     // Find a conference in May (for testing purposes)
     const conference = conferences.find((conf) => {
-      const parts = conf.start_date.split(' ');
+      const parts = conf.start_date.split(" ");
       if (parts.length < 2) return false;
       return parts[1].toLowerCase() === "may";
     });
@@ -30,7 +30,7 @@ describe("Single Conference Complete Calculation Test", () => {
       name: conferenceWithOrigin.conference,
       location: conferenceWithOrigin.location,
       start: conferenceWithOrigin.start_date,
-      end: conferenceWithOrigin.end_date ?? conferenceWithOrigin.start_date
+      end: conferenceWithOrigin.end_date ?? conferenceWithOrigin.start_date,
     });
 
     // Determine the appropriate year
@@ -38,7 +38,7 @@ describe("Single Conference Complete Calculation Test", () => {
     const currentYear = currentDate.getFullYear();
 
     // Parse the conference date with current year
-    const confDateParts = conferenceWithOrigin.start_date.split(' ');
+    const confDateParts = conferenceWithOrigin.start_date.split(" ");
     const confDate = new Date(`${confDateParts[1]} ${confDateParts[0]}, ${currentYear}`);
 
     // If the date has passed, use next year

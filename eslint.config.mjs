@@ -4,107 +4,126 @@ import checkFile from "eslint-plugin-check-file";
 import sonarjs from "eslint-plugin-sonarjs";
 import tsEslint from "typescript-eslint";
 
-export default tsEslint.config({
-  files: ["**/*.ts", "**/*.d.ts"],
-  ignores: ["**/*.js", ".github/**.ts", "src/utils/google-flights-scraper/**/*", "tests/*.ts", ".github/actions/calculate-stipend/index.js"],
-  plugins: {
-    "@typescript-eslint": tsEslint.plugin,
-    "check-file": checkFile,
-  },
-  extends: [eslint.configs.recommended, ...tsEslint.configs.recommended, sonarjs.configs.recommended],
-  languageOptions: {
-    parser: tsEslint.parser,
-    parserOptions: {
-      project: ["./tsconfig.json"],
-      allowDefaultProject: ["*.mjs"],
-      tsconfigRootDir: import.meta.dirname,
-      createDefaultProgram: true,
+export default tsEslint.config(
+  {
+    files: ["**/*.ts"],
+    ignores: ["**/*.js", ".github/**.ts", "src/utils/google-flights-scraper/**/*", "tests/*.ts", ".github/actions/calculate-stipend/index.js"],
+    plugins: {
+      "@typescript-eslint": tsEslint.plugin,
+      "check-file": checkFile,
+    },
+    extends: [eslint.configs.recommended, ...tsEslint.configs.recommended, sonarjs.configs.recommended],
+    languageOptions: {
+      parser: tsEslint.parser,
+      parserOptions: {
+        project: ["./tsconfig.json", "./tsconfig.declarations.json"],
+        allowDefaultProject: ["*.mjs"],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      "check-file/filename-naming-convention": [
+        "error",
+        {
+          "**/*.{js,ts,d.ts}": "+([-._a-z0-9])",
+        },
+      ],
+      "prefer-arrow-callback": ["warn", { allowNamedFunctions: true }],
+      "func-style": ["warn", "declaration", { allowArrowFunctions: false }],
+      "@typescript-eslint/no-floating-promises": "error",
+      "@typescript-eslint/no-non-null-assertion": "error",
+      "constructor-super": "error",
+      "no-invalid-this": "off",
+      "@typescript-eslint/no-invalid-this": "error",
+      "no-restricted-syntax": ["error", "ForInStatement"],
+      "use-isnan": "error",
+      "no-unneeded-ternary": "error",
+      "no-nested-ternary": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          args: "after-used",
+          ignoreRestSiblings: true,
+          vars: "all",
+          varsIgnorePattern: "^_",
+          argsIgnorePattern: "^_",
+        },
+      ],
+      "@typescript-eslint/await-thenable": "error",
+      "@typescript-eslint/no-misused-new": "error",
+      "@typescript-eslint/restrict-plus-operands": "error",
+      "sonarjs/no-all-duplicated-branches": "error",
+      "sonarjs/no-collection-size-mischeck": "error",
+      "sonarjs/no-duplicated-branches": "error",
+      "sonarjs/no-element-overwrite": "error",
+      "sonarjs/no-identical-conditions": "error",
+      "sonarjs/no-identical-expressions": "error",
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          selector: "interface",
+          format: ["StrictPascalCase"],
+          custom: { regex: "^I[A-Z]", match: false },
+        },
+        {
+          selector: "memberLike",
+          modifiers: ["private"],
+          format: ["strictCamelCase"],
+          leadingUnderscore: "require",
+        },
+        {
+          selector: "typeLike",
+          format: ["StrictPascalCase"],
+        },
+        {
+          selector: "typeParameter",
+          format: ["StrictPascalCase"],
+          prefix: ["T"],
+        },
+        {
+          selector: "variable",
+          format: ["strictCamelCase", "UPPER_CASE"],
+          leadingUnderscore: "allow",
+          trailingUnderscore: "allow",
+        },
+        {
+          selector: "variable",
+          modifiers: ["destructured"],
+          format: null,
+        },
+        {
+          selector: "variable",
+          types: ["boolean"],
+          format: ["StrictPascalCase"],
+          prefix: ["is", "should", "has", "can", "did", "will", "does"],
+        },
+        {
+          selector: "variableLike",
+          format: ["strictCamelCase"],
+        },
+        {
+          selector: ["function", "variable"],
+          format: ["strictCamelCase"],
+        },
+      ],
     },
   },
-  rules: {
-    "check-file/filename-naming-convention": [
-      "error",
-      {
-        "**/*.{js,ts,d.ts}": "+([-._a-z0-9])",
+  {
+    files: ["**/*.d.ts"],
+    languageOptions: {
+      parser: tsEslint.parser,
+      parserOptions: {
+        project: ["./tsconfig.declarations.json"],
+        tsconfigRootDir: import.meta.dirname,
       },
-    ],
-    "prefer-arrow-callback": ["warn", { allowNamedFunctions: true }],
-    "func-style": ["warn", "declaration", { allowArrowFunctions: false }],
-    "@typescript-eslint/no-floating-promises": "error",
-    "@typescript-eslint/no-non-null-assertion": "error",
-    "constructor-super": "error",
-    "no-invalid-this": "off",
-    "@typescript-eslint/no-invalid-this": "error",
-    "no-restricted-syntax": ["error", "ForInStatement"],
-    "use-isnan": "error",
-    "no-unneeded-ternary": "error",
-    "no-nested-ternary": "error",
-    "@typescript-eslint/no-unused-vars": [
-      "error",
-      {
-        args: "after-used",
-        ignoreRestSiblings: true,
-        vars: "all",
-        varsIgnorePattern: "^_",
-        argsIgnorePattern: "^_",
-      },
-    ],
-    "@typescript-eslint/await-thenable": "error",
-    "@typescript-eslint/no-misused-new": "error",
-    "@typescript-eslint/restrict-plus-operands": "error",
-    "sonarjs/no-all-duplicated-branches": "error",
-    "sonarjs/no-collection-size-mischeck": "error",
-    "sonarjs/no-duplicated-branches": "error",
-    "sonarjs/no-element-overwrite": "error",
-    "sonarjs/no-identical-conditions": "error",
-    "sonarjs/no-identical-expressions": "error",
-    "@typescript-eslint/naming-convention": [
-      "error",
-      {
-        selector: "interface",
-        format: ["StrictPascalCase"],
-        custom: { regex: "^I[A-Z]", match: false },
-      },
-      {
-        selector: "memberLike",
-        modifiers: ["private"],
-        format: ["strictCamelCase"],
-        leadingUnderscore: "require",
-      },
-      {
-        selector: "typeLike",
-        format: ["StrictPascalCase"],
-      },
-      {
-        selector: "typeParameter",
-        format: ["StrictPascalCase"],
-        prefix: ["T"],
-      },
-      {
-        selector: "variable",
-        format: ["strictCamelCase", "UPPER_CASE"],
-        leadingUnderscore: "allow",
-        trailingUnderscore: "allow",
-      },
-      {
-        selector: "variable",
-        modifiers: ["destructured"],
-        format: null,
-      },
-      {
-        selector: "variable",
-        types: ["boolean"],
-        format: ["StrictPascalCase"],
-        prefix: ["is", "should", "has", "can", "did", "will", "does"],
-      },
-      {
-        selector: "variableLike",
-        format: ["strictCamelCase"],
-      },
-      {
-        selector: ["function", "variable"],
-        format: ["strictCamelCase"],
-      },
-    ],
-  },
-});
+    },
+    rules: {
+      "check-file/filename-naming-convention": [
+        "error",
+        {
+          "**/*.d.ts": "+([-._a-z0-9])",
+        },
+      ],
+    },
+  }
+);

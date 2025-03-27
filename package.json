@@ -18,7 +18,7 @@
     "bun": ">=1.0.0"
   },
   "scripts": {
-    "start" : "bun src/travel-stipend-cli.ts",
+    "start": "bun src/travel-stipend-cli.ts",
     "db": "sqlite3 travel_data.db",
     "calc": "bun src/travel-stipend-calculator.ts",
     "format": "run-s format:*",

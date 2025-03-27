@@ -20,10 +20,15 @@ export async function calculateFlightCost(
   returnDate: string,
   includeBudget: boolean = false
 ): Promise<number> {
-  const result = await scrapeFlightPrice(origin, destination, {
-    outbound: departureDate,
-    return: returnDate,
-  }, includeBudget);
+  const result = await scrapeFlightPrice(
+    origin,
+    destination,
+    {
+      outbound: departureDate,
+      return: returnDate,
+    },
+    includeBudget
+  );
   return result.price ?? 0;
 }
 
@@ -34,13 +39,16 @@ async function handleScreenshot(page: Page, description: string, options: Record
   }
 }
 
-async function handleNavigation(page: Page, parameters: {
-  from: string;
-  to: string;
-  departureDate: string;
-  returnDate: string;
-  includeBudget: boolean;
-}) {
+async function handleNavigation(
+  page: Page,
+  parameters: {
+    from: string;
+    to: string;
+    departureDate: string;
+    returnDate: string;
+    includeBudget: boolean;
+  }
+) {
   const didNavigate = await withRetry(async () => {
     await navigateToFlights(page, parameters);
     return true;
@@ -50,7 +58,7 @@ async function handleNavigation(page: Page, parameters: {
     throw new Error("Failed to navigate to Google Flights");
   }
 
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 }
 
 async function handleFlightScraping(page: Page) {
@@ -82,7 +90,7 @@ export async function scrapeFlightPrice(
     const launchOptions: LaunchOptions = {
       args: getBrowserLaunchArgs(),
       timeout: setupEnvironment().timeout,
-      headless: true
+      headless: true,
     };
 
     browser = await launchBrowser(launchOptions);
@@ -117,7 +125,7 @@ export async function scrapeFlightPrice(
         fullPage: true,
         captureHtml: true,
         logDOM: true,
-        dumpConsole: true
+        dumpConsole: true,
       });
       return { price: null, source: "No flight results found" };
     }
@@ -125,9 +133,7 @@ export async function scrapeFlightPrice(
     // Calculate price
     const topFlights = flightData.filter((flight) => flight.isTopFlight);
     const flightsToUse = topFlights.length > 0 ? topFlights : flightData;
-    const avgPrice = Math.round(
-      flightsToUse.reduce((sum, flight) => sum + flight.price, 0) / flightsToUse.length
-    );
+    const avgPrice = Math.round(flightsToUse.reduce((sum, flight) => sum + flight.price, 0) / flightsToUse.length);
 
     await handleScreenshot(page, "successful-scrape", { fullPage: true });
 
@@ -137,11 +143,7 @@ export async function scrapeFlightPrice(
     };
   } catch (error) {
     if (page) {
-      await handleError(
-        page,
-        error instanceof Error ? error : new Error(String(error)),
-        "flight-scraping"
-      );
+      await handleError(page, error instanceof Error ? error : new Error(String(error)), "flight-scraping");
     }
     return {
       price: null,

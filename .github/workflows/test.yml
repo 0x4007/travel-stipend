@@ -3,10 +3,10 @@ name: Run Tests
 on:
   push:
     paths:
-      - '**.ts'
-      - '.github/workflows/**'
-      - 'package.json'
-      - 'bun.lock'
+      - "**.ts"
+      - ".github/workflows/**"
+      - "package.json"
+      - "bun.lock"
 
 jobs:
   test:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1

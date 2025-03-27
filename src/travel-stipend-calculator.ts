@@ -111,7 +111,7 @@ export async function calculateStipend(record: Conference & { origin?: string })
   ]);
 
   const destination = record.location;
-  console.log(`Processing conference: ${record.conference} in ${destination}`);
+  console.log(`Processing conference: ${record.conference}`);
 
   // Check if conference is in origin city
   const isOriginCity = origin === destination;

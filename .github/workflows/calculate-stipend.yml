@@ -4,46 +4,46 @@ on:
   workflow_dispatch:
     inputs:
       origin:
-        description: 'Origin city for travel calculations (i.e. Seoul)'
+        description: "Origin city for travel calculations (i.e. Seoul)"
         required: true
         type: string
       destination:
-        description: 'Conference destination city (i.e. Singapore)'
+        description: "Conference destination city (i.e. Singapore)"
         required: true
         type: string
       conference_start:
-        description: 'Conference start date (i.e. 1 May)'
+        description: "Conference start date (i.e. 1 May)"
         required: true
         type: string
       conference_end:
-        description: 'Conference end date (i.e. 3 May)'
+        description: "Conference end date (i.e. 3 May)"
         required: false
         type: string
       days_before:
-        description: 'Travel days before conference'
+        description: "Travel days before conference"
         required: false
         type: number
         default: 1
       days_after:
-        description: 'Travel days after conference'
+        description: "Travel days after conference"
         required: false
         type: number
         default: 1
       output_format:
-        description: 'Output format (table, json, csv)'
+        description: "Output format (table, json, csv)"
         required: false
         type: choice
         options:
           - table
           - json
           - csv
-        default: 'table'
+        default: "table"
       ticket_price:
-        description: 'Conference ticket price (if applicable)'
+        description: "Conference ticket price (if applicable)"
         required: false
         type: number
       verbose:
-        description: 'Enable detailed output logging'
+        description: "Enable detailed output logging"
         required: false
         type: boolean
         default: false
@@ -55,7 +55,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1

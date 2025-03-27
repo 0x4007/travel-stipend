@@ -37,7 +37,7 @@ function parseDate(dateStr: string | undefined | null): Date | null {
   if (isoDate) return isoDate;
 
   // Try "DD Month YYYY" format
-  const parts = dateStr.split(' ');
+  const parts = dateStr.split(" ");
   if (parts.length < 2) return null;
 
   const day = parseInt(parts[0]);
@@ -127,8 +127,8 @@ export function generateFlightDates(conference: Conference, isOriginCity = false
   // Format dates as YYYY-MM-DD
   function formatDate(date: Date) {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   }
 

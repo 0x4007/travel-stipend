@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { Database, open } from "sqlite";
 import sqlite3 from "sqlite3";
-import { Conference, } from "../types";
+import { Conference } from "../types";
 
 interface TaxiRates {
   city: string;
@@ -168,7 +168,7 @@ export class DatabaseService {
         buffer_days_after: parseInt(row.BufferDaysAfter ?? "1"),
         ticket_price: row.TicketPrice ?? row["Ticket Price"] ?? "0",
         priority: row["❗️"]?.toLowerCase() === "true",
-        tentative: row["❓"]?.toLowerCase() === "true"
+        tentative: row["❓"]?.toLowerCase() === "true",
       }))
       .filter((v) => v.category && v.conference && v.location);
 
@@ -181,9 +181,17 @@ export class DatabaseService {
             buffer_days_before, buffer_days_after, ticket_price, priority, tentative
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
-            value.category, value.conference, value.location, value.start_date,
-            value.end_date, value.description, value.buffer_days_before,
-            value.buffer_days_after, value.ticket_price, value.priority, value.tentative
+            value.category,
+            value.conference,
+            value.location,
+            value.start_date,
+            value.end_date,
+            value.description,
+            value.buffer_days_before,
+            value.buffer_days_after,
+            value.ticket_price,
+            value.priority,
+            value.tentative,
           ]
         );
       }
@@ -403,13 +411,7 @@ export class DatabaseService {
     return this._db.get<TaxiRates>("SELECT city, base_fare, per_km_rate, typical_trip_km FROM taxis WHERE city = ?", [city]);
   }
 
-
-
-  public async addCityCoordinates(
-    city: string,
-    lat: number,
-    lng: number
-  ): Promise<boolean> {
+  public async addCityCoordinates(city: string, lat: number, lng: number): Promise<boolean> {
     await this._init();
     if (!this._db) throw new Error("Database not initialized");
 
