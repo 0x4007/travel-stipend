@@ -33,7 +33,31 @@ if ! git diff --staged --quiet; then
       echo "Push failed."
       exit 1
     else
-      echo "Push completed successfully."
+      echo "Push completed successfully. Waiting for CI run..."
+      sleep 15 # Wait for GitHub Actions to detect the push and start the run
+
+      COMMIT_SHA=$(git rev-parse HEAD)
+      echo "Fetching latest workflow run for commit $COMMIT_SHA..."
+
+      # Fetch the latest run ID associated with the commit SHA
+      RUN_ID=$(gh run list --commit "$COMMIT_SHA" --limit 1 --json databaseId --jq '.[0].databaseId')
+
+      if [ -z "$RUN_ID" ] || [ "$RUN_ID" == "null" ]; then
+          echo "Could not find a recent run ID for commit '$COMMIT_SHA'."
+          echo "Please check GitHub Actions manually."
+          # Don't exit, as the push itself was successful
+      else
+          echo "Watching run ID: $RUN_ID"
+          gh run watch "$RUN_ID" --exit-status
+
+          if [ $? -ne 0 ]; then
+            echo "Workflow run failed."
+            # Optionally exit here if a failed CI run should stop the script
+            # exit 1
+          else
+            echo "Workflow run completed successfully."
+          fi
+      fi
     fi
 else
     echo "No changes detected. Nothing to commit or push."
