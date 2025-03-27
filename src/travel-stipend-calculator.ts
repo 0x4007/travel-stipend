@@ -34,6 +34,8 @@ async function calculateFlightCostForConference(
   log.debug(`Dates: ${flightDates.outbound} to ${flightDates.return}`);
   const scrapedResult = await scrapeFlightPrice(origin, destination, flightDates, includeBudget);
 
+  // Flight data is now logged directly from the flights.ts file
+
   if (scrapedResult.price === null) {
     throw new Error(`Failed to get flight price for ${destination} from Google Flights`);
   }
@@ -188,6 +190,7 @@ export async function calculateStipend(record: Conference & { origin?: string })
     flight_cost: parseFloat(flightCost.toFixed(2)),
     flight_price_source: flightPriceSource,
     lodging_cost: parseFloat(lodgingCost.toFixed(2)),
+    meals_cost: parseFloat((basicMealsCost + businessEntertainmentCost).toFixed(2)),
     basic_meals_cost: parseFloat(basicMealsCost.toFixed(2)),
     business_entertainment_cost: parseFloat(businessEntertainmentCost.toFixed(2)),
     local_transport_cost: parseFloat(localTransportCost.toFixed(2)),

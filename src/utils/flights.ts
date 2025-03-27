@@ -130,6 +130,9 @@ export async function scrapeFlightPrice(
       return { price: null, source: "No flight results found" };
     }
 
+    // Log flight data for debug purposes (for outputting in GitHub Actions)
+    console.log("Flight data:", JSON.stringify(flightData, null, 2));
+
     // Calculate price
     const topFlights = flightData.filter((flight) => flight.isTopFlight);
     const flightsToUse = topFlights.length > 0 ? topFlights : flightData;

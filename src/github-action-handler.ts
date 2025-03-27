@@ -28,7 +28,10 @@ function getActionInputs(): ActionInputs {
     daysBefore: parseInt(process.env.INPUT_DAYS_BEFORE ?? "1"),
     daysAfter: parseInt(process.env.INPUT_DAYS_AFTER ?? "1"),
     ticketPrice: process.env.INPUT_TICKET_PRICE ?? "0",
-    outputFormat: process.env.INPUT_OUTPUT_FORMAT ?? "table",
+    outputFormat: process.env.INPUT_OUTPUT_FORMAT ?? (() => {
+      const formatIndex = process.argv.indexOf('--output-format');
+      return formatIndex !== -1 && process.argv[formatIndex + 1] === 'json' ? 'json' : 'table';
+    })(),
     includeBudget: process.env.INPUT_INCLUDE_BUDGET === "true",
   };
 }
@@ -147,18 +150,18 @@ async function main() {
 
     const result = await calculateStipend(conference);
 
-    // Format and output results
-    // Write JSON to file first to ensure we have a clean JSON output
-    const outputJson = JSON.stringify(result, null, 2);
-    fs.writeFileSync('result.json', outputJson);
+    // If json format, just output the raw result
+    if (inputs.outputFormat === 'json') {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      // Otherwise show the formatted table output
+      const output = formatOutput(result, inputs.outputFormat);
+      console.log(output);
 
-    // Then show the formatted output
-    const output = formatOutput(result, inputs.outputFormat);
-    console.log(output);
-
-    // Set GitHub Actions output
-    if (process.env.GITHUB_OUTPUT) {
-      fs.appendFileSync(process.env.GITHUB_OUTPUT, `result=${outputJson}\n`);
+      // Set GitHub Actions output if needed
+      if (process.env.GITHUB_OUTPUT) {
+        fs.appendFileSync(process.env.GITHUB_OUTPUT, `result=${JSON.stringify(result)}\n`);
+      }
     }
   } catch (error) {
     console.error("Error calculating travel stipend:", error);
