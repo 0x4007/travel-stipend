@@ -85,10 +85,10 @@ jobs:
           INPUT_OUTPUT_FORMAT: "json"
         id: calculate
         run: |
-          # Run with JSON output format and save directly to file
-          bun src/github-action-handler.ts > "results-${{ matrix.destination }}-${{ matrix.startDate }}.json"
+          # Run once with JSON output and save to file
+          bun src/github-action-handler.ts --output-file "results-${{ matrix.destination }}-${{ matrix.startDate }}.json"
 
-          # For display, run again with table format
+          # For logs, run again with table format
           bun src/github-action-handler.ts --output-format table
 
       - name: Upload Result

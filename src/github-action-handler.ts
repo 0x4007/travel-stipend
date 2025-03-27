@@ -134,8 +134,10 @@ async function main() {
   try {
     console.log("Starting travel stipend calculation...");
 
-    // Get inputs from environment variables (set by GitHub Actions)
+    // Get inputs from environment variables and CLI args
     const inputs = getActionInputs();
+    const outputFileIndex = process.argv.indexOf('--output-file');
+    const outputFile = outputFileIndex !== -1 ? process.argv[outputFileIndex + 1] : null;
 
     if (!inputs.location || !inputs.conferenceStart) {
       throw new Error("Missing required inputs: destination and start date are required");
@@ -151,18 +153,22 @@ async function main() {
 
     const result = await calculateStipend(conference);
 
-    // If json format, just output the raw result
+    // Write to file if --output-file specified
+    if (outputFile) {
+      fs.writeFileSync(outputFile, JSON.stringify(result, null, 2));
+    }
+
+    // Output to console based on format
     if (inputs.outputFormat === 'json') {
       console.log(JSON.stringify(result, null, 2));
     } else {
-      // Otherwise show the formatted table output
       const output = formatOutput(result, inputs.outputFormat);
       console.log(output);
+    }
 
-      // Set GitHub Actions output if needed
-      if (process.env.GITHUB_OUTPUT) {
-        fs.appendFileSync(process.env.GITHUB_OUTPUT, `result=${JSON.stringify(result)}\n`);
-      }
+    // Set GitHub Actions output if needed
+    if (process.env.GITHUB_OUTPUT) {
+      fs.appendFileSync(process.env.GITHUB_OUTPUT, `result=${JSON.stringify(result)}\n`);
     }
   } catch (error) {
     console.error("Error calculating travel stipend:", error);
