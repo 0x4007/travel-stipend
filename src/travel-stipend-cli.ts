@@ -4,6 +4,13 @@ import fs from "fs";
 import { calculateStipend } from "./travel-stipend-calculator";
 import { Conference, StipendBreakdown } from "./types";
 
+// Setup debug logging
+const log = {
+  debug: (message: string) => program.opts().verbose && console.log(`[DEBUG] ${message}`),
+  info: (message: string) => console.log(message),
+  error: (message: string) => console.error(`Error: ${message}`)
+};
+
 // Program definition with examples
 const program = new Command()
   .version("1.0.0")
@@ -56,6 +63,13 @@ async function processSingleConference(options: {
 }): Promise<StipendBreakdown> {
   const { destination, departureDate, returnDate, bufferBefore, bufferAfter, ticketPrice, origin } = options;
 
+  log.debug(`Processing conference request:`);
+  log.debug(`  Origin: ${origin}`);
+  log.debug(`  Destination: ${destination}`);
+  log.debug(`  Dates: ${departureDate} to ${returnDate}`);
+  log.debug(`  Buffer days: Before=${bufferBefore ?? 1}, After=${bufferAfter ?? 1}`);
+  log.debug(`  Ticket price: ${ticketPrice ?? 'N/A'}`);
+
   if (!departureDate) {
     throw new Error("Departure date is required");
   }
@@ -74,12 +88,15 @@ async function processSingleConference(options: {
     ...(bufferAfter !== undefined ? { buffer_days_after: parseInt(bufferAfter, 10) } : {}),
   };
 
-  console.log(`Conference dates: ${departureDate} to ${returnDate ?? departureDate}`);
+  log.info(`Conference dates: ${departureDate} to ${returnDate ?? departureDate}`);
   if (bufferBefore !== undefined || bufferAfter !== undefined) {
-    console.log(`Travel buffer: ${bufferBefore ?? 1} day(s) before, ${bufferAfter ?? 1} day(s) after`);
+    log.info(`Travel buffer: ${bufferBefore ?? 1} day(s) before, ${bufferAfter ?? 1} day(s) after`);
   }
 
-  return calculateStipend(record);
+  log.debug('Calculating stipend...');
+  const result = await calculateStipend(record);
+  log.debug(`Stipend calculation completed: $${result.total_stipend}`);
+  return result;
 }
 
 /**
@@ -198,7 +215,8 @@ async function main(): Promise<void> {
   const options = program.opts();
 
   try {
-    console.log(`Travel Stipend Calculator - Starting from ${options.origin}`);
+    log.info(`Travel Stipend Calculator - Starting from ${options.origin}`);
+    log.debug(`CLI Options: ${JSON.stringify(options, null, 2)}`);
     let results: StipendBreakdown[] = [];
 
     if (!options.destination) {
@@ -221,8 +239,9 @@ async function main(): Promise<void> {
       }),
     ];
 
+    log.debug('Outputting results...');
     outputResults(results, options.output);
-    console.log("Travel Stipend Calculator - Completed");
+    log.info("Travel Stipend Calculator - Completed");
   } catch (error) {
     console.error("Error:", error);
     process.exit(1);

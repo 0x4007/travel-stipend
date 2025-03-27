@@ -7,6 +7,13 @@ import { calculateDateDiff, generateFlightDates } from "./utils/dates";
 import { scrapeFlightPrice } from "./utils/flights";
 import { calculateLocalTransportCost } from "./utils/taxi-fares";
 
+// Setup debug logging based on CLI verbose flag
+const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v');
+const log = {
+  debug: (message: string) => isVerbose && console.log(`[DEBUG] ${message}`),
+  info: (message: string) => console.log(message)
+};
+
 // Initialize cache
 const stipendCache = new PersistentCache<StipendBreakdown>("fixtures/cache/stipend-cache.json");
 
@@ -19,17 +26,20 @@ async function calculateFlightCostForConference(
   includeBudget: boolean = false
 ): Promise<{ cost: number; source: string }> {
   if (isOriginCity) {
-    console.log(`No flight cost for ${destination} (same as origin)`);
+    log.info(`No flight cost for ${destination} (same as origin)`);
     return { cost: 0, source: "No flight needed" };
   }
 
+  log.debug(`Searching flights from ${origin} to ${destination}`);
+  log.debug(`Dates: ${flightDates.outbound} to ${flightDates.return}`);
   const scrapedResult = await scrapeFlightPrice(origin, destination, flightDates, includeBudget);
 
   if (scrapedResult.price === null) {
     throw new Error(`Failed to get flight price for ${destination} from Google Flights`);
   }
 
-  console.log(`Flight cost for ${destination}: ${scrapedResult.price} (from ${scrapedResult.source})`);
+  log.info(`Flight cost for ${destination}: ${scrapedResult.price} (from ${scrapedResult.source})`);
+  log.debug(`Flight details: ${JSON.stringify(scrapedResult, null, 2)}`);
   return { cost: scrapedResult.price, source: scrapedResult.source };
 }
 
@@ -111,7 +121,9 @@ export async function calculateStipend(record: Conference & { origin?: string })
   ]);
 
   const destination = record.location;
-  console.log(`Processing conference: ${record.conference}`);
+  log.debug(`Calculating stipend for ${record.conference}`);
+  log.debug(`Cache key: ${cacheKey}`);
+  log.info(`Processing conference: ${record.conference}`);
 
   // Check if conference is in origin city
   const isOriginCity = origin === destination;
@@ -131,8 +143,9 @@ export async function calculateStipend(record: Conference & { origin?: string })
   const totalDays = conferenceDays + preConferenceDays + postConferenceDays;
   const numberOfNights = totalDays - 1;
 
-  console.log(`Conference duration: ${conferenceDays} days, Total stay: ${totalDays} days (${numberOfNights} nights)`);
-  console.log(`Travel dates: ${flightDates.outbound} to ${flightDates.return}`);
+  log.info(`Conference duration: ${conferenceDays} days, Total stay: ${totalDays} days (${numberOfNights} nights)`);
+  log.info(`Travel dates: ${flightDates.outbound} to ${flightDates.return}`);
+  log.debug(`Cost of living factor for ${destination}: ${colFactor}`);
 
   // Calculate nights breakdown
   const { weekdayNights, weekendNights } = calculateNights(record.start_date, totalDays, preConferenceDays);
@@ -140,6 +153,9 @@ export async function calculateStipend(record: Conference & { origin?: string })
   // Adjust lodging rates with cost of living factor and weekend rates
   const baseWeekdayRate = TRAVEL_STIPEND.costs.hotel * colFactor;
   const baseWeekendRate = baseWeekdayRate * TRAVEL_STIPEND.rules.weekendRateMultiplier;
+
+  log.debug(`Nights breakdown: ${weekdayNights} weekday, ${weekendNights} weekend`);
+  log.debug(`Base rates: Weekday=${baseWeekdayRate}, Weekend=${baseWeekendRate}`);
 
   // Calculate costs
   const lodgingCost = isOriginCity ? 0 : weekdayNights * baseWeekdayRate + weekendNights * baseWeekendRate;
@@ -182,6 +198,9 @@ export async function calculateStipend(record: Conference & { origin?: string })
     total_stipend: parseFloat(totalStipend.toFixed(2)),
     meals_cost: parseFloat(mealsCost.toFixed(2)),
   };
+
+  log.debug('Final stipend breakdown:');
+  log.debug(JSON.stringify(result, null, 2));
 
   stipendCache.set(cacheKey, result);
   return result;
