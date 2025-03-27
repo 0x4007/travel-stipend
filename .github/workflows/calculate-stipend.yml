@@ -7,10 +7,6 @@ on:
         description: 'Conference location'
         required: true
         type: string
-      conference_name:
-        description: 'Conference name'
-        required: true
-        type: string
       conference_start:
         description: 'Conference start date (YYYY-MM-DD)'
         required: true
@@ -43,11 +39,6 @@ on:
           - json
           - csv
         default: 'table'
-      include_budget:
-        description: 'Include budget airlines in flight search'
-        required: false
-        type: boolean
-        default: false
 
 jobs:
   calculate:
@@ -74,7 +65,6 @@ jobs:
       - name: Calculate Stipend
         env:
           INPUT_LOCATION: ${{ inputs.location }}
-          INPUT_CONFERENCE_NAME: ${{ inputs.conference_name }}
           INPUT_CONFERENCE_START: ${{ inputs.conference_start }}
           INPUT_CONFERENCE_END: ${{ inputs.conference_end }}
           INPUT_DAYS_BEFORE: ${{ inputs.days_before }}

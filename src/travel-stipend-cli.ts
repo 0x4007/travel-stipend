@@ -12,10 +12,9 @@ const program = new Command()
   .requiredOption("--destination <city>", "Destination city (e.g. 'Singapore')")
   .requiredOption("--departure-date <date>", "Departure date (e.g. '15 april')")
   .requiredOption("--return-date <date>", "Return date (e.g. '20 april')")
-  .option("-c, --conference <name>", "Conference name (optional, will use 'Business Trip' if not specified)")
-  .option("--buffer-before <days>", "Buffer days before conference (default: 1)")
-  .option("--buffer-after <days>", "Buffer days after conference (default: 1)")
-  .option("--ticket-price <price>", "Conference ticket price (defaults to standard price)")
+  .option("--buffer-before <days>", "Buffer days before event (default: 1)")
+  .option("--buffer-after <days>", "Buffer days after event (default: 1)")
+  .option("--ticket-price <price>", "Event ticket price (if applicable)")
   .option("-o, --output <format>", "Output format: json, csv, table (default: table)")
   .option("-v, --verbose", "Show detailed output")
   .addHelpText(
@@ -29,13 +28,12 @@ Examples:
       --departure-date "15 april" \\
       --return-date "20 april"
 
-  # With conference details and custom buffer days
+  # With custom buffer days and additional costs
   $ bun run src/travel-stipend-cli.ts \\
       --origin seoul \\
       --destination "barcelona" \\
       --departure-date "10 june" \\
       --return-date "12 june" \\
-      -c "MobileConf 2025" \\
       --buffer-before 2 \\
       --buffer-after 1 \\
       --ticket-price 750 \\
@@ -45,11 +43,10 @@ Examples:
   );
 
 /**
- * Process a single conference or business trip
+ * Process a single business trip
  */
 async function processSingleConference(options: {
   destination: string;
-  conference?: string;
   departureDate: string;
   returnDate: string;
   bufferBefore?: string;
@@ -57,11 +54,7 @@ async function processSingleConference(options: {
   ticketPrice?: string;
   origin: string;
 }): Promise<StipendBreakdown> {
-  const { destination, conference, departureDate, returnDate, bufferBefore, bufferAfter, ticketPrice, origin } = options;
-
-  // Use default name if conference name not provided
-  const defaultName = `Business Trip to ${destination.split(",")[0]}`;
-  const conferenceName = conference ?? defaultName;
+  const { destination, departureDate, returnDate, bufferBefore, bufferAfter, ticketPrice, origin } = options;
 
   if (!departureDate) {
     throw new Error("Departure date is required");
@@ -69,7 +62,7 @@ async function processSingleConference(options: {
 
   // Create conference record
   const record: Conference & { origin: string } = {
-    conference: conferenceName,
+    conference: `Conference in ${destination.split(",")[0]}`,
     location: destination,
     origin,
     start_date: departureDate,
@@ -219,7 +212,6 @@ async function main(): Promise<void> {
     results = [
       await processSingleConference({
         destination: options.destination,
-        conference: options.conference,
         departureDate: options.departureDate,
         returnDate: options.returnDate,
         bufferBefore: options.bufferBefore,

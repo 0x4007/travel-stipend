@@ -12,10 +12,6 @@ export interface Conference {
   buffer_days_before?: number; // Days to arrive before conference (default: 1)
   buffer_days_after?: number; // Days to stay after conference (default: 1)
 
-  // Flags for conference priority and status
-  priority?: boolean; // Marked with ❗️ in CSV
-  tentative?: boolean; // Marked with ❓ in CSV
-
   // For travel stipend calculations
   origin?: string; // Added during calculations
   includeBudget?: boolean; // Whether to include budget airlines in flight search
