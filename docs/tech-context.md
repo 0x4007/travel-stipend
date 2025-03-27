@@ -123,22 +123,14 @@ The project uses esbuild for fast compilation and bundling:
 
 ### Google Flights Scraper
 
-The application uses a custom Google Flights scraper to look up flight prices:
+The application uses a custom Google Flights scraper (`src/utils/google-flights-scraper/`) via an adapter (`src/utils/flights.ts`) to look up flight prices:
 
 - **Web Scraping**: Uses Puppeteer to automate browser interactions with Google Flights.
 - **Currency Selection**: Ensures USD currency for consistent pricing.
 - **Price Averaging**: Calculates average price from top flights when multiple are available.
 - **Headless Mode**: Runs in headless mode for better performance.
-- **Fallback**: Distance-based calculation when scraping fails.
-
-### Distance-Based Calculation
-
-When scraping fails, the application falls back to a distance-based calculation:
-
-- **Haversine Formula**: Calculates distance between cities using coordinates.
-- **Multi-tier Pricing**: Different pricing tiers based on flight distance.
-- **Regional Factors**: Adjusts prices based on regional flight patterns.
-- **Popular Route Discounts**: Special pricing for common city pairs.
+- **GitHub Actions Integration**: The adapter (`src/utils/flights.ts`) includes specific utilities and error handling tailored for running within GitHub Actions (e.g., enhanced screenshots, session recovery).
+- **Fallback**: If scraping fails (error or null price), the calculator (`src/travel-stipend-calculator.ts`) now defaults the flight cost to `0`. **Note:** The previously documented distance-based fallback is **not** currently implemented in this path.
 
 ## Technical Constraints
 
@@ -156,8 +148,8 @@ When scraping fails, the application falls back to a distance-based calculation:
 3. **Error Handling**:
 
    - Must gracefully handle missing or malformed data.
-   - Should provide fallbacks when scraping fails.
-   - Needs robust error recovery for web scraping.
+   - Provides a fallback to `0` flight cost when scraping fails.
+   - Needs robust error recovery for web scraping (partially addressed by `try...catch` in calculator).
 
 4. **Scalability**:
    - Current design handles hundreds of conferences efficiently.

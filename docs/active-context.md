@@ -31,15 +31,16 @@ The most recent development has focused on:
 
 4. **Implementing fallback mechanisms** for resilience:
 
-   - Distance-based flight cost calculation when scraping fails
-   - Fuzzy matching for city names when exact matches aren't found
+   - Flight cost calculation defaults to `0` when scraping fails (Note: Distance-based fallback is documented but not currently implemented in the main calculation path).
+   - Fuzzy matching for city names when exact matches aren't found.
 
 5. **Integrating the Google Flights scraper**:
    - Replaced SerpAPI with custom Google Flights scraper
    - Added flight price source tracking in the output
    - Implemented average price calculation for multiple flights
    - Enhanced caching for scraped flight prices
-   - Improved error handling: Implemented `try...catch` around the scraper call in `travel-stipend-calculator.ts` to return 0 flight cost on failure (including null price results) instead of throwing an error.
+   - Improved error handling: Implemented `try...catch` around the scraper call in `travel-stipend-calculator.ts` to return `0` flight cost on failure (including null price results) instead of throwing an error.
+   - Updated output structure (`StipendBreakdown` type, CSV, console table) to include `origin` and rename `location` to `destination`.
 
 ## Current Focus
 
@@ -111,7 +112,8 @@ Current known issues that need attention:
 4. **Scraper Reliability**:
    - Google Flights UI can change, breaking selectors
    - Some destinations fail to scrape consistently
-   - Need for more robust error handling and recovery (partially addressed by recent `try...catch` implementation, but underlying scraper issues may persist)
+   - Need for more robust error handling and recovery (partially addressed by `try...catch` in calculator, but underlying scraper issues may persist).
+   - **Documentation Discrepancy:** Distance-based flight cost fallback is documented but not implemented in the current calculation flow.
 
 ## Next Steps
 

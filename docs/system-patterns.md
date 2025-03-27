@@ -83,7 +83,7 @@ The application processes data through a series of transformations:
 
 The system implements fallback mechanisms for resilience:
 
-- **Web Scraping → Distance-Based Calculation**: When Google Flights scraping fails, the system falls back to distance-based calculations.
+- **Web Scraping → Zero Cost**: When Google Flights scraping fails (either throws an error or returns a null price), the `travel-stipend-calculator.ts` now catches the error or null result and sets the `flightCost` to `0`. **Note:** The previously documented distance-based fallback is currently **not** implemented in the main calculation path.
 - **Exact City Match → Fuzzy Matching**: When exact city matches fail, the system uses fuzzy matching with similarity thresholds.
 
 ### 5. Configuration Constants
@@ -136,7 +136,7 @@ flowchart TD
     CalcStipend --> Transport[calculateLocalTransportCost]
 
     FlightCost --> Scraper[scrapeFlightPrice]
-    FlightCost --> DistCalc[calculateFlightCost]
+    %% FlightCost --> DistCalc[calculateFlightCost] %% Removed as distance fallback is not used here
 
     Distance --> Haversine[haversineDistance]
     Distance --> FindCity[findCityCoordinates]
@@ -161,10 +161,14 @@ flowchart LR
 
 The application implements a robust error handling approach:
 
-1. **Try-Catch Blocks**: Individual conference processing is wrapped in try-catch to prevent one failure from affecting others.
-2. **Graceful Degradation**: When components fail (e.g., web scraping), the system falls back to alternative methods.
-3. **Error Logging**: Errors are logged to the console with context about which conference caused the issue.
-4. **Multi-level Fallbacks**: The system has multiple fallback levels for critical operations.
+1. **Try-Catch Blocks**:
+    - The main calculation loop likely wraps individual conference processing (needs verification in CLI/batch processing code).
+    - The `calculateFlightCostForConference` function now uses a `try...catch` block specifically for the `scrapeFlightPrice` call.
+2. **Graceful Degradation**:
+    - **Flight Scraping:** On failure, the flight cost defaults to `0` instead of halting the calculation. The source is marked as "Scraping failed" or "Scraping returned null".
+    - **City Matching:** Falls back to fuzzy matching if exact match fails.
+3. **Error Logging**: Errors during flight scraping are logged to `console.error`. Other errors are logged with context.
+4. **Multi-level Fallbacks**: The system primarily relies on the flight scraping fallback to `0` and the city matching fallback. The distance-based flight cost fallback is not currently active in the main calculation flow.
 
 ## Extension Points
 

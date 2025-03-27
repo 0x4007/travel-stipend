@@ -44,8 +44,8 @@ function formatMarkdownTable(consolidatedResults: ConsolidatedResults): string {
 
   // Create the main table
   markdown += "## Detailed Results\n\n";
-  markdown += "| Conference | Location | Dates | Flight | Lodging | Meals | Transport | Misc. | Total |\n";
-  markdown += "|------------|----------|-------|--------|---------|-------|-----------|-------|-------|\n";
+  markdown += "| Conference | Origin | Destination | Dates | Flight | Lodging | Meals | Transport | Misc. | Total |\n"; // Added Origin column
+  markdown += "|------------|--------|-------------|-------|--------|---------|-------|-----------|-------|-------|\n"; // Adjusted separator lengths
 
   // Add a row for each result
   for (const result of results) {
@@ -56,14 +56,14 @@ function formatMarkdownTable(consolidatedResults: ConsolidatedResults): string {
       result.incidentals_allowance
     );
 
-    markdown += `| ${result.conference} | ${result.location} | ${dates} | ` +
+    markdown += `| ${result.conference} | ${result.origin} | ${result.destination} | ${dates} | ` + // Added result.origin
       `${formatCurrency(result.flight_cost)} | ${formatCurrency(result.lodging_cost)} | ` +
       `${formatCurrency(result.meals_cost)} | ${formatCurrency(result.local_transport_cost)} | ` +
       `${misc} | ${formatCurrency(result.total_stipend)} |\n`;
   }
 
   // Add a totals row
-  markdown += `| **TOTALS** | | | ${formatCurrency(totals.flight_cost)} | ` +
+  markdown += `| **TOTALS** | | | | ${formatCurrency(totals.flight_cost)} | ` + // Added empty cell for Origin column
     `${formatCurrency(totals.lodging_cost)} | ${formatCurrency(totals.meals_cost)} | ` +
     `${formatCurrency(totals.local_transport_cost)} | ` +
     `${formatCurrency(totals.ticket_price + totals.internet_data_allowance + totals.incidentals_allowance)} | ` +
@@ -73,12 +73,13 @@ function formatMarkdownTable(consolidatedResults: ConsolidatedResults): string {
   markdown += "## Individual Trip Details\n\n";
 
   for (const result of results) {
-    markdown += `### ${result.conference} (${result.location})\n\n`;
+    markdown += `### ${result.conference} (${result.destination})\n\n`; // Changed result.location to result.destination
 
     markdown += "| Category | Amount |\n";
     markdown += "|----------|--------|\n";
     markdown += `| Conference | ${result.conference} |\n`;
-    markdown += `| Location | ${result.location} |\n`;
+    markdown += `| Origin | ${result.origin} |\n`; // Added Origin row
+    markdown += `| Destination | ${result.destination} |\n`; // Changed Location to Destination and result.location to result.destination
     markdown += `| Conference Start | ${result.conference_start} |\n`;
     markdown += `| Conference End | ${result.conference_end} |\n`;
     markdown += `| Flight Departure | ${result.flight_departure} |\n`;
@@ -108,7 +109,8 @@ function formatCSV(consolidatedResults: ConsolidatedResults): string {
   // Create header row
   const headers = [
     "Conference",
-    "Location",
+    "Origin", // Added Origin
+    "Destination", // Changed Location to Destination
     "Start Date",
     "End Date",
     "Flight Departure",
@@ -130,7 +132,8 @@ function formatCSV(consolidatedResults: ConsolidatedResults): string {
   for (const result of results) {
     const row = [
       `"${result.conference}"`,
-      `"${result.location}"`,
+      `"${result.origin}"`, // Added result.origin
+      `"${result.destination}"`, // Changed result.location to result.destination
       `"${result.conference_start}"`,
       `"${result.conference_end}"`,
       `"${result.flight_departure}"`,
@@ -180,7 +183,7 @@ async function consolidateResults() {
               const result = JSON.parse(content) as StipendBreakdown;
 
               // Validate that this is a StipendBreakdown object
-              if (result.conference && result.location && typeof result.total_stipend === 'number') {
+              if (result.conference && result.destination && typeof result.total_stipend === 'number') { // Changed result.location to result.destination
                 results.push(result);
               } else {
                 console.error(`File ${file} does not contain valid StipendBreakdown data`);
@@ -221,7 +224,8 @@ async function consolidateResults() {
         console.log("No result files found, using sample data");
         results.push({
           conference: "Sample Conference",
-          location: "Tokyo, Japan",
+          origin: "Seoul, South Korea", // Added missing origin
+          destination: "Tokyo, Japan", // Changed location to destination
           conference_start: "May 15",
           conference_end: "May 17",
           flight_departure: "14 May",
@@ -241,7 +245,8 @@ async function consolidateResults() {
 
         results.push({
           conference: "Sample Conference 2",
-          location: "San Francisco, USA",
+          origin: "Seoul, South Korea", // Added missing origin
+          destination: "San Francisco, USA", // Changed location to destination
           conference_start: "Jun 20",
           conference_end: "Jun 22",
           flight_departure: "19 June",

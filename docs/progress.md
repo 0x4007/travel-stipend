@@ -30,7 +30,7 @@
 ✅ **Flight Price Lookup**
 
 - Google Flights scraper integration
-- Fallback to distance-based calculation
+- Fallback to `0` cost when scraping fails (Note: Distance-based fallback is documented elsewhere but not implemented in this path).
 - Flight date generation based on conference dates
 - Average price calculation for multiple flights
 - Flight price source tracking in output
@@ -208,6 +208,7 @@
 - Google Flights UI can change, breaking selectors
 - Some destinations fail to scrape consistently
 - Need for more robust error handling and recovery (Partially addressed: `try...catch` added in calculator)
+- **Documentation Discrepancy:** Distance-based flight cost fallback is documented but not implemented in the current calculation flow.
 
 ### Low Priority
 
@@ -245,15 +246,15 @@
 - Added flight price source tracking in the output
 - Implemented average price calculation for multiple flights
 - Enhanced caching for scraped flight prices
-- Improved error handling: Implemented `try...catch` in calculator to return 0 flight cost on scraper failure.
+- Improved error handling: Implemented `try...catch` in calculator to return `0` flight cost on scraper failure.
 
 ✅ **Enhanced Output Format**
 
-- Added clear distinction between conference dates and travel dates
-- Improved table output with more meaningful column names (Added 'Origin', renamed 'Location' to 'Destination')
-- Added flight price source information to CSV output (Added 'Origin', renamed 'Location' to 'Destination')
-- Updated console table display with source information
-- Improved sorting options to include new fields
+- Added clear distinction between conference dates and travel dates.
+- Updated `StipendBreakdown` type, CSV output, and console table output to include `origin` and rename `location` to `destination`.
+- Added flight price source information to CSV output.
+- Updated console table display with source information.
+- Improved sorting options to include new fields.
 
 ## Next Milestone Goals
 
