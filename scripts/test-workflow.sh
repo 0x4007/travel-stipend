@@ -50,9 +50,11 @@ if ! git diff --staged --quiet; then
       else
           echo "Watching run ID: $RUN_ID"
           gh run watch "$RUN_ID" --exit-status
+          WATCH_EXIT_CODE=$? # Capture the exit code of gh run watch
 
-          if [ $? -ne 0 ]; then
-            echo "Workflow run failed."
+          if [ $WATCH_EXIT_CODE -ne 0 ]; then
+            echo "Workflow run failed. Fetching logs for failed jobs..."
+            gh run view "$RUN_ID" --log-failed
             # Optionally exit here if a failed CI run should stop the script
             # exit 1
           else
