@@ -19,7 +19,6 @@ export interface Conference {
 
 export interface MealCosts {
   basicMealsCost: number;
-  mealsCost: number;
   businessEntertainmentCost: number;
 }
 
