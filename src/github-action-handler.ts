@@ -21,10 +21,10 @@ interface ActionInputs {
 
 function getActionInputs(): ActionInputs {
   return {
-    location: process.env.INPUT_LOCATION ?? "",
+    location: process.env.INPUT_DESTINATION ?? "",
     conferenceStart: process.env.INPUT_CONFERENCE_START ?? "",
     conferenceEnd: process.env.INPUT_CONFERENCE_END ?? "",
-    conferenceName: process.env.INPUT_CONFERENCE_NAME ?? "",
+    conferenceName: process.env.INPUT_CONFERENCE_NAME ?? `Conference in ${process.env.INPUT_DESTINATION ?? 'destination'}`,
     daysBefore: parseInt(process.env.INPUT_DAYS_BEFORE ?? "1"),
     daysAfter: parseInt(process.env.INPUT_DAYS_AFTER ?? "1"),
     ticketPrice: process.env.INPUT_TICKET_PRICE ?? "0",
@@ -43,7 +43,7 @@ async function constructConference(inputs: ActionInputs): Promise<Conference> {
       buffer_days_before: inputs.daysBefore,
       buffer_days_after: inputs.daysAfter,
       ticket_price: inputs.ticketPrice,
-      origin: process.env.ORIGIN ?? "Seoul, South Korea", // Default origin
+      origin: process.env.INPUT_ORIGIN ?? "Seoul, South Korea", // Default origin
       includeBudget: inputs.includeBudget
     };
 }
@@ -84,8 +84,8 @@ async function main() {
     // Get inputs from environment variables (set by GitHub Actions)
     const inputs = getActionInputs();
 
-    if (!inputs.location || !inputs.conferenceName || !inputs.conferenceStart) {
-      throw new Error("Missing required inputs: location, conference name, and start date are required");
+    if (!inputs.location || !inputs.conferenceStart) {
+      throw new Error("Missing required inputs: destination and start date are required");
     }
 
     // Construct conference object

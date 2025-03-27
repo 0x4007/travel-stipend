@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       origin:
-        description: 'Origin city for travel calculations'
+        description: 'Origin city for travel calculations (i.e. Seoul)'
         required: true
         type: string
       destination:

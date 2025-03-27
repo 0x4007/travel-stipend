@@ -5,7 +5,7 @@ import sonarjs from "eslint-plugin-sonarjs";
 import tsEslint from "typescript-eslint";
 
 export default tsEslint.config({
-  files: ["**/*.ts"],
+  files: ["**/*.ts", "**/*.d.ts"],
   ignores: ["**/*.js", ".github/**.ts", "src/utils/google-flights-scraper/**/*", "tests/*.ts", ".github/actions/calculate-stipend/index.js"],
   plugins: {
     "@typescript-eslint": tsEslint.plugin,
@@ -18,13 +18,14 @@ export default tsEslint.config({
       project: ["./tsconfig.json"],
       allowDefaultProject: ["*.mjs"],
       tsconfigRootDir: import.meta.dirname,
+      createDefaultProgram: true,
     },
   },
   rules: {
     "check-file/filename-naming-convention": [
       "error",
       {
-        "**/*.{js,ts}": "+([-._a-z0-9])",
+        "**/*.{js,ts,d.ts}": "+([-._a-z0-9])",
       },
     ],
     "prefer-arrow-callback": ["warn", { allowNamedFunctions: true }],

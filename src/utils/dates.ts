@@ -1,59 +1,67 @@
 import { Conference } from "../types";
 import { TRAVEL_STIPEND } from "./constants";
 
+// Calculate appropriate year based on date components and current date
+function calculateYear(monthNumber: number, day: number, specifiedYear: number | undefined): number {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth();
+  const currentDay = currentDate.getDate();
+
+  if (specifiedYear) return specifiedYear;
+
+  // Use next year if the date has already passed this year
+  if (monthNumber < currentMonth || (monthNumber === currentMonth && day <= currentDay)) {
+    return currentYear + 1;
+  }
+
+  return currentYear;
+}
+
+// Parse ISO format date string
+function parseIsoDate(dateStr: string): Date | null {
+  const date = new Date(dateStr);
+  if (!isNaN(date.getTime())) {
+    date.setFullYear(new Date().getFullYear());
+    return date;
+  }
+  return null;
+}
+
 // Parse date string into a Date object, using next year if date has passed
 function parseDate(dateStr: string | undefined | null): Date | null {
   if (!dateStr?.trim()) return null;
 
-  // First try parsing as ISO format (YYYY-MM-DD)
-  let date = new Date(dateStr);
-  if (!isNaN(date.getTime())) {
-    // Ensure we're using current year for ISO dates too
-    const currentYear = new Date().getFullYear();
-    date.setFullYear(currentYear);
-    return date;
-  }
+  // Try ISO format first
+  const isoDate = parseIsoDate(dateStr);
+  if (isoDate) return isoDate;
 
-  // If that fails, try parsing as "DD Month YYYY" format
+  // Try "DD Month YYYY" format
   const parts = dateStr.split(' ');
-  if (parts.length >= 2) {
-    const day = parseInt(parts[0]);
-    const month = parts[1];
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    console.log('Parsing date:', { dateStr, currentYear, currentDate: currentDate.toISOString() });
+  if (parts.length < 2) return null;
 
-    // Get current month and day
-    const currentMonth = currentDate.getMonth(); // 0-11
-    const currentDay = currentDate.getDate();
+  const day = parseInt(parts[0]);
+  const month = parts[1];
+  const specifiedYear = parts[2] ? parseInt(parts[2]) : undefined;
 
-    // Create a test date with current year to get month number
-    const testDate = new Date(`${month} 1, ${currentYear}`);
-    if (isNaN(testDate.getTime())) {
-      console.warn(`Invalid month name: ${month}`);
-      return null;
+  // Get month number
+  const testDate = new Date(`${month} 1, ${new Date().getFullYear()}`);
+  if (isNaN(testDate.getTime())) {
+    console.warn(`Invalid month name: ${month}`);
+    return null;
+  }
+  const monthNumber = testDate.getMonth();
+
+  // Calculate appropriate year
+  const year = calculateYear(monthNumber, day, specifiedYear);
+
+  // Create and validate final date
+  const date = new Date(year, monthNumber, day);
+  if (!isNaN(date.getTime())) {
+    if (date.getFullYear() !== year) {
+      date.setFullYear(year);
     }
-    const monthNumber = testDate.getMonth();
-
-    // Use specified year or calculate based on current date
-    let year = parts[2] ? parseInt(parts[2]) : currentYear;
-
-    // If no year specified and the date has passed this year, use next year
-    if (!parts[2] && (monthNumber < currentMonth || (monthNumber === currentMonth && day <= currentDay))) {
-      year = currentYear + 1;
-    }
-
-    // Create final date using the determined year
-    date = new Date(year, monthNumber, day);
-    console.log('Created date:', { year, monthNumber, day, result: date.toISOString() });
-
-    if (!isNaN(date.getTime())) {
-      // Double check year is set correctly
-      if (date.getFullYear() !== year) {
-        date.setFullYear(year);
-      }
-      return date;
-    }
+    return date;
   }
 
   console.warn(`Could not parse date: ${dateStr}`);
