@@ -53,22 +53,13 @@ jobs:
           submodules: "recursive"
       - uses: oven-sh/setup-bun@v1
 
-      - name: Install jq
-        run: sudo apt-get install -y jq
-
       - name: Process Inputs
         id: set-matrix
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
             # Use test events for push triggers
-            echo "Using test events for push trigger"
-            # Write properly formatted JSON to file
-            echo '${{ env.TEST_EVENTS }}' | jq '.' > test_events.json
-            if [ $? -ne 0 ]; then
-              echo "Error: Failed to create test events JSON file"
-              exit 1
-            fi
-            matrix=$(bun .github/scripts/generate-stipend-matrix.ts --test-events test_events.json 2>/dev/null)
+            echo "Using test events from .github/test-events.json"
+            matrix=$(bun .github/scripts/generate-stipend-matrix.ts --test-events .github/test-events.json 2>/dev/null)
             if [ $? -ne 0 ]; then
               echo "Error: Failed to generate matrix from test events"
               exit 1
@@ -118,11 +109,29 @@ jobs:
           INPUT_OUTPUT_FORMAT: "json"
         id: calculate
         run: |
+          echo "::group::Starting calculation for ${{ matrix.destination }} (${{ matrix.startDate }})"
+          echo "Input parameters:"
+          echo "Origin: ${{ matrix.origin }}"
+          echo "Destination: ${{ matrix.destination }}"
+          echo "Dates: ${{ matrix.startDate }} to ${{ matrix.endDate }}"
+          echo "Ticket price: ${{ matrix.price }}"
+
           # Run once with JSON output and save to file
+          echo "Running calculation and saving to results-${{ matrix.destination }}-${{ matrix.startDate }}.json"
           bun src/github-action-handler.ts --output-file "results-${{ matrix.destination }}-${{ matrix.startDate }}.json"
+          echo "Calculation complete, output saved"
 
           # For logs, run again with table format
+          echo "::group::Detailed calculation results"
           bun src/github-action-handler.ts --output-format table
+          echo "::endgroup::"
+          echo "::endgroup::"
+
+      - name: Prepare Upload
+        run: |
+          echo "Preparing to upload result artifact: result-${{ matrix.destination }}-${{ matrix.startDate }}"
+          ls -la results-${{ matrix.destination }}-${{ matrix.startDate }}.json
+          echo "File size: $(wc -c <results-${{ matrix.destination }}-${{ matrix.startDate }}.json) bytes"
 
       - name: Upload Result
         uses: actions/upload-artifact@v4
@@ -144,6 +153,12 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Prepare for Download
+        run: |
+          echo "Preparing to download result artifacts to matrix-results/"
+          mkdir -p matrix-results
+          ls -la matrix-results/
+
       - name: Download All Results
         uses: actions/download-artifact@v4
         with:
@@ -151,13 +166,25 @@ jobs:
           pattern: result-*
           merge-multiple: true
 
+      - name: Verify Download
+        run: |
+          echo "Downloaded artifacts:"
+          ls -la matrix-results/
+          echo "Total files: $(ls matrix-results/ | wc -l)"
+
       - name: Create Sample Results Directory
         run: |
           mkdir -p sample-results
           cp matrix-results/results-*.json sample-results/ || true
 
       - name: Consolidate Results
-        run: bun .github/scripts/consolidate-stipend-results.ts
+        run: |
+          echo "::group::Consolidating all results"
+          echo "Input files:"
+          ls -la matrix-results/
+          bun .github/scripts/consolidate-stipend-results.ts
+          echo "Consolidation complete"
+          echo "::endgroup::"
 
       - name: Upload Consolidated Results
         uses: actions/upload-artifact@v4
