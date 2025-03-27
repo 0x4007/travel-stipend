@@ -12,3 +12,5 @@ cypress/screenshots
 outputs
 logs
 test-screenshots
+*.log
+dom-captures

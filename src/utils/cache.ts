@@ -1,103 +1,70 @@
+import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 
-// Helper function to check if a timestamp is within six hours
-export function isWithinSixHours(timestamp: string): boolean {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const sixHoursInMs = 6 * 60 * 60 * 1000;
-  return now.getTime() - date.getTime() < sixHoursInMs;
+/**
+ * Creates a hash key for caching values based on input parameters
+ */
+export function createHashKey(values: (string | number | undefined)[]): string {
+  const stringValues = values.map((v) => v?.toString() ?? "undefined").join("|");
+  return crypto.createHash("sha256").update(stringValues).digest("hex");
 }
 
-interface MemoryCache<T> {
-  [key: string]: {
-    value: T;
-    timestamp: number;
-  };
-}
-
-class CacheStore<T> {
-  private _entries: MemoryCache<T> = {};
-
-  set(key: string, value: T): void {
-    this._entries[key] = {
-      value,
-      timestamp: Date.now(),
-    };
-  }
-
-  get(key: string): T | null {
-    const entry = this._entries[key];
-    return entry ? entry.value : null;
-  }
-
-  getAllEntries(): MemoryCache<T> {
-    return this._entries;
-  }
-}
-
+/**
+ * A cache implementation that persists data to disk
+ */
 export class PersistentCache<T> {
-  private _memoryCache: CacheStore<T>;
-  private _filePath: string;
+  private _cache: Map<string, T>;
+  private _filepath: string;
 
-  constructor(filePath: string) {
-    this._memoryCache = new CacheStore<T>();
-    this._filePath = filePath;
-    this._createCacheDir();
+  constructor(filepath: string) {
+    this._filepath = filepath;
+    this._cache = new Map<string, T>();
     this._loadFromDisk();
-  }
-
-  private _createCacheDir(): void {
-    const dir = path.dirname(this._filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
   }
 
   private _loadFromDisk(): void {
     try {
-      if (fs.existsSync(this._filePath)) {
-        const data = fs.readFileSync(this._filePath, 'utf-8');
-        const cache = JSON.parse(data) as MemoryCache<T>;
-
-        // Load entries into memory cache
-        Object.entries(cache).forEach(([key, entry]) => {
-          this._memoryCache.set(key, entry.value);
-        });
+      if (fs.existsSync(this._filepath)) {
+        const data = JSON.parse(fs.readFileSync(this._filepath, "utf-8"));
+        this._cache = new Map(Object.entries(data));
       }
     } catch (error) {
-      console.error(`Error loading cache from ${this._filePath}:`, error);
+      console.error(`Error loading cache from ${this._filepath}:`, error);
+      // Start with empty cache if file can't be loaded
+      this._cache = new Map<string, T>();
     }
   }
 
-  get(key: string): T | null {
-    return this._memoryCache.get(key);
-  }
-
-  set(key: string, value: T): void {
-    this._memoryCache.set(key, value);
-  }
-
-  getAllEntries(): MemoryCache<T> {
-    return this._memoryCache.getAllEntries();
-  }
-
-  saveToDisk(): void {
+  public saveToDisk(): void {
     try {
-      // Get all entries from the memory cache
-      const cacheObject = this._memoryCache.getAllEntries();
+      // Create directory if it doesn't exist
+      const dir = path.dirname(this._filepath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
 
-      // Create cache directory if it doesn't exist
-      this._createCacheDir();
-
-      // Write to disk
-      fs.writeFileSync(this._filePath, JSON.stringify(cacheObject, null, 2));
+      // Convert Map to object for JSON serialization
+      const data = Object.fromEntries(this._cache);
+      fs.writeFileSync(this._filepath, JSON.stringify(data, null, 2));
     } catch (error) {
-      console.error(`Error saving cache to ${this._filePath}:`, error);
+      console.error(`Error saving cache to ${this._filepath}:`, error);
     }
   }
-}
 
-export function createHashKey(parts: (string | number | undefined)[]): string {
-  return parts.map(part => String(part ?? '')).join('|');
+  public get(key: string): T | undefined {
+    return this._cache.get(key);
+  }
+
+  public set(key: string, value: T): void {
+    this._cache.set(key, value);
+  }
+
+  public has(key: string): boolean {
+    return this._cache.has(key);
+  }
+
+  public clear(): void {
+    this._cache.clear();
+  }
 }

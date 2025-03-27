@@ -1,15 +1,16 @@
 // @ts-check
 import eslint from "@eslint/js";
-import tsEslint from "typescript-eslint";
-import sonarjs from "eslint-plugin-sonarjs";
 import checkFile from "eslint-plugin-check-file";
+import sonarjs from "eslint-plugin-sonarjs";
+import tsEslint from "typescript-eslint";
 
 export default tsEslint.config({
+  files: ["**/*.ts"],
+  ignores: ["**/*.js", ".github/**.ts", "src/utils/google-flights-scraper/**/*", "tests/*.ts", ".github/actions/calculate-stipend/index.js"],
   plugins: {
     "@typescript-eslint": tsEslint.plugin,
     "check-file": checkFile,
   },
-  ignores: ["**/*.js", ".github/**.ts"],
   extends: [eslint.configs.recommended, ...tsEslint.configs.recommended, sonarjs.configs.recommended],
   languageOptions: {
     parser: tsEslint.parser,

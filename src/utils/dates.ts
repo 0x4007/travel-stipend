@@ -1,69 +1,82 @@
-import { DEFAULT_CONFERENCE_DAYS } from "./constants";
-import { Conference } from "./types";
+import { Conference } from "../types";
+import { TRAVEL_STIPEND } from "./constants";
 
-// Parse date strings like "18 February" to a Date object
-function parseDate(dateStr: string, year = new Date().getFullYear()): Date | null {
-  if (!dateStr || dateStr.trim() === "") {
-    return null;
+// Parse date string into a Date object, using next year if date has passed
+function parseDate(dateStr: string | undefined | null): Date | null {
+  if (!dateStr?.trim()) return null;
+
+  // First try parsing as ISO format (YYYY-MM-DD)
+  let date = new Date(dateStr);
+  if (!isNaN(date.getTime())) {
+    return date;
   }
 
-  // Add the year to the date string
-  const fullDateStr = `${dateStr} ${year}`;
+  // If that fails, try parsing as "DD Month YYYY" format
+  const parts = dateStr.split(' ');
+  if (parts.length >= 2) {
+    const day = parseInt(parts[0]);
+    const month = parts[1];
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
 
-  try {
-    return new Date(fullDateStr);
-  } catch (error) {
-    console.error(`Error parsing date: ${dateStr}`, error);
-    return null;
+    // Get current month and day
+    const currentMonth = currentDate.getMonth(); // 0-11
+    const currentDay = currentDate.getDate();
+
+    // Convert month name to number (0-11)
+    const monthNumber = new Date(`${month} 1, 2000`).getMonth();
+
+    // Use specified year or calculate based on current date
+    let year = parts[2] ? parseInt(parts[2]) : currentYear;
+
+    // If no year specified and the date has passed this year, use next year
+    if (!parts[2] && (monthNumber < currentMonth || (monthNumber === currentMonth && day <= currentDay))) {
+      year = currentYear + 1;
+    }
+
+    date = new Date(`${month} ${day}, ${year}`);
+
+    if (!isNaN(date.getTime())) {
+      return date;
+    }
   }
+
+  console.warn(`Could not parse date: ${dateStr}`);
+  return null;
 }
 
-// Calculate the difference in days between two dates
-export function calculateDateDiff(startDateStr: string, endDateStr: string): number {
-  const start = parseDate(startDateStr);
-
-  // If end date is empty, assume the conference is defaultDays days long
-  if (!endDateStr || endDateStr.trim() === "") {
-    if (start) {
-      const end = new Date(start);
-      end.setDate(end.getDate() + DEFAULT_CONFERENCE_DAYS - 1); // -1 because the start day counts as day 1
-      return DEFAULT_CONFERENCE_DAYS - 1; // Return nights (days - 1)
-    }
-    return DEFAULT_CONFERENCE_DAYS - 1; // Default to defaultDays - 1 nights
+// Calculate number of nights between two dates
+export function calculateDateDiff(startDateStr: string, endDateStr: string | undefined | null): number {
+  if (!endDateStr?.trim()) {
+    return TRAVEL_STIPEND.conference.defaultDays - 1; // Default to conference days minus 1 for nights
   }
 
+  const start = parseDate(startDateStr);
   const end = parseDate(endDateStr);
 
   if (!start || !end) {
-    console.warn(`Could not parse dates: ${startDateStr} - ${endDateStr}, using default of ${DEFAULT_CONFERENCE_DAYS} days`);
-    return DEFAULT_CONFERENCE_DAYS - 1; // Default to defaultDays - 1 nights
+    console.warn(`Could not parse dates: ${startDateStr} - ${endDateStr}`);
+    return TRAVEL_STIPEND.conference.defaultDays - 1;
   }
 
   const msPerDay = 24 * 60 * 60 * 1000;
-  const diffInMs = end.getTime() - start.getTime();
-  const diffInDays = Math.round(diffInMs / msPerDay) + 1; // +1 because both start and end days are inclusive
-
-  return diffInDays - 1; // Convert days to nights
+  return Math.round((end.getTime() - start.getTime()) / msPerDay);
 }
 
-// Calculate meal allowance based on day index (for duration-based scaling) - removed as unused
-
-// Generate flight dates for a conference (with customizable buffer days)
+// Generate travel dates for a conference with buffer days
 export function generateFlightDates(conference: Conference, isOriginCity = false): { outbound: string; return: string } {
   const startDate = parseDate(conference.start_date);
   if (!startDate) {
     throw new Error("Invalid start date");
   }
 
-  const endDate = conference.end_date ? parseDate(conference.end_date) : new Date(startDate);
-  if (!endDate) {
-    throw new Error("Invalid conference dates");
-  }
+  const endDateParsed = parseDate(conference.end_date);
+  const endDate = endDateParsed ?? startDate;
 
   // Get buffer days from the conference record, or use defaults
   // Always enforce minimum of 1 day before AND 1 day after to prevent flying on conference days
-  let bufferDaysBefore = conference.buffer_days_before ?? 1; // Default: 1 day before
-  let bufferDaysAfter = conference.buffer_days_after ?? 1;   // Default: 1 day after
+  let bufferDaysBefore = conference.buffer_days_before ?? TRAVEL_STIPEND.conference.preDays; // Default: 1 day before
+  let bufferDaysAfter = conference.buffer_days_after ?? TRAVEL_STIPEND.conference.postDays; // Default: 1 day after
 
   // Safety check: require at least 1 day before and 1 day after for flights
   if (bufferDaysBefore === 0) {
@@ -76,25 +89,21 @@ export function generateFlightDates(conference: Conference, isOriginCity = false
     bufferDaysAfter = 1; // Force at least one buffer day after
   }
 
-  // For origin city conferences, use the actual conference dates
-  // For non-origin city conferences, add buffer days
+  // Set departure to day before conference (or same day for local events)
   const outboundDate = new Date(startDate);
   if (!isOriginCity && bufferDaysBefore > 0) {
     outboundDate.setDate(startDate.getDate() - bufferDaysBefore);
   }
 
-  // Set return date to specified days after conference (or same day for origin city)
+  // Set return to day after conference (or same day for local events)
   const returnDate = new Date(endDate);
   if (!isOriginCity && bufferDaysAfter > 0) {
     returnDate.setDate(endDate.getDate() + bufferDaysAfter);
   }
 
-  // Format dates as YYYY-MM-DD in local timezone
+  // Format dates as YYYY-MM-DD
   function formatDate(date: Date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+    return date.toISOString().split("T")[0];
   }
 
   return {

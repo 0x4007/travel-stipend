@@ -1,59 +1,100 @@
-name: Travel Stipend Calculator
+name: Calculate Travel Stipend
+
 on:
   workflow_dispatch:
     inputs:
       location:
-        description: 'Destination location (e.g. "Singapore, SG")'
+        description: 'Conference location'
         required: true
-        type: string
-      conference_start:
-        description: 'Conference start date (e.g. "20 May 2025")'
-        required: true
-        type: string
-      conference_end:
-        description: 'Conference end date'
-        required: false
         type: string
       conference_name:
         description: 'Conference name'
+        required: true
+        type: string
+      conference_start:
+        description: 'Conference start date (YYYY-MM-DD)'
+        required: true
+        type: string
+      conference_end:
+        description: 'Conference end date (YYYY-MM-DD)'
         required: false
         type: string
       days_before:
-        description: 'Days to arrive before conference'
+        description: 'Buffer days before conference'
         required: false
         type: number
         default: 1
       days_after:
-        description: 'Days to leave after conference'
+        description: 'Buffer days after conference'
         required: false
         type: number
         default: 1
       ticket_price:
         description: 'Conference ticket price'
         required: false
-        type: number
+        type: string
+        default: '0'
+      output_format:
+        description: 'Output format (table, json, csv)'
+        required: false
+        type: choice
+        options:
+          - table
+          - json
+          - csv
+        default: 'table'
+      include_budget:
+        description: 'Include budget airlines in flight search'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   calculate:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - uses: oven-sh/setup-bun@v1
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: bun install
 
-      - name: Run travel stipend calculator
-        id: stipend-calculator
+      - name: Setup Chrome and Xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb chromium-browser
+
+      - name: Calculate Stipend
         env:
-          INPUT_LOCATION: ${{ github.event.inputs.location }}
-          INPUT_CONFERENCE_START: ${{ github.event.inputs.conference_start }}
-          INPUT_CONFERENCE_END: ${{ github.event.inputs.conference_end || github.event.inputs.conference_start }}
-          INPUT_CONFERENCE_NAME: ${{ github.event.inputs.conference_name }}
-          INPUT_DAYS_BEFORE: ${{ github.event.inputs.days_before }}
-          INPUT_DAYS_AFTER: ${{ github.event.inputs.days_after }}
-          INPUT_TICKET_PRICE: ${{ github.event.inputs.ticket_price }}
-        run: bun src/github-action-handler.ts
+          INPUT_LOCATION: ${{ inputs.location }}
+          INPUT_CONFERENCE_NAME: ${{ inputs.conference_name }}
+          INPUT_CONFERENCE_START: ${{ inputs.conference_start }}
+          INPUT_CONFERENCE_END: ${{ inputs.conference_end }}
+          INPUT_DAYS_BEFORE: ${{ inputs.days_before }}
+          INPUT_DAYS_AFTER: ${{ inputs.days_after }}
+          INPUT_TICKET_PRICE: ${{ inputs.ticket_price }}
+          INPUT_OUTPUT_FORMAT: ${{ inputs.output_format }}
+          INPUT_INCLUDE_BUDGET: ${{ inputs.include_budget }}
+          ORIGIN: 'Seoul, South Korea'
+          CHROME_PATH: /usr/bin/chromium-browser
+          DISPLAY: ':99.0'
+        run: |
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          bun src/github-action-handler.ts
+
+      - name: Upload Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-screenshots
+          path: |
+            screenshots/
+            dom-captures/
+          retention-days: 5

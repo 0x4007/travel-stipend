@@ -1,16 +1,16 @@
-import { DatabaseService } from '../src/utils/database';
-import fs from 'fs';
-import path from 'path';
+import { DatabaseService } from "../src/utils/database";
+import fs from "fs";
+import path from "path";
 
 async function reinitializeDatabase() {
   // Delete existing database file
-  const dbPath = path.join(process.cwd(), 'db', 'travel-stipend.db');
+  const dbPath = path.join(process.cwd(), "db", "travel-stipend.db");
   if (fs.existsSync(dbPath)) {
-    console.log('Removing existing database...');
+    console.log("Removing existing database...");
     fs.unlinkSync(dbPath);
-    console.log('Database file removed.');
+    console.log("Database file removed.");
   } else {
-    console.log('No existing database found, will create a new one.');
+    console.log("No existing database found, will create a new one.");
   }
 
   // Initialize database service (this will create new tables and import data)
@@ -22,7 +22,7 @@ async function reinitializeDatabase() {
   // Close the connection
   await db.close();
 
-  console.log('Database reinitialized successfully');
+  console.log("Database reinitialized successfully");
 }
 
 reinitializeDatabase().catch(console.error);

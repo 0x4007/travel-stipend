@@ -1,11 +1,11 @@
-import { BASE_LOCAL_TRANSPORT_PER_DAY } from "./constants";
+import { TRAVEL_STIPEND } from "./constants";
 import { DatabaseService } from "./database";
 
 export async function calculateLocalTransportCost(
   city: string,
   numberOfDays: number,
   colFactor: number,
-  baseRate = BASE_LOCAL_TRANSPORT_PER_DAY
+  baseRate = TRAVEL_STIPEND.costs.transport
 ): Promise<number> {
   try {
     const taxiRates = await DatabaseService.getInstance().getTaxiRates(city);
@@ -16,9 +16,7 @@ export async function calculateLocalTransportCost(
     }
 
     // Calculate average trip cost using taxi rates
-    const averageTripCost =
-      taxiRates.base_fare +
-      (taxiRates.per_km_rate * taxiRates.typical_trip_km);
+    const averageTripCost = taxiRates.base_fare + taxiRates.per_km_rate * taxiRates.typical_trip_km;
 
     // Assume 2 trips per day (to and from conference)
     const dailyCost = averageTripCost * 2;
