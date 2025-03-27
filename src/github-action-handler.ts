@@ -48,6 +48,32 @@ async function constructConference(inputs: ActionInputs): Promise<Conference> {
   };
 }
 
+// Helper function to format currency values
+const formatCurrency = (value: number) => `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+// Helper function to create table rows with proper padding and borders
+function formatTableRow(label: string, value: string, isHeader = false, isTotal = false): string {
+  const labelColumn = label.padEnd(20);
+  const valueColumn = value.padStart(25);
+  let border = "│";
+  if (isHeader) {
+    border = "├";
+  } else if (isTotal) {
+    border = "└";
+  }
+  return `${border} ${labelColumn} │ ${valueColumn} │`;
+}
+
+// Helper function to create section headers with proper formatting
+function formatSectionHeader(title: string, isFirst = false): string {
+  const topBorder = isFirst ? "┌" : "├";
+  return [
+    `${topBorder}${"─".repeat(22)}┬${"─".repeat(27)}┐`,
+    `│ ${title.padEnd(21)} │${" ".repeat(27)}│`,
+    `├${"─".repeat(22)}┼${"─".repeat(27)}┤`
+  ].join("\n");
+}
+
 function formatOutput(result: StipendBreakdown, format: string): string {
   switch (format.toLowerCase()) {
     case "json": {
@@ -60,39 +86,39 @@ function formatOutput(result: StipendBreakdown, format: string): string {
     }
     case "table":
     default: {
-      let output = "\nStipend Calculation Results:\n";
-      output += "-".repeat(50) + "\n\n";
+      const rows: string[] = [];
 
-      // Group 1: Conference Info
-      output += `Conference: ${result.conference}\n`;
-      output += `Location: ${result.location}\n`;
-      output += `Conference Start: ${result.conference_start}\n`;
-      output += `Conference End: ${result.conference_end}\n\n`;
+      // Conference Details Section
+      rows.push(formatSectionHeader("Conference Details", true));
+      rows.push(formatTableRow("Name", result.conference));
+      rows.push(formatTableRow("Location", result.location));
+      rows.push(formatTableRow("Start Date", result.conference_start));
+      rows.push(formatTableRow("End Date", result.conference_end || result.conference_start));
 
-      // Group 2: Travel Dates
-      output += `Flight Departure: ${result.flight_departure}\n`;
-      output += `Flight Return: ${result.flight_return}\n\n`;
+      // Travel Dates Section
+      rows.push(formatSectionHeader("Travel Dates"));
+      rows.push(formatTableRow("Departure", result.flight_departure));
+      rows.push(formatTableRow("Return", result.flight_return));
 
-      // Group 3: Travel Costs
-      const formatCurrency = (value: number) => `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      // Travel Costs Section
+      rows.push(formatSectionHeader("Travel Costs"));
+      rows.push(formatTableRow("Flight", `${formatCurrency(result.flight_cost)} (${result.flight_price_source})`));
+      rows.push(formatTableRow("Lodging", formatCurrency(result.lodging_cost)));
+      rows.push(formatTableRow("Meals", formatCurrency(result.meals_cost)));
+      rows.push(formatTableRow("Local Transport", formatCurrency(result.local_transport_cost)));
 
-      output += "Travel Costs:\n";
-      output += `Flight Cost: ${formatCurrency(result.flight_cost)} (Source: ${result.flight_price_source})\n`;
-      output += `Lodging Cost: ${formatCurrency(result.lodging_cost)}\n`;
-      output += `Meals Cost: ${formatCurrency(result.meals_cost)}\n`;
-      output += `Local Transport Cost: ${formatCurrency(result.local_transport_cost)}\n\n`;
+      // Additional Costs Section
+      rows.push(formatSectionHeader("Additional Costs"));
+      rows.push(formatTableRow("Conference Ticket", formatCurrency(result.ticket_price)));
+      rows.push(formatTableRow("Internet Data", formatCurrency(result.internet_data_allowance)));
+      rows.push(formatTableRow("Incidentals", formatCurrency(result.incidentals_allowance)));
 
-      // Group 4: Additional Costs
-      output += "Additional Costs:\n";
-      output += `Conference Ticket: ${formatCurrency(result.ticket_price)}\n`;
-      output += `Internet Data: ${formatCurrency(result.internet_data_allowance)}\n`;
-      output += `Incidentals: ${formatCurrency(result.incidentals_allowance)}\n\n`;
+      // Total Section
+      rows.push(`├${"─".repeat(22)}┼${"─".repeat(27)}┤`);
+      rows.push(formatTableRow("Total Stipend", formatCurrency(result.total_stipend), false, true));
+      rows.push(`└${"─".repeat(22)}┴${"─".repeat(27)}┘`);
 
-      // Group 5: Total
-      output += `Total Stipend: ${formatCurrency(result.total_stipend)}\n`;
-
-      output += "\n" + "-".repeat(50);
-      return output;
+      return "\n" + rows.join("\n");
     }
   }
 }
