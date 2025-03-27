@@ -36,9 +36,14 @@ env:
     [
       {"name": "Asia Blockchain Summit", "origin": "seoul", "destination": "taipei", "start": "Aug 6", "end": "Aug 8", "price": "0"},
       {"name": "Korea Blockchain Week", "origin": "seoul", "destination": "seoul", "start": "Sep 1", "end": "Sep 7", "price": "0"},
-      {"name": "TOKEN2049 Singapore", "origin": "seoul", "destination": "singapore", "start": "Sep 18", "end": "Sep 19", "price": "0"},
-      {"name": "GitHub Universe", "origin": "seoul", "destination": "san francisco", "start": "Oct 29", "end": "Oct 30", "price": "0"},
-      {"name": "Devcon 7 Bangkok", "origin": "san francisco", "destination": "bangkok", "start": "Nov 12", "end": "Nov 15", "price": "0"},
+      {"name": "Korea Blockchain Week", "origin": "seoul", "destination": "seoul", "start": "Sep 1", "end": "Sep 7", "price": "0"},
+      {"name": "TOKEN2049 Singapore", "origin": "seoul", "destination": "singapore", "start": "Sep 18", "end": "Sep 19", "price": "599"},
+      {"name": "TOKEN2049 Singapore", "origin": "seoul", "destination": "singapore", "start": "Sep 18", "end": "Sep 19", "price": "599"},
+      {"name": "GitHub Universe", "origin": "seoul", "destination": "san francisco", "start": "Oct 29", "end": "Oct 30", "price": "1300"},
+      {"name": "GitHub Universe", "origin": "seoul", "destination": "san francisco", "start": "Oct 29", "end": "Oct 30", "price": "1300"},
+      {"name": "Devcon 7 Bangkok", "origin": "san francisco", "destination": "bangkok", "start": "Nov 12", "end": "Nov 15", "price": "284.76"},
+      {"name": "Devcon 7 Bangkok", "origin": "seoul", "destination": "bangkok", "start": "Nov 12", "end": "Nov 15", "price": "284.76"},
+      {"name": "Consensus Hong Kong", "origin": "seoul", "destination": "hong kong", "start": "Feb 18", "end": "Feb 20", "price": "500"},
       {"name": "Consensus Hong Kong", "origin": "seoul", "destination": "hong kong", "start": "Feb 18", "end": "Feb 20", "price": "0"}
     ]
 
@@ -157,7 +162,8 @@ jobs:
 
           # Sanitize the date for use in filenames
           SAFE_DATE=$(echo "${{ matrix.startDate }}" | sed 's/\//-/g')
-          OUTPUT_FILENAME="results-${{ matrix.destination }}-${SAFE_DATE}.json"
+          # Include origin and job index in the filename for uniqueness
+          OUTPUT_FILENAME="results-${{ matrix.origin }}-${{ matrix.destination }}-${SAFE_DATE}-${{ strategy.job-index }}.json"
           echo "SAFE_DATE=${SAFE_DATE}" >> $GITHUB_ENV # Set ENV var
           echo "OUTPUT_FILENAME=${OUTPUT_FILENAME}" >> $GITHUB_ENV # Set ENV var
 
@@ -181,7 +187,8 @@ jobs:
       - name: Upload Result
         uses: actions/upload-artifact@v4
         with:
-          name: result-${{ matrix.origin }}-${{ matrix.destination }}-${{ env.SAFE_DATE }}-${{ strategy.job-index }} # Added job index for absolute uniqueness
+          # Match artifact name to the unique filename
+          name: ${{ env.OUTPUT_FILENAME }}
           path: ${{ env.OUTPUT_FILENAME }} # Use OUTPUT_FILENAME ENV var
           retention-days: 5
 
@@ -220,8 +227,8 @@ jobs:
       - name: Create Sample Results Directory
         run: |
           mkdir -p sample-results
-          # Use find to handle filenames with spaces safely
-          find matrix-results -name 'results-*.json' -exec cp {} sample-results/ \; || true
+          # Use find to handle filenames with spaces safely, matching the new pattern
+          find matrix-results -name 'results-*-*-*-*.json' -exec cp {} sample-results/ \; || true
 
       - name: Consolidate Results
         run: |
