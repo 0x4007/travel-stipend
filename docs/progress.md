@@ -4,281 +4,140 @@
 
 ### Core Functionality
 
-✅ **Basic Stipend Calculation**
+✅ **Stipend Calculation Logic (`src/travel-stipend-calculator.ts`)**
 
-- Flight cost calculation based on distance
-- Lodging cost calculation with cost-of-living adjustment
-- Meal cost calculation with basic and business components
-- Local transportation cost calculation
-- Conference ticket price inclusion
+-   Calculates flight cost via Google Flights scraping (with $0 fallback).
+-   Calculates lodging cost with cost-of-living and weekend adjustments.
+-   Calculates meal costs (basic + business) with cost-of-living adjustments and duration scaling.
+-   Calculates local transport cost based on taxi data or fallback.
+-   Includes ticket price from input.
+-   Adds allowances for internet and incidentals based on duration and international travel.
 
-✅ **Data Processing**
+✅ **Data Persistence & Management**
 
-- CSV parsing for conference data
-- Filtering for upcoming conferences
-- Sorting results by any column
-- Reverse sort option
+-   SQLite database (`db/travel-stipend.db`) stores reference data (CoL, coordinates, taxis, conferences).
+-   Automatic database initialization and data import from `fixtures/*.csv` on first run/empty tables.
+-   JSON-based caching (`fixtures/cache/`) for calculated stipends, flight prices, distances, CoL factors, coordinates.
 
-✅ **Caching System**
+✅ **Flight Price Lookup (`src/utils/flights.ts`, `src/utils/google-flights-scraper/`)**
 
-- Distance cache implementation
-- Cost-of-living cache implementation
-- Coordinates cache implementation
-- Stipend cache implementation
-- Persistent JSON storage for caches
+-   Integrates Puppeteer-based Google Flights scraper (via submodule).
+-   Handles scraper errors gracefully, falling back to $0 flight cost.
+-   Includes utilities for running in GitHub Actions (screenshots, retries).
 
-✅ **Flight Price Lookup**
+✅ **Command Line Interface (`src/travel-stipend-cli.ts`)**
 
-- Google Flights scraper integration
-- Fallback to `0` cost when scraping fails (Note: Distance-based fallback is documented elsewhere but not implemented in this path).
-- Flight date generation based on conference dates
-- Average price calculation for multiple flights
-- Flight price source tracking in output
+-   Accepts origin, destination, dates, ticket price, buffer days via arguments.
+-   Outputs results in JSON, CSV, or formatted console table.
+-   Includes verbose logging option.
 
-✅ **City Matching**
+✅ **GitHub Actions Workflow (`.github/workflows/batch-travel-stipend.yml`)**
 
-- Exact city name matching
-- Variant city name matching
-- Fuzzy matching with similarity threshold
-- Error handling for unmatched cities
+-   Triggers on `push` (using `.github/test-events.json`) or `workflow_dispatch`.
+-   Uses a matrix strategy to run multiple calculations in parallel (`calculate` job).
+-   Generates unique filenames/artifact names for each job result.
+-   Consolidates results from all jobs (`consolidate` job).
+-   Generates Markdown, JSON, and CSV consolidated reports.
+-   Uploads individual and consolidated results as artifacts.
+-   **Callback:** Sends consolidated results via POST to a configured URL (`PROXY_CALLBACK_URL`) using a shared secret (`PROXY_CALLBACK_SECRET`) if triggered with a `clientId`.
 
-✅ **Output Generation**
+✅ **Web UI Trigger Mechanism**
 
-- CSV file output with timestamp (Includes 'Origin', 'Destination')
-- Console table display (Includes 'Origin', 'Destination')
-- Detailed cost breakdown
-- Flight price source information
+-   **Static UI (`ui/`):** HTML form for input, CSS for styling (dark mode), JS (`ui/script.js`) for interaction.
+-   **Proxy Function (`api/trigger-workflow.ts`):**
+    -   Deno Deploy function serves static UI and API endpoint.
+    -   Receives UI requests via WebSocket (`/ws`).
+    -   Authenticates with GitHub using GitHub App credentials.
+    -   Triggers `batch-travel-stipend.yml` via `workflow_dispatch`, passing UI inputs and a unique `clientId`.
+    -   Receives results back from the Action via HTTP POST callback (`/api/workflow-complete`).
+    -   Authenticates callback using a shared secret (`CALLBACK_SECRET`).
+    -   Forwards results to the correct UI client via WebSocket.
+-   **Local Proxy (`start:proxy` script):** Bun/Node version of the proxy for local testing (requires `.env` file).
 
 ### Utilities
 
-✅ **Distance Calculation**
+✅ **Core Utils (`src/utils/`)**
 
-- Haversine formula implementation
-- Coordinate lookup from city names
-- Distance caching for performance
-
-✅ **Date Handling**
-
-- Conference duration calculation
-- Travel date generation
-- Weekend vs. weekday detection
-- Date formatting for output
-
-✅ **Cost of Living**
-
-- CSV data loading
-- Factor lookup by city
-- Adjustment application to base rates
-
-✅ **Command Line Interface**
-
-- Argument parsing
-- Intuitive parameter naming (conference dates and buffer days)
-- Travel schedule validation (preventing flying on conference days)
-- Buffer day enforcement for safe travel scheduling
-- Help text with clear examples
-- Comprehensive error handling
-
-✅ **Web Scraping**
-
-- Multi-approach element selection strategy
-- Fallback mechanisms for UI variations
-- Detailed logging and screenshots
-- Error handling and recovery (Improved: `try...catch` added in calculator to return 0 on failure)
+-   Distance calculation (Haversine).
+-   Date handling (parsing, diff, flight date generation).
+-   Cost-of-living factor lookup.
+-   Local transport cost calculation.
+-   Caching (`PersistentCache`).
+-   Constants for configuration.
 
 ## In Progress
 
+🔄 **UI/Proxy/Actions Flow Stabilization**
+
+-   Testing the end-to-end flow in deployed environment (Deno Deploy).
+-   Refining error handling and status reporting via WebSockets.
+-   Ensuring callback security and reliability.
+
 🔄 **Flight Price Scraper Improvements**
 
-- Enhancing scraper reliability
-- Handling edge cases for less common destinations
-- Improving error handling and recovery (Partially addressed: `try...catch` added in calculator)
-- Optimizing scraper performance
+-   Ongoing monitoring for breakages due to Google Flights UI changes.
+-   Potential enhancements for reliability and edge case handling.
 
-🔄 **Data Expansion**
+🔄 **Data Expansion & Accuracy**
 
-- Adding more cities to coordinates.csv
-- Expanding cost_of_living.csv
-- Updating taxi fare data
+-   Need for more comprehensive and up-to-date data in `fixtures/*.csv` (CoL, taxis, coordinates).
 
-🔄 **Performance Optimization**
-
-- Profiling for bottlenecks
-- Improving cache hit rates
-- Reducing redundant calculations
-- Optimizing web scraping operations
-
-## What's Left to Build
+## What's Left to Build (Potential Future Goals)
 
 ### Core Enhancements
 
-⬜ **Multiple Origin Support**
-
-- Command-line parameter for origin city
-- Support for different employee home locations
-- Per-employee stipend calculations
-
-⬜ **Currency Conversion**
-
-- Support for multiple currencies
-- Exchange rate API integration
-- Currency selection in output
-
-⬜ **Advanced Cost Adjustments**
-
-- Seasonal adjustments for travel costs
-- Conference popularity factor
-- Duration-based scaling for longer stays
+⬜ **Currency Conversion**: Support non-USD inputs/outputs.
+⬜ **Advanced Cost Adjustments**: Seasonal factors, conference popularity, etc.
+⬜ **Improved City/Airport Matching**: More robust fuzzy matching or alias support.
+⬜ **Flight Price Stabilization**: Strategies beyond simple averaging (e.g., multiple lookups, historical data).
 
 ### User Experience
 
-⬜ **Interactive Mode**
-
-- Command-line interactive interface
-- Step-by-step stipend calculation
-- Individual conference lookup
-
-⬜ **Visualization**
-
-- Cost breakdown charts
-- Comparison visualizations
-- Trend analysis graphs
-
-⬜ **Reporting**
-
-- Summary reports by month/quarter
-- Budget forecasting
-- Historical comparison
+⬜ **UI Enhancements**: More detailed result display, input validation, historical view.
+⬜ **CLI Enhancements**: Interactive mode, more filtering/sorting.
+⬜ **Visualization/Reporting**: Charts, budget forecasting tools.
 
 ### Technical Improvements
 
-⬜ **Expanded Test Suite**
-
-- Unit tests for all utility functions
-- Integration tests for end-to-end flow
-- Mocking for external APIs
-- Edge case testing
-- Comprehensive scraper testing
-
-⬜ **Documentation**
-
-- API documentation
-- Configuration guide
-- Contribution guidelines
-- Example usage scenarios
-- Web scraping strategy documentation
-
-⬜ **Refactoring**
-
-- Code organization improvements
-- Consistent error handling
-- Better type definitions
-- Performance optimizations
+⬜ **Expanded Test Suite**: More unit and integration tests, especially for scraping and the UI/proxy flow.
+⬜ **Refactoring**: Code organization, type safety improvements, performance optimizations.
+⬜ **Configuration Management**: Move more constants to `.env` or a config file.
+⬜ **Database Migrations**: Implement a proper system if DB schema evolves.
 
 ## Known Issues
 
 ### High Priority
 
-🐛 **City Name Matching Failures**
-
-- Some cities with unusual formats fail to match
-- Need more robust normalization
-- Consider adding city aliases
-
-🐛 **Flight Price Volatility**
-
-- Scraped prices can vary significantly
-- Need strategies for price stabilization
-- Consider averaging multiple lookups
+🐛 **Scraper Reliability**: Highly dependent on Google Flights UI stability. Needs monitoring.
+🐛 **Proxy Deployment/Secrets:** Correct configuration of environment variables (especially the multi-line private key) on Deno Deploy is critical and error-prone.
+🐛 **Callback Reliability:** Network issues or proxy downtime could prevent results from reaching the UI.
 
 ### Medium Priority
 
-🐛 **Weekend Rate Calculation**
-
-- Edge cases around conference spanning weekends
-- Need more testing for date boundary conditions
-
-🐛 **Missing Cost of Living Data**
-
-- Some cities lack cost of living information
-- Need fallback strategy for missing data
-
-🐛 **Scraper Reliability**
-
-- Google Flights UI can change, breaking selectors
-- Some destinations fail to scrape consistently
-- Need for more robust error handling and recovery (Partially addressed: `try...catch` added in calculator)
-- **Documentation Discrepancy:** Distance-based flight cost fallback is documented but not implemented in the current calculation flow.
+🐛 **City Name Matching Failures**: Some cities might not match DB entries.
+🐛 **Missing Reference Data**: Gaps in CoL or taxi data lead to fallbacks.
+🐛 **WebSocket State Management:** Current server implementation is basic.
 
 ### Low Priority
 
-🐛 **CSV Format Sensitivity**
-
-- Strict requirements for input CSV format
-- Need more robust parsing with error recovery
-
-🐛 **Memory Usage**
-
-- Large datasets can consume significant memory
-- Consider streaming for very large datasets
+🐛 **Local Testing Callback:** GitHub Actions runners usually cannot reach `localhost` for the callback; requires workarounds like `ngrok`.
 
 ## Recent Achievements
 
-✅ **Improved Database Performance and Reliability**
-
-- Fixed database reset issues with optimized import process
-- Added better seed data for common destinations
-- Implemented intelligent detection of existing data
-- Optimized CSV file path lookup strategy
-- Added detailed error handling to prevent database failures
-
-✅ **Enhanced CLI Interface**
-
-- Added intuitive parameter names (`--conference-start`, `--conference-end`, `--days-before`, `--days-after`)
-- Maintained backward compatibility with legacy parameters
-- Implemented buffer day validation to ensure safe travel scheduling
-- Added clear warnings when attempting to schedule flights on conference days
-- Improved help text with practical examples for different use cases
-
-✅ **Integrated Google Flights Scraper**
-
-- Replaced SerpAPI with custom Google Flights scraper
-- Added flight price source tracking in the output
-- Implemented average price calculation for multiple flights
-- Enhanced caching for scraped flight prices
-- Improved error handling: Implemented `try...catch` in calculator to return `0` flight cost on scraper failure.
-
-✅ **Enhanced Output Format**
-
-- Added clear distinction between conference dates and travel dates.
-- Updated `StipendBreakdown` type, CSV output, and console table output to include `origin` and rename `location` to `destination`.
-- Added flight price source information to CSV output.
-- Updated console table display with source information.
-- Improved sorting options to include new fields.
+✅ **Implemented UI -> Proxy -> Actions -> Proxy -> UI flow:** Major architectural change enabling UI-driven calculations via GitHub Actions.
+✅ **Added WebSocket Communication:** For real-time status updates and results delivery to the UI.
+✅ **Implemented GitHub App Authentication:** Switched from PAT to more secure App-based auth for the proxy.
+✅ **Created Deno Deploy Proxy Function:** Including static file serving and API endpoints.
+✅ **Added GitHub Actions Callback:** Workflow now POSTs results back to the proxy.
+✅ **Implemented Shared Secret Auth:** For securing the Action -> Proxy callback.
+✅ **Added UI Build Step:** Compiling frontend TS to JS.
+✅ **Created Key Conversion Script:** To ensure correct private key format.
+✅ **Updated Documentation:** Rewrote large parts of README and other docs to reflect new architecture and setup.
+✅ **Troubleshooting:** Resolved numerous issues related to GitHub Actions conflicts, Deno Deploy configuration, Git tracking, and UI functionality.
 
 ## Next Milestone Goals
 
-1. **Improve Scraper Reliability**
-
-   - Enhance error handling and recovery
-   - Implement more robust selectors
-   - Add retry mechanisms for failed scrapes
-   - Optimize performance for batch processing
-
-2. **Expand Data Coverage**
-
-   - Add at least 50 more cities to coordinates database
-   - Update cost of living data for all major conference cities
-   - Add more comprehensive taxi fare data
-
-3. **Implement Multiple Origin Support**
-
-   - Command-line parameter for origin city
-   - Configuration file for default origins
-   - Support for per-employee home locations
-
-4. **Enhance Testing**
-   - Achieve 80%+ test coverage
-   - Add integration tests for main workflows
-   - Implement automated testing in CI
-   - Add comprehensive tests for web scraping components
+1.  **Stabilize UI/Proxy/Actions Flow:** Complete deployment and end-to-end testing.
+2.  **Refine UI Error Handling:** Provide clearer feedback to the user on errors.
+3.  **Finalize Documentation:** Ensure all setup and usage steps are accurate and clear.
+4.  **Monitor Scraper:** Keep an eye on the flight scraper's reliability.

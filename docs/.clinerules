@@ -4,113 +4,115 @@
 
 ### TypeScript Conventions
 
-- Use TypeScript for all new code
-- Maintain strict type safety with explicit interfaces
-- Prefer functional programming patterns where appropriate
-- Use async/await for asynchronous operations
+- Use TypeScript for all new code.
+- Maintain strict type safety with explicit interfaces.
+- Prefer functional programming patterns where appropriate.
+- Use async/await for asynchronous operations.
 
 ### Runtime Environment
 
-- Always use Bun to run TypeScript files directly without compilation
-- Use Bun for package installation and management
-- Default origin location is "Seoul, Korea" unless specified otherwise
+- **Core Logic/CLI/Local Proxy:** Use Bun to run TypeScript files directly and manage dependencies.
+- **Deployed Proxy:** Use Deno runtime (target: Deno Deploy).
+- **Calculations:** Primarily executed within the GitHub Actions environment (Ubuntu Linux).
+- Default origin location is "Seoul, Korea" unless specified otherwise via input.
 
-### Data Processing
+### Data Processing & Persistence
 
-- CSV files are the primary input format
-- Use the csv-parse library for parsing
-- Always handle CSV headers properly
-- Implement caching for expensive operations
-- Use persistent JSON caches for data that doesn't change frequently
+- **Reference Data:** SQLite database (`db/travel-stipend.db`) stores CoL, coordinates, taxis, etc. Populated from `fixtures/*.csv`.
+- **Caching:** Persistent JSON files (`fixtures/cache/`) store calculated stipends, flight prices, distances, etc., keyed by hashes of inputs.
+- **Input Methods:**
+    - CLI: Arguments via `commander`.
+    - GitHub Actions (Push): Reads `.github/test-events.json`.
+    - GitHub Actions (UI/Dispatch): Receives inputs via `workflow_dispatch` triggered by the proxy function.
+- **Data Flow:** UI -> Proxy -> GitHub API -> Actions Workflow -> Calculator -> DB/Cache/Scraper -> Actions -> Proxy -> UI (via WebSocket).
 
 ### Calculation Logic
 
-- Implement fallback mechanisms for all external data sources
-- Use the Haversine formula for distance calculations
-- Apply cost-of-living adjustments to lodging and meal costs
-- Account for weekend vs. weekday rates for lodging
-- Include pre and post-conference days in travel duration
+- Implement fallback mechanisms (e.g., $0 flight cost on scraper failure).
+- Use Haversine formula for distance.
+- Apply cost-of-living adjustments (from DB).
+- Account for weekend vs. weekday lodging rates.
+- Include pre/post-conference buffer days.
+- Calculate allowances (internet, incidentals).
 
 ### Web Scraping Strategies
 
-- Implement multiple approaches for element selection
-- Use a combination of CSS selectors, XPath, and DOM traversal
-- Take screenshots at key points for debugging
-- Implement fallback mechanisms for UI variations
-- Split complex functions into smaller, focused functions
-- Use descriptive function and variable names with appropriate prefixes
+- Use Puppeteer via submodule (`src/utils/google-flights-scraper/`).
+- Implement multiple approaches for element selection.
+- Use screenshots (`handleScreenshot` in `src/utils/flights.ts`) for debugging, especially in Actions.
+- Implement error recovery and retries (`withRetry` in `src/utils/flights.ts`).
 
 ### Output Formatting
 
-- Generate timestamped CSV files for all outputs
-- Use console.table for terminal display
-- Include detailed breakdowns of all cost components
-- Support sorting by any column in the output
+- **CLI:** JSON, CSV, Console Table.
+- **GitHub Actions:** Individual JSON artifacts per job, consolidated Markdown/JSON/CSV artifacts.
+- **Web UI:** Receives consolidated JSON results via WebSocket and renders an HTML table.
 
 ## User Preferences
 
-- Prefer command-line interface over interactive mode
-- Focus on accuracy of calculations over speed
-- Maintain backward compatibility with existing CSV formats
-- Prioritize clear error messages for troubleshooting
+- **Primary Interface:** Web UI triggering GitHub Actions workflow.
+- **Secondary Interfaces:** CLI for local single calculations, direct GitHub Actions triggers (push/manual).
+- Focus on accuracy and leveraging the robust Actions environment for calculations.
+- Maintain transparency in calculations and results display.
 
 ## Implementation Paths
 
 ### Adding New Cost Factors
 
-1. Define the new factor in src/utils/constants.ts
-2. Implement the calculation logic in a dedicated utility function
-3. Integrate the new factor into the calculateStipend function
-4. Update the StipendBreakdown interface in types.ts
-5. Add the new field to CSV output and console display
+1. Define factor in `src/utils/constants.ts`.
+2. Add calculation logic in `src/travel-stipend-calculator.ts` or a new util.
+3. Update `StipendBreakdown` type (`src/types.ts`).
+4. Update result display/reporting (UI table rendering in `ui/script.ts`, consolidation script `consolidate-stipend-results.ts`, CLI output).
 
 ### Extending City Data
 
-1. Add new entries to fixtures/coordinates.csv
-2. Update fixtures/cost_of_living.csv with corresponding entries
-3. Add taxi fare data to fixtures/taxis.csv if available
-4. Clear caches to force recalculation with new data
+1. Add/update entries in `fixtures/*.csv` (coordinates, cost_of_living, taxis).
+2. Consider clearing the database (`db/travel-stipend.db`) locally to force re-import on next run, or implement DB update logic.
+3. Clear relevant JSON caches (`fixtures/cache/`) if calculations depend on cached versions of this data.
 
-### Implementing New Command-Line Options
+### Modifying UI/Proxy Flow
 
-1. Update the parseArgs function in travel-stipend-calculator.ts
-2. Add validation for the new options
-3. Implement the logic to handle the new options
-4. Update the help text and documentation
-
-### Improving Web Scraping Reliability
-
-1. Analyze the UI structure and identify stable selectors
-2. Implement multiple approaches for element selection
-3. Add detailed logging and screenshots for debugging
-4. Create test scripts to verify functionality
-5. Refactor code to reduce cognitive complexity
+1. Update UI form/script (`ui/`). Remember to run `bun run build:ui`.
+2. Update Proxy function (`api/trigger-workflow.ts`). Test locally with `bun run start:proxy`.
+3. Update GitHub Action workflow (`batch-travel-stipend.yml`) if inputs or callback change.
+4. Update relevant documentation.
+5. Deploy proxy and UI changes.
 
 ## Known Challenges
 
-- City name matching is sensitive to formatting and spelling
-- Web scraping reliability depends on Google Flights UI stability
-- Cost-of-living data may be outdated for some locations
-- Weekend detection logic has edge cases around date boundaries
-- Web UI elements may change structure or attributes
+- **Scraper Flakiness:** Google Flights UI changes can break scraping.
+- **Proxy Deployment:** Configuring secrets (especially multi-line private key) and ensuring correct runtime environment (Deno) can be tricky.
+- **Callback Security/Reliability:** Requires secure secret management and robust error handling for the Action -> Proxy communication. Network issues can prevent results reaching UI.
+- **WebSocket State:** Server needs to manage client connections reliably.
+- **Local Testing Callback:** GitHub Actions runners cannot easily reach `localhost` for the callback; requires workarounds like `ngrok`.
+- **City Name Matching:** Sensitive to formatting.
+- **Reference Data Freshness:** CoL, taxi data needs updates.
 
 ## Tool Usage Patterns
 
-- Use ESLint and Prettier for code formatting
-- Run tests with Bun test
-- Use husky pre-commit hooks to enforce code quality
-- Leverage cspell for spell checking in code and documentation
-- Use Puppeteer for web scraping and automation
+- **Runtime:** Bun (local), Deno (deployed proxy), Node.js (Actions runner).
+- **Build:** Bun (`bun build`, `bun run build:ui`).
+- **Testing:** Jest (`bun test`).
+- **Linting/Formatting:** ESLint, Prettier, cspell.
+- **Git Hooks:** Husky, lint-staged, commitlint.
+- **Web Scraping:** Puppeteer.
+- **Database:** SQLite (via `sqlite`, `sqlite3`).
+- **Proxy Auth:** GitHub Apps (JWT via `djwt` for Deno, `jsonwebtoken` for local Bun/Node proxy), GitHub API.
+- **Deployment:** Deno Deploy (preferred for proxy), Static hosting (for UI if separate).
 
 ## Project Evolution
 
-- Originally focused on distance-based flight cost calculation
-- Added SerpAPI-based flight price lookup as an enhancement
-- Expanded to include local transportation costs
-- Added business entertainment allowance
-- Implemented weekend rate adjustments for lodging
-- Added command-line sorting options
-- Improved web scraping reliability with multi-approach strategies
-- Replaced SerpAPI with custom Google Flights scraper
-- Added flight price source tracking in the output
-- Implemented average price calculation for multiple flights
+- Initial CLI tool with distance-based flights.
+- Added DB persistence for reference data.
+- Added JSON caching.
+- Integrated Google Flights scraper via submodule.
+- Developed GitHub Actions workflow for batch processing.
+- Implemented Web UI trigger architecture:
+    - Static UI (`ui/`).
+    - Serverless Proxy Function (`api/trigger-workflow.ts`) using Deno.
+    - Switched proxy auth from PAT to GitHub App.
+    - Added WebSocket communication for status/results.
+    - Added Action->Proxy callback mechanism with shared secret.
+- Refined UI feedback (removed local server, added status messages).
+- Added key conversion script.
+- Extensive troubleshooting of Actions conflicts, Deno Deploy issues, Git tracking, UI functionality.

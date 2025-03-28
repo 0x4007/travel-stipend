@@ -26,6 +26,12 @@ on:
         required: false
         type: string
         default: ""
+      # Input for WebSocket callback
+      clientId:
+        description: "Internal client ID for WebSocket callback"
+        required: false # Only required if triggered via UI/proxy
+        type: string
+        default: ""
 
 defaults:
   run:
@@ -110,6 +116,9 @@ jobs:
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   calculate:
+    # Pass clientId through if provided by dispatch
+    env:
+      CLIENT_ID: ${{ github.event.inputs.clientId }}
     needs: setup
     runs-on: ubuntu-latest
     strategy:
@@ -176,6 +185,13 @@ jobs:
           retention-days: 5
 
   consolidate:
+    # Pass clientId through if provided by dispatch
+    env:
+      CLIENT_ID: ${{ github.event.inputs.clientId }}
+      # Add shared secret for callback authentication
+      CALLBACK_SECRET: ${{ secrets.PROXY_CALLBACK_SECRET }} # Needs to be set in GitHub repo secrets
+      # Add proxy URL for callback
+      PROXY_CALLBACK_URL: ${{ secrets.PROXY_CALLBACK_URL }} # Needs to be set in GitHub repo secrets (e.g., https://travel-stipend.deno.dev/api/workflow-complete)
     needs: [calculate]
     if: always()
     runs-on: ubuntu-latest
@@ -230,3 +246,35 @@ jobs:
             consolidated-results.md
             consolidated-results/
           retention-days: 5
+
+      # New Step: Send results back to proxy via callback URL
+      - name: Send Results to Proxy (if clientId provided)
+        if: env.CLIENT_ID != '' && env.CALLBACK_SECRET != '' && env.PROXY_CALLBACK_URL != ''
+        run: |
+          echo "Client ID found, attempting to send results back to proxy..."
+          # Prepare JSON payload - use consolidated JSON results
+          # Ensure jq is available or use alternative JSON processing
+          if ! command -v jq &> /dev/null; then
+            echo "jq could not be found, installing..."
+            sudo apt-get update && sudo apt-get install -y jq
+          fi
+
+          # Extract the 'results' array from the consolidated JSON
+          RESULTS_JSON=$(jq -c '.results' consolidated-results/results.json)
+
+          # Construct the callback payload
+          CALLBACK_PAYLOAD=$(jq -n --argjson results "$RESULTS_JSON" --arg clientId "$CLIENT_ID" \
+            '{clientId: $clientId, results: $results}')
+
+          echo "Callback URL: $PROXY_CALLBACK_URL"
+          echo "Sending payload:"
+          echo "$CALLBACK_PAYLOAD"
+
+          # Send POST request with shared secret header
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Callback-Secret: $CALLBACK_SECRET" \
+            -d "$CALLBACK_PAYLOAD" \
+            "$PROXY_CALLBACK_URL"
+
+          echo "Callback request sent."
