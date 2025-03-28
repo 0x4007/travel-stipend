@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Stipend Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Travel Stipend Calculator</h1>
+
+    <form id="stipend-form">
+        <div class="form-group">
+            <label for="origin">Origin City:</label>
+            <input type="text" id="origin" name="origin" required value="Seoul">
+        </div>
+        <div class="form-group">
+            <label for="destination">Destination City:</label>
+            <input type="text" id="destination" name="destination" required placeholder="e.g., Singapore">
+        </div>
+        <div class="form-group">
+            <label for="departure-date">Departure Date:</label>
+            <input type="text" id="departure-date" name="departure-date" required placeholder="e.g., 17 Sep or 2025-09-17">
+        </div>
+        <div class="form-group">
+            <label for="return-date">Return Date:</label>
+            <input type="text" id="return-date" name="return-date" required placeholder="e.g., 20 Sep or 2025-09-20">
+        </div>
+        <div class="form-group">
+            <label for="ticket-price">Ticket Price (USD, optional):</label>
+            <input type="number" id="ticket-price" name="ticket-price" min="0" step="any" placeholder="e.g., 599">
+        </div>
+        <button type="submit" id="calculate-button">Calculate Stipend</button>
+    </form>
+
+    <div id="results-container">
+        <h2>Results</h2>
+        <pre id="results-output">Calculation results will appear here...</pre>
+        <div id="error-output" class="error"></div>
+    </div>
+
+    <script src="script.js" type="module"></script>
+</body>
+</html>

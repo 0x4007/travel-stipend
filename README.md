@@ -116,6 +116,20 @@ bun run src/travel-stipend-cli.ts \
   -o json
 ```
 
+### Web Interface (Development)
+
+A simple web UI is available for interactive calculations during development.
+
+1.  **Start the UI Server:**
+    ```bash
+    bun run ui:dev
+    ```
+    This command first compiles the UI script (`ui/script.ts` to `ui/script.js`) and then uses Bun to run the API server (`ui/api.ts`), watching the server file for changes. (Note: Changes to `ui/script.ts` require restarting the command to re-compile).
+
+2.  **Open in Browser:** Navigate to `http://localhost:3000` in your web browser.
+
+3.  **Use the Form:** Enter the origin, destination, dates, and optional ticket price, then click "Calculate Stipend". The JSON result will be displayed below the form.
+
 ### Batch Processing (GitHub Actions)
 
 The `.github/workflows/batch-travel-stipend.yml` workflow handles batch calculations.
