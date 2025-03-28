@@ -22,13 +22,17 @@ function formatLabel(key) {
   return key.replace(/_/g, " ").replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
 }
 function renderResultsTable(result) {
-  if (!resultsTableDiv)
+  console.log("Attempting to render results table with payload:", result);
+  if (!resultsTableDiv) {
+    console.error("resultsTableDiv not found");
     return;
+  }
   resultsTableDiv.innerHTML = "";
   resultsTableDiv.style.display = "block";
   const resultData = Array.isArray(result) ? result[0] : result;
   if (!resultData) {
-    resultsTableDiv.innerHTML = "<p>Received empty or invalid results.</p>";
+    resultsTableDiv.innerHTML = "<p>Received empty or invalid results data.</p>";
+    console.error("Received empty or invalid resultData for rendering.");
     return;
   }
   const table = document.createElement("table");
@@ -55,10 +59,8 @@ function renderResultsTable(result) {
   ];
   displayOrder.forEach((key) => {
     const value = resultData[key];
-    if (value === undefined || value === null) {
-      if (key === "distance_km")
-        return;
-    }
+    if (key === "distance_km" && (value === undefined || value === null))
+      return;
     const tr = document.createElement("tr");
     const th = document.createElement("th");
     const td = document.createElement("td");
@@ -66,7 +68,7 @@ function renderResultsTable(result) {
     if (key.endsWith("_cost") || key.endsWith("_price") || key.endsWith("_allowance") || key === "total_stipend") {
       td.textContent = formatCurrency(value);
     } else {
-      td.textContent = String(value);
+      td.textContent = String(value ?? "");
     }
     tr.appendChild(th);
     tr.appendChild(td);
@@ -74,6 +76,7 @@ function renderResultsTable(result) {
   });
   table.appendChild(tbody);
   resultsTableDiv.appendChild(table);
+  console.log("Results table rendered.");
 }
 function updateStatus(message, isSuccess = false) {
   if (!statusMessageDiv)
@@ -140,6 +143,8 @@ function connectWebSocket(requestData) {
         case "result":
           updateStatus("Calculation complete!", true);
           addLog("Calculation complete. Results received.");
+          if (logContainerDiv)
+            logContainerDiv.style.display = "none";
           renderResultsTable(message.payload);
           if (calculateButton)
             calculateButton.disabled = false;
@@ -152,6 +157,10 @@ function connectWebSocket(requestData) {
             errorOutput.textContent = `Error: ${errorMsg}`;
           updateStatus("Calculation failed.");
           addLog(`ERROR: ${errorMsg}`);
+          if (logContainerDiv)
+            logContainerDiv.style.display = "block";
+          if (resultsTableDiv)
+            resultsTableDiv.innerHTML = "";
           if (calculateButton)
             calculateButton.disabled = false;
           socket?.close();
