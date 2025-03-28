@@ -160,7 +160,7 @@ async function consolidateResults() {
     // This will be accessed through the GITHUB_OUTPUT files
     // But for testing and development, we'll use sample data or read from files
 
-    let results: StipendBreakdown[] = [];
+    const results: StipendBreakdown[] = [];
 
     // Here we have two approaches:
     // 1. In GitHub Actions: access outputs from needs.calculate.outputs
