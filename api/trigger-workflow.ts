@@ -23,14 +23,12 @@ async function getInstallationToken(appId: string, installationId: string, priva
   let privateKey: CryptoKey;
   try {
     // Use the key directly from env var, assuming Deno Deploy handles newlines correctly
-    // const pemFormatted = privateKeyPem.replace(/\\n/g, '\n'); // Removed replacement
     privateKey = await crypto.subtle.importKey("pkcs8", pemToArrayBuffer(privateKeyPem), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
   } catch (e) {
     console.error("Error importing private key:", e);
-    // Provide more specific error message if possible
     let errMsg = "Failed to import GitHub App private key.";
-    if (e instanceof Error && e.message.includes("ASN.1")) {
-        errMsg += " Ensure the key is in correct PKCS8 PEM format and newlines are preserved correctly in the environment variable.";
+    if (e instanceof Error && (e.message.includes("ASN.1") || e.message.includes("decode base64"))) { // Check for common errors
+        errMsg += " Ensure the key is in correct PKCS8 PEM format and newlines are preserved correctly in the environment variable. Check for extra whitespace.";
     } else if (e instanceof Error) {
         errMsg += ` (${e.message})`;
     }
@@ -47,13 +45,27 @@ async function getInstallationToken(appId: string, installationId: string, priva
     return data.token;
   } catch (error) { console.error("Error fetching installation token:", error); throw error; }
 }
+
+// Helper to convert PEM key to ArrayBuffer - More robust handling
 function pemToArrayBuffer(pem: string): ArrayBuffer {
-    const base64 = pem.replace(/-----BEGIN PRIVATE KEY-----/g, "").replace(/-----END PRIVATE KEY-----/g, "").replace(/\s/g, "");
-    const binaryString = atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) { bytes[i] = binaryString.charCodeAt(i); }
-    return bytes.buffer;
+    // 1. Replace literal '\n' if present (e.g., from single-line env var)
+    // 2. Remove header/footer
+    // 3. Remove ALL whitespace (including actual newlines)
+    const base64 = pem
+        .replace(/\\n/g, "\n") // Ensure actual newlines first
+        .replace(/-----BEGIN PRIVATE KEY-----/g, "")
+        .replace(/-----END PRIVATE KEY-----/g, "")
+        .replace(/\s/g, ""); // Remove ALL whitespace (newlines, spaces, etc.)
+    try {
+        const binaryString = atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) { bytes[i] = binaryString.charCodeAt(i); }
+        return bytes.buffer;
+    } catch (e) {
+        console.error("Failed to decode base64 content of the private key.", e);
+        throw new Error("Failed to decode base64 content of the private key. Ensure the key content is valid.");
+    }
 }
 // --- End GitHub App Authentication ---
 
