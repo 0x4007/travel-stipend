@@ -8,9 +8,9 @@ import * as djwt from "https://deno.land/x/djwt@v2.8/mod.ts";
 
 // --- Types ---
 interface WebSocketMessage {
-    type: 'log' | 'status' | 'result' | 'error' | 'request_calculation';
+    type: 'log' | 'status' | 'result' | 'error' | 'request_calculation'; // Added types
     payload: any;
-    clientId?: string;
+    clientId?: string; // Include clientId in request
 }
 
 // Store active WebSocket connections mapped by clientId
@@ -23,7 +23,7 @@ function getEnv(key: string): string {
   return value;
 }
 
-// --- GitHub App Authentication ---
+// --- GitHub App Authentication (remains the same) ---
 async function getInstallationToken(appId: string, installationId: string, privateKeyPem: string): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const expiration = now + (10 * 60);
@@ -66,8 +66,12 @@ function sendWsMessage(ws: WebSocket, type: WebSocketMessage['type'], payload: a
         if (ws.readyState === WebSocket.OPEN) {
             const message: WebSocketMessage = { type, payload };
             ws.send(JSON.stringify(message));
-        } else { console.warn("Attempted to send message to closed WebSocket."); }
-    } catch (error) { console.error("Error sending WebSocket message:", error); }
+        } else {
+            console.warn("Attempted to send message to closed WebSocket.");
+        }
+    } catch (error) {
+        console.error("Error sending WebSocket message:", error);
+    }
 }
 
 // --- Main Request Handler ---
@@ -82,88 +86,164 @@ async function handler(req: Request): Promise<Response> {
 
   // --- WebSocket Upgrade ---
   if (pathname === "/ws") {
-    if (req.headers.get("upgrade") !== "websocket") return new Response("Expected websocket upgrade", { status: 400 });
+    if (req.headers.get("upgrade") !== "websocket") {
+      return new Response("Expected websocket upgrade", { status: 400 });
+    }
     const { socket, response } = Deno.upgradeWebSocket(req);
-    socket.onopen = () => console.log("WebSocket connected!");
-    socket.onmessage = async (event) => { /* ... WebSocket message handling ... */
+
+    socket.onopen = () => {
+        console.log("WebSocket connected!");
+        // Client should send an initial message with its ID
+    };
+    socket.onmessage = async (event) => {
         console.log("WebSocket message received:", event.data);
         let parsedMessage: WebSocketMessage;
-        try { parsedMessage = JSON.parse(event.data); }
-        catch (e) { sendWsMessage(socket, 'error', 'Invalid message format.'); return; }
+        try {
+            parsedMessage = JSON.parse(event.data);
+        } catch (e) {
+            sendWsMessage(socket, 'error', 'Invalid message format. Send JSON.');
+            return;
+        }
 
-        if (parsedMessage.type === 'request_calculation' && parsedMessage.clientId && parsedMessage.payload) {
+        // Handle initial client registration or calculation request
+        if (parsedMessage.type === 'register' && parsedMessage.clientId) {
+            clients.set(parsedMessage.clientId, socket);
+            console.log(`Client registered: ${parsedMessage.clientId}`);
+            sendWsMessage(socket, 'status', 'Registered successfully. Ready for calculation.');
+        } else if (parsedMessage.type === 'request_calculation' && parsedMessage.clientId && parsedMessage.payload) {
             const clientId = parsedMessage.clientId;
             const requestData = parsedMessage.payload;
-            clients.set(clientId, socket); // Store socket
-            console.log(`Client registered/request received: ${clientId}`);
+
+            // Store client socket before triggering async workflow
+            if (!clients.has(clientId)) {
+                 clients.set(clientId, socket); // Re-register just in case
+                 console.log(`Client re-registered on request: ${clientId}`);
+            }
+
             sendWsMessage(socket, 'status', 'Received calculation request. Triggering workflow...');
+
+            // Trigger GitHub Action
             try {
                 const { origin, destination, startDate, endDate, price } = requestData;
-                 if (!origin || !destination || !startDate) throw new Error("Missing fields.");
-                const inputs = { origins: origin, destinations: destination, start_dates: startDate, end_dates: endDate || "", ticket_prices: price || "0", clientId: clientId };
-                const appId = getEnv("GITHUB_APP_ID"), installationId = getEnv("GITHUB_APP_INSTALLATION_ID"), privateKey = getEnv("GITHUB_APP_PRIVATE_KEY");
-                const owner = getEnv("GITHUB_OWNER"), repo = getEnv("GITHUB_REPO"), workflowId = getEnv("WORKFLOW_ID");
+                 if (!origin || !destination || !startDate) {
+                    throw new Error("Missing required fields in payload: origin, destination, startDate");
+                 }
+                const inputs = { origins: origin, destinations: destination, start_dates: startDate, end_dates: endDate || "", ticket_prices: price || "0", clientId: clientId }; // Pass clientId
+
+                // Get App Config
+                const appId = getEnv("GITHUB_APP_ID");
+                const installationId = getEnv("GITHUB_APP_INSTALLATION_ID");
+                const privateKey = getEnv("GITHUB_APP_PRIVATE_KEY");
+                const owner = getEnv("GITHUB_OWNER");
+                const repo = getEnv("GITHUB_REPO");
+                const workflowId = getEnv("WORKFLOW_ID");
+
                 const installationToken = await getInstallationToken(appId, installationId, privateKey);
                 const dispatchUrl = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowId}/dispatches`;
                 const body = JSON.stringify({ ref: "main", inputs: inputs });
+
                 console.log(`Triggering workflow ${workflowId} for client ${clientId}...`);
                 const ghResponse = await fetch(dispatchUrl, { method: "POST", headers: { Authorization: `token ${installationToken}`, Accept: "application/vnd.github.v3+json", "Content-Type": "application/json" }, body: body });
-                if (!ghResponse.ok) { let err = `GitHub API Error: ${ghResponse.status}`; try { const ghErr = await ghResponse.json(); err += `: ${ghErr.message || JSON.stringify(ghErr)}`; } catch(e){} console.error(err); throw new Error(err); }
+
+                if (!ghResponse.ok) {
+                    let err = `GitHub API Error: ${ghResponse.status}`; try { const ghErr = await ghResponse.json(); err += `: ${ghErr.message || JSON.stringify(ghErr)}`; } catch(e){} console.error(err); throw new Error(err);
+                }
                 console.log(`Workflow dispatch successful for client ${clientId}`);
                 sendWsMessage(socket, 'status', 'Workflow triggered successfully. Waiting for results...');
+
             } catch (error) {
                 console.error(`Error triggering workflow for client ${clientId}:`, error);
                 sendWsMessage(socket, 'error', `Failed to trigger workflow: ${error.message}`);
-                clients.delete(clientId);
+                clients.delete(clientId); // Clean up on trigger failure
             }
-        } else { sendWsMessage(socket, 'error', 'Invalid message type or missing clientId/payload.'); }
+        } else {
+             sendWsMessage(socket, 'error', 'Invalid message type or missing clientId/payload.');
+        }
     };
-    socket.onclose = (event) => { /* ... Close handling ... */
+    socket.onclose = (event) => {
         console.log("WebSocket closed:", event.code, event.reason);
-        for (const [clientId, clientSocket] of clients.entries()) { if (clientSocket === socket) { clients.delete(clientId); console.log(`Client unregistered: ${clientId}`); break; } }
+        // Find and remove client from map on close
+        for (const [clientId, clientSocket] of clients.entries()) {
+            if (clientSocket === socket) {
+                clients.delete(clientId);
+                console.log(`Client unregistered: ${clientId}`);
+                break;
+            }
+        }
     };
-    socket.onerror = (error) => { /* ... Error handling ... */
+    socket.onerror = (error) => {
         console.error("WebSocket error:", error);
-         for (const [clientId, clientSocket] of clients.entries()) { if (clientSocket === socket) { clients.delete(clientId); console.log(`Client unregistered due to error: ${clientId}`); break; } }
+        // Attempt to find and remove client from map on error
+         for (const [clientId, clientSocket] of clients.entries()) {
+            if (clientSocket === socket) {
+                clients.delete(clientId);
+                console.log(`Client unregistered due to error: ${clientId}`);
+                break;
+            }
+        }
     };
-    return response;
+
+    return response; // Return the response from Deno.upgradeWebSocket
   }
   // --- End WebSocket Upgrade ---
 
   // --- API Endpoint: Workflow Completion Callback ---
   if (pathname === "/api/workflow-complete" && req.method === "POST") {
-      const sharedSecret = getEnv("CALLBACK_SECRET");
+      // Authenticate the request (e.g., using a shared secret)
+      const sharedSecret = getEnv("PROXY_CALLBACK_SECRET"); // Needs to be set in Deno Deploy & GitHub Secrets
       const incomingSecret = req.headers.get("X-Callback-Secret");
-      if (!incomingSecret || incomingSecret !== sharedSecret) { console.warn("Unauthorized callback."); return new Response("Unauthorized", { status: 401 }); }
+
+      if (!incomingSecret || incomingSecret !== sharedSecret) {
+          console.warn("Unauthorized callback attempt received.");
+          return new Response("Unauthorized", { status: 401 });
+      }
+
       try {
           const data = await req.json();
-          const clientId = data.clientId; const results = data.results;
-          if (!clientId || !results) throw new Error("Invalid callback payload.");
+          const clientId = data.clientId; // Expect clientId in callback payload
+          const results = data.results; // Expect results array in callback payload
+
+          if (!clientId || !results) {
+              throw new Error("Invalid callback payload: Missing clientId or results.");
+          }
+
           const clientSocket = clients.get(clientId);
           if (clientSocket && clientSocket.readyState === WebSocket.OPEN) {
               console.log(`Sending results back to client: ${clientId}`);
               sendWsMessage(clientSocket, 'result', results);
-              // Optionally close socket after sending results
-              // clientSocket.close(); clients.delete(clientId);
-          } else { console.warn(`Client ${clientId} not found/closed.`); }
+              // Optionally close the socket after sending results
+              // clientSocket.close();
+              // clients.delete(clientId);
+          } else {
+              console.warn(`Client ${clientId} not found or connection closed. Cannot send results.`);
+          }
+
           return new Response("Callback received", { status: 200 });
-      } catch (error) { console.error("Error processing callback:", error); return new Response(`Error: ${error.message}`, { status: 400 }); }
+
+      } catch (error) {
+          console.error("Error processing workflow callback:", error);
+          return new Response(`Error processing callback: ${error.message}`, { status: 400 });
+      }
   }
   // --- End Workflow Completion Callback ---
+
 
   // --- Static File Serving ---
   try {
       const scriptDir = path.dirname(path.fromFileUrl(import.meta.url));
       const uiDir = path.join(scriptDir, "..", "ui");
+      // Attempt to serve the file using serveDir
       const response = await serveDir(req, { fsRoot: uiDir, urlRoot: "", showDirListing: false, quiet: true });
+      // Add CORS headers to static file responses too, if needed by the script loading
       response.headers.set("Access-Control-Allow-Origin", corsHeaders["Access-Control-Allow-Origin"]);
       return response;
   } catch (error) {
       if (error instanceof Deno.errors.NotFound) {
-          console.log(`Static file not found: ${pathname}`);
+          // If serveDir throws NotFound, return a standard 404
+          console.log(`Static file not found for path: ${pathname}`);
           return new Response("Not Found", { status: 404, headers: corsHeaders });
       }
-      console.error(`Error serving static file ${pathname}:`, error);
+      console.error(`Error serving static file for path ${pathname}:`, error);
       return new Response("Internal Server Error", { status: 500, headers: corsHeaders });
   }
   // --- End Static File Serving ---

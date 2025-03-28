@@ -45,7 +45,7 @@ async function handleScreenshot(page: Page, description: string, options: Record
   }
 }
 
-// Add logCallback parameter back
+// Add logCallback parameter back and logging around submodule call
 async function handleNavigation(
   page: Page,
   parameters: {
@@ -62,7 +62,7 @@ async function handleNavigation(
     logCallback?.("Calling navigateToFlights (submodule)...");
     // Call original function (no callback passed into submodule)
     await navigateToFlights(page, parameters);
-    logCallback?.("navigateToFlights (submodule) finished.");
+    logCallback?.("navigateToFlights (submodule) finished."); // Log end
     return true;
   });
 
@@ -75,15 +75,15 @@ async function handleNavigation(
   await new Promise((resolve) => setTimeout(resolve, 2000)); // Keep delay
 }
 
-// Add logCallback parameter back
+// Add logCallback parameter back and logging around submodule call
 async function handleFlightScraping(page: Page, logCallback?: LogCallback) {
-  logCallback?.("Attempting to scrape flight prices...");
+  logCallback?.("Attempting to scrape flight prices..."); // Log start
   return await withRetry(async () => {
     try {
       logCallback?.("Calling scrapeFlightPrices (submodule)...");
       // Call original function (no callback passed into submodule)
       const results = await scrapeFlightPrices(page);
-      logCallback?.(`scrapeFlightPrices (submodule) finished. Found ${results?.length ?? 0} results.`);
+      logCallback?.(`scrapeFlightPrices (submodule) finished. Found ${results?.length ?? 0} results.`); // Log end
       return results;
     } catch (error) {
       logCallback?.(`Scraping attempt failed, attempting recovery... Error: ${error instanceof Error ? error.message : error}`);
@@ -95,7 +95,7 @@ async function handleFlightScraping(page: Page, logCallback?: LogCallback) {
       logCallback?.("Session recovered, retrying scrape...");
       // Call original function (no callback passed into submodule)
       const results = await scrapeFlightPrices(page);
-      logCallback?.(`scrapeFlightPrices (submodule) retry finished. Found ${results?.length ?? 0} results.`);
+      logCallback?.(`scrapeFlightPrices (submodule) retry finished. Found ${results?.length ?? 0} results.`); // Log end retry
       return results;
     }
   });
@@ -146,7 +146,6 @@ export async function scrapeFlightPrice(
     await handleScreenshot(page, "post-navigation", { fullPage: true, captureHtml: true });
 
     // Call updated handleFlightScraping (with callback)
-    // This contains the workaround call to scrapeFlightPrices again
     const flightData = await handleFlightScraping(page, logCallback);
 
     if (!flightData?.length) {

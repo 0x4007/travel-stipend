@@ -35,10 +35,10 @@ const departureDateInput = document.getElementById('departure-date') as HTMLInpu
 const returnDateInput = document.getElementById('return-date') as HTMLInputElement;
 const ticketPriceInput = document.getElementById('ticket-price') as HTMLInputElement;
 const calculateButton = document.getElementById('calculate-button') as HTMLButtonElement;
-const resultsTableDiv = document.getElementById('results-table') as HTMLDivElement; // Keep for results
-const statusMessageDiv = document.getElementById('status-message') as HTMLDivElement;
-const logContainerDiv = document.getElementById('log-container') as HTMLDivElement; // Get log container
-const logOutput = document.getElementById('log-output') as HTMLPreElement; // Get log output area
+const resultsTableDiv = document.getElementById('results-table') as HTMLDivElement; // For results table
+const statusMessageDiv = document.getElementById('status-message') as HTMLDivElement; // For status text
+const logContainerDiv = document.getElementById('log-container') as HTMLDivElement; // Log container
+const logOutput = document.getElementById('log-output') as HTMLPreElement; // Log text area
 const errorOutput = document.getElementById('error-output') as HTMLDivElement;
 
 let socket: WebSocket | null = null;
@@ -60,8 +60,8 @@ function renderResultsTable(result: StipendBreakdown | StipendBreakdown[]): void
     if (!resultsTableDiv) return;
     resultsTableDiv.innerHTML = '';
     resultsTableDiv.style.display = 'block';
-    const resultData = Array.isArray(result) ? result[0] : result;
-    if (!resultData) { resultsTableDiv.innerHTML = '<p>Received empty results.</p>'; return; }
+    const resultData = Array.isArray(result) ? result[0] : result; // Use first result if array
+    if (!resultData) { resultsTableDiv.innerHTML = '<p>Received empty or invalid results.</p>'; return; }
     const table = document.createElement('table');
     const tbody = document.createElement('tbody');
     const displayOrder: (keyof StipendBreakdown)[] = [
@@ -100,10 +100,8 @@ function updateStatus(message: string, isSuccess = false): void {
 // Function to add log messages
 function addLog(message: string): void {
     if (!logOutput) return;
-    // Add message with newline
     logOutput.textContent += message + '\n';
-    // Auto-scroll to bottom
-    logOutput.scrollTop = logOutput.scrollHeight;
+    logOutput.scrollTop = logOutput.scrollHeight; // Auto-scroll
 }
 
 // Function to handle WebSocket connection and messages
@@ -114,8 +112,8 @@ function connectWebSocket(requestData: any): void {
         console.log("WebSocket exists. Sending request.");
         socket.send(JSON.stringify({ type: 'request_calculation', clientId, payload: requestData }));
         updateStatus('Sending calculation request...');
-        if (logContainerDiv) logContainerDiv.style.display = 'block'; // Show log container
-        if (logOutput) logOutput.textContent = 'Sending calculation request...\n'; // Clear previous logs
+        if (logContainerDiv) logContainerDiv.style.display = 'block';
+        if (logOutput) logOutput.textContent = 'Sending calculation request...\n';
         if (calculateButton) calculateButton.disabled = true;
         return;
     }
@@ -124,14 +122,14 @@ function connectWebSocket(requestData: any): void {
     const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
 
     updateStatus('Connecting to server...');
-    if (logContainerDiv) logContainerDiv.style.display = 'block'; // Show log container
-    if (logOutput) logOutput.textContent = 'Connecting to server...\n'; // Clear previous logs
+    if (logContainerDiv) logContainerDiv.style.display = 'block';
+    if (logOutput) logOutput.textContent = 'Connecting to server...\n';
     console.log(`Attempting to connect WebSocket to: ${wsUrl}`);
     socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
         console.log('WebSocket connection established.');
-        addLog('Connection established.'); // Log connection
+        addLog('Connection established.');
         updateStatus('Connection established. Sending calculation request...');
         socket?.send(JSON.stringify({ type: 'request_calculation', clientId, payload: requestData }));
         if (calculateButton) calculateButton.disabled = true;
@@ -147,7 +145,7 @@ function connectWebSocket(requestData: any): void {
                     break;
                 case 'status':
                     updateStatus(message.payload);
-                    addLog(`Status: ${message.payload}`); // Also add status to log
+                    addLog(`Status: ${message.payload}`); // Also log status
                     break;
                 case 'result':
                     updateStatus('Calculation complete!', true);
@@ -161,7 +159,7 @@ function connectWebSocket(requestData: any): void {
                     console.error('Error from server:', errorMsg);
                     if (errorOutput) errorOutput.textContent = `Error: ${errorMsg}`;
                     updateStatus('Calculation failed.');
-                    addLog(`ERROR: ${errorMsg}`); // Add error to log
+                    addLog(`ERROR: ${errorMsg}`);
                     if (calculateButton) calculateButton.disabled = false;
                     socket?.close();
                     break;
@@ -191,8 +189,8 @@ function connectWebSocket(requestData: any): void {
             updateStatus('Connection closed unexpectedly.');
             addLog('WebSocket connection closed unexpectedly.');
         } else {
-             updateStatus('Connection closed.'); // Indicate clean close if needed
-             // addLog('WebSocket connection closed.'); // Optional log for clean close
+             updateStatus('Connection closed.');
+             // addLog('WebSocket connection closed.');
         }
         if (calculateButton && calculateButton.disabled) {
              calculateButton.disabled = false;
@@ -214,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
 
         // Clear previous results/errors
-        if (resultsTableDiv) resultsTableDiv.innerHTML = ''; // Clear table
+        if (resultsTableDiv) resultsTableDiv.innerHTML = '';
         if (statusMessageDiv) updateStatus('Initiating calculation...');
         if (logContainerDiv) logContainerDiv.style.display = 'none'; // Hide log container initially
         if (logOutput) logOutput.textContent = ''; // Clear log content

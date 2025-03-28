@@ -28,7 +28,7 @@ function renderResultsTable(result) {
   resultsTableDiv.style.display = "block";
   const resultData = Array.isArray(result) ? result[0] : result;
   if (!resultData) {
-    resultsTableDiv.innerHTML = "<p>Received empty results.</p>";
+    resultsTableDiv.innerHTML = "<p>Received empty or invalid results.</p>";
     return;
   }
   const table = document.createElement("table");
