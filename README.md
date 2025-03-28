@@ -24,7 +24,7 @@ This travel stipend calculator helps provide fair and consistent travel stipends
 -   **Caching**: Implements persistent caching for flight prices, distances, coordinates, and cost-of-living data to improve performance and reduce redundant lookups.
 -   **Flexible Output**: Supports JSON, CSV, and formatted console table outputs via the CLI and generates a consolidated Markdown report in the batch workflow.
 -   **Modular Design**: Calculations are separated into utility functions for maintainability.
--   **Web UI Trigger**: A simple web interface (`ui/`) allows triggering the GitHub Actions workflow via a secure proxy function.
+-   **Web UI Trigger**: A simple web interface (`ui/`) allows triggering the GitHub Actions workflow via a secure proxy function, with results delivered back via WebSockets.
 
 ## Requirements
 
@@ -85,12 +85,12 @@ There are three main ways to use the calculator:
 
 ### 1. Web Interface (Recommended)
 
-A simple web UI allows triggering calculations via GitHub Actions. This is the recommended way for most users as it leverages the robust backend environment provided by Actions.
+A simple web UI allows triggering calculations via GitHub Actions and receiving results back in real-time via WebSockets.
 
 **Architecture:**
 
-1.  **Static UI & Proxy Function (Single Deployment):** The Deno Deploy function (`api/trigger-workflow.ts`) serves both the static UI files (`ui/`) and acts as a secure proxy to trigger the GitHub Actions workflow.
-2.  **GitHub Actions Workflow:** The `batch-travel-stipend.yml` workflow runs the actual calculation using the inputs provided by the proxy function. Results are available in the Actions tab of the repository and as uploaded artifacts.
+1.  **Static UI & Proxy/WebSocket Server (Single Deployment):** The Deno Deploy function (`api/trigger-workflow.ts`) serves the static UI files (`ui/`), handles WebSocket connections (`/ws`), triggers the GitHub Actions workflow via API (`/api/trigger-workflow`), and receives results from the Action via a secure callback endpoint (`/api/workflow-complete`).
+2.  **GitHub Actions Workflow:** The `batch-travel-stipend.yml` workflow runs the calculation, triggered by `workflow_dispatch`. Its final step POSTs the results back to the proxy's callback URL.
 
 **Setup:**
 
@@ -108,14 +108,10 @@ A simple web UI allows triggering calculations via GitHub Actions. This is the r
     *   **Convert Private Key (If Necessary):** The proxy function expects the private key in unencrypted PKCS#8 PEM format (`-----BEGIN PRIVATE KEY-----`). Keys downloaded from GitHub should already be in this format. If your key starts with something else (like `-----BEGIN RSA PRIVATE KEY-----`), convert it using the provided script:
         ```bash
         # Ensure openssl is installed
-        # Make the script executable
         chmod +x scripts/convert-key-to-pkcs8.sh
-        # Run the script (uses keys/ubiquity-os.2025-03-28.private-key.pem by default)
-        bun run convert:key
-        # Or specify a different input key:
-        # bun run convert:key path/to/your/original-key.pem
+        bun run convert:key [path/to/your/original-key.pem] # Optional path
         ```
-        This creates a new file ending in `_pkcs8.pem`. Use the content of **this new file** for the environment variable below.
+        Use the content of the generated `_pkcs8.pem` file for the environment variable below.
 2.  **Deploy to Deno Deploy:**
     1.  Go to [dash.deno.com](https://dash.deno.com/) and create a new project.
     2.  Link the project to your GitHub repository (`0x4007/travel-stipend`).
@@ -125,56 +121,56 @@ A simple web UI allows triggering calculations via GitHub Actions. This is the r
     6.  Add the following **secrets**:
         *   `GITHUB_APP_ID`: Your App ID (`975031`).
         *   `GITHUB_APP_INSTALLATION_ID`: Your Installation ID (`60991083`).
-        *   `GITHUB_APP_PRIVATE_KEY`: Paste the **entire content** of your **PKCS#8 formatted** `.pem` private key file (the original from GitHub or the converted `_pkcs8.pem` file).
+        *   `GITHUB_APP_PRIVATE_KEY`: Paste the **entire content** of your **PKCS#8 formatted** `.pem` private key file.
         *   `GITHUB_OWNER`: Your GitHub username or organization (`0x4007`).
         *   `GITHUB_REPO`: The repository name (`travel-stipend`).
         *   `WORKFLOW_ID`: The workflow filename (`batch-travel-stipend.yml`).
-        *   `CALLBACK_SECRET`: A strong, unique secret string you generate (e.g., using a password manager or `openssl rand -hex 32`). This is used to authenticate the callback from GitHub Actions to your proxy.
-    7.  Deno Deploy will automatically build and deploy the `api/trigger-workflow.ts` function (which also serves the UI) upon pushes to the selected branch.
+        *   `CALLBACK_SECRET`: A strong, unique secret string you generate (e.g., using `openssl rand -hex 32`). This authenticates the callback from GitHub Actions.
+    7.  Deno Deploy will automatically build and deploy the `api/trigger-workflow.ts` function upon pushes to the selected branch.
     *   Note the **URL** of your deployed project (e.g., `https://your-project-name.deno.dev`).
 3.  **Configure GitHub Secrets:** Go to your `0x4007/travel-stipend` repository settings -> Secrets and variables -> Actions -> New repository secret. Add the following secrets:
     *   `PROXY_CALLBACK_URL`: The full URL of your deployed proxy function's callback endpoint (e.g., `https://your-project-name.deno.dev/api/workflow-complete`).
     *   `PROXY_CALLBACK_SECRET`: The same secret string you configured in Deno Deploy's environment variables.
-4.  **Update UI Script (if needed):** The `proxyApiUrl` constant in `ui/script.ts` currently points to `/api/trigger-workflow` (a relative path). This works correctly when the UI and API are served from the same domain by Deno Deploy. Ensure the latest UI script is compiled (`bun run build:ui`) and included in your commit.
+4.  **Compile UI:** Ensure the latest UI script is compiled before committing/pushing:
+    ```bash
+    bun run build:ui
+    ```
 
 **Using the Deployed UI:**
 
 1.  Navigate to the URL of your deployed Deno Deploy project (e.g., `https://your-project-name.deno.dev`).
 2.  Fill in the form and click "Calculate Stipend".
-3.  A status message will indicate if the workflow was triggered successfully. The UI will then wait for the results via WebSocket.
-4.  Go to the **Actions** tab in your GitHub repository (`https://github.com/0x4007/travel-stipend/actions`) to monitor the workflow run.
-5.  Once the workflow completes, the results should appear automatically in the UI table.
+3.  The UI will connect via WebSocket and show status messages ("Triggering workflow...", "Workflow triggered successfully. Waiting for results...").
+4.  Monitor the workflow run in the GitHub Actions tab if desired.
+5.  Once the workflow completes and calls back to the proxy, the results table should appear automatically in the UI.
 
 **Local Testing (UI + Proxy + Actions):**
 
-It's possible to test the UI-to-Actions flow locally, but requires careful setup:
+Testing the full callback loop locally is challenging as GitHub Actions cannot easily reach `localhost`.
 
-1.  **Create `.env` file:** In the project root, create a `.env` file (and add it to `.gitignore`). Populate it with the required secrets:
+1.  **Create `.env` file:** In the project root, create a `.env` file (add to `.gitignore`) with secrets:
     ```dotenv
-    # GitHub App Credentials
     GITHUB_APP_ID=975031
     GITHUB_APP_INSTALLATION_ID=60991083
-    # Paste the *entire* content of your PKCS#8 .pem file below, replacing newlines with \n literal characters
-    GITHUB_APP_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_KEY_LINE_1\nYOUR_KEY_LINE_2\n...\n-----END PRIVATE KEY-----\n"
+    GITHUB_APP_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PKCS8_KEY...\n-----END PRIVATE KEY-----\n" # Literal \n needed for Bun/Node version
     GITHUB_OWNER=0x4007
     GITHUB_REPO=travel-stipend
     WORKFLOW_ID=batch-travel-stipend.yml
-    # Shared secret for Action->Proxy callback
     CALLBACK_SECRET="your_strong_random_secret_string"
     ```
-    *Security Note:* Be extremely careful with the `.env` file and never commit it.
-2.  **Run the Proxy Server:** Open a terminal and run:
+2.  **Run the Proxy Server (Bun/Node version):**
     ```bash
-    # This script uses Bun/Node APIs and requires the .env file
     bun run start:proxy
     ```
-    This starts the local proxy server on `http://localhost:8000`. This server now *also* serves the static UI files from the `ui/` directory.
-3.  **Compile UI:** Ensure the latest UI script is compiled:
-    ```bash
-    bun run build:ui
-    ```
-4.  **Configure UI:** Ensure `proxyApiUrl` in `ui/script.ts` points to `/api/trigger-workflow` (relative path for local testing when served by the same proxy). Re-compile if needed (`bun run build:ui`).
-5.  **Test:** Open `http://localhost:8000` in your browser. The UI should load. Submitting the form hits the local proxy, which triggers the GitHub Action. The Action will run, and its final step will attempt to POST results back to `http://localhost:8000/api/workflow-complete` (using the `CALLBACK_SECRET` from `.env`). Check the proxy server's terminal logs, the UI, and the GitHub Actions tab for results. *Note: GitHub Actions runners might not be able to reach `localhost:8000`. Consider using a tool like ngrok to expose your local server for testing the callback.*
+    This starts the local proxy on `http://localhost:8000`. It serves the UI and handles WebSocket connections/API calls.
+3.  **Compile UI:** `bun run build:ui`
+4.  **Test UI -> Proxy -> Action Trigger:** Open `http://localhost:8000`. Submitting the form should trigger the Action. Check proxy logs and GitHub Actions tab.
+5.  **Testing Action -> Proxy Callback:** This requires exposing your local proxy server (e.g., using `ngrok http 8000`).
+    *   Get the public ngrok URL (e.g., `https://your-ngrok-subdomain.ngrok.io`).
+    *   Temporarily set the `PROXY_CALLBACK_URL` secret in your GitHub repository settings to `https://your-ngrok-subdomain.ngrok.io/api/workflow-complete`.
+    *   Trigger the workflow (via UI or manually on GitHub).
+    *   Observe if the `curl` step in the completed Action successfully POSTs data to your local proxy (check ngrok and proxy logs) and if the result appears in the UI.
+    *   **Remember to remove the ngrok URL from GitHub secrets afterwards.**
 
 ### 2. Command Line Interface (CLI)
 
