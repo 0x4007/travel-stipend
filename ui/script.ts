@@ -23,7 +23,7 @@ interface StipendBreakdown {
 
 // Type for WebSocket messages from server
 interface WebSocketMessage {
-    type: 'log' | 'status' | 'result' | 'error'; // Added 'status'
+    type: 'log' | 'status' | 'result' | 'error';
     payload: any;
 }
 
@@ -35,12 +35,14 @@ const departureDateInput = document.getElementById('departure-date') as HTMLInpu
 const returnDateInput = document.getElementById('return-date') as HTMLInputElement;
 const ticketPriceInput = document.getElementById('ticket-price') as HTMLInputElement;
 const calculateButton = document.getElementById('calculate-button') as HTMLButtonElement;
-const resultsTableDiv = document.getElementById('results-table') as HTMLDivElement;
-const statusMessageDiv = document.getElementById('status-message') as HTMLDivElement; // Use status div
+const resultsTableDiv = document.getElementById('results-table') as HTMLDivElement; // Keep for results
+const statusMessageDiv = document.getElementById('status-message') as HTMLDivElement;
+const logContainerDiv = document.getElementById('log-container') as HTMLDivElement; // Get log container
+const logOutput = document.getElementById('log-output') as HTMLPreElement; // Get log output area
 const errorOutput = document.getElementById('error-output') as HTMLDivElement;
 
 let socket: WebSocket | null = null;
-let clientId: string | null = null; // Store client ID for the session
+let clientId: string | null = null;
 
 // Helper to format currency
 function formatCurrency(value: number | undefined): string {
@@ -58,14 +60,8 @@ function renderResultsTable(result: StipendBreakdown | StipendBreakdown[]): void
     if (!resultsTableDiv) return;
     resultsTableDiv.innerHTML = '';
     resultsTableDiv.style.display = 'block';
-
-    // Handle potential array from consolidation (though proxy currently sends single object)
     const resultData = Array.isArray(result) ? result[0] : result;
-    if (!resultData) {
-        resultsTableDiv.innerHTML = '<p>Received empty or invalid results.</p>';
-        return;
-    }
-
+    if (!resultData) { resultsTableDiv.innerHTML = '<p>Received empty results.</p>'; return; }
     const table = document.createElement('table');
     const tbody = document.createElement('tbody');
     const displayOrder: (keyof StipendBreakdown)[] = [
@@ -75,7 +71,6 @@ function renderResultsTable(result: StipendBreakdown | StipendBreakdown[]): void
         'local_transport_cost', 'ticket_price', 'internet_data_allowance', 'incidentals_allowance',
         'total_stipend'
     ];
-
     displayOrder.forEach(key => {
         const value = resultData[key];
         if (value === undefined || value === null) { if (key === 'distance_km') return; }
@@ -98,42 +93,46 @@ function renderResultsTable(result: StipendBreakdown | StipendBreakdown[]): void
 function updateStatus(message: string, isSuccess = false): void {
     if (!statusMessageDiv) return;
     statusMessageDiv.innerHTML = `<p>${message}</p>`;
-    if (isSuccess) {
-        statusMessageDiv.classList.add('success');
-    } else {
-        statusMessageDiv.classList.remove('success');
-    }
+    if (isSuccess) statusMessageDiv.classList.add('success');
+    else statusMessageDiv.classList.remove('success');
+}
+
+// Function to add log messages
+function addLog(message: string): void {
+    if (!logOutput) return;
+    // Add message with newline
+    logOutput.textContent += message + '\n';
+    // Auto-scroll to bottom
+    logOutput.scrollTop = logOutput.scrollHeight;
 }
 
 // Function to handle WebSocket connection and messages
 function connectWebSocket(requestData: any): void {
-    if (!clientId) {
-        clientId = crypto.randomUUID(); // Generate unique ID for this client session
-        console.log("Generated Client ID:", clientId);
-    }
+    if (!clientId) clientId = crypto.randomUUID();
 
-    // If socket exists and is open/connecting, just send the message
     if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
         console.log("WebSocket exists. Sending request.");
         socket.send(JSON.stringify({ type: 'request_calculation', clientId, payload: requestData }));
         updateStatus('Sending calculation request...');
+        if (logContainerDiv) logContainerDiv.style.display = 'block'; // Show log container
+        if (logOutput) logOutput.textContent = 'Sending calculation request...\n'; // Clear previous logs
         if (calculateButton) calculateButton.disabled = true;
         return;
     }
 
-    // Determine WebSocket protocol and URL
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // Use relative path for same-origin deployment (Deno Deploy), or absolute for separate deployments
     const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
 
     updateStatus('Connecting to server...');
+    if (logContainerDiv) logContainerDiv.style.display = 'block'; // Show log container
+    if (logOutput) logOutput.textContent = 'Connecting to server...\n'; // Clear previous logs
     console.log(`Attempting to connect WebSocket to: ${wsUrl}`);
     socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
         console.log('WebSocket connection established.');
+        addLog('Connection established.'); // Log connection
         updateStatus('Connection established. Sending calculation request...');
-        // Send request immediately after opening
         socket?.send(JSON.stringify({ type: 'request_calculation', clientId, payload: requestData }));
         if (calculateButton) calculateButton.disabled = true;
     };
@@ -143,31 +142,37 @@ function connectWebSocket(requestData: any): void {
             const message: WebSocketMessage = JSON.parse(event.data);
             console.log("WS Message Received:", message);
             switch (message.type) {
-                case 'log': // Currently unused on client, but could be added
-                    console.log('LOG:', message.payload);
+                case 'log':
+                    addLog(message.payload); // Append log message
                     break;
                 case 'status':
                     updateStatus(message.payload);
+                    addLog(`Status: ${message.payload}`); // Also add status to log
                     break;
                 case 'result':
                     updateStatus('Calculation complete!', true);
-                    renderResultsTable(message.payload); // Render the received results
+                    addLog('Calculation complete. Results received.');
+                    renderResultsTable(message.payload);
                     if (calculateButton) calculateButton.disabled = false;
-                    socket?.close(); // Close socket after getting result
+                    socket?.close();
                     break;
                 case 'error':
-                    console.error('Error from server:', message.payload);
-                    if (errorOutput) errorOutput.textContent = `Error: ${message.payload}`;
+                    const errorMsg = message.payload || 'Unknown server error';
+                    console.error('Error from server:', errorMsg);
+                    if (errorOutput) errorOutput.textContent = `Error: ${errorMsg}`;
                     updateStatus('Calculation failed.');
+                    addLog(`ERROR: ${errorMsg}`); // Add error to log
                     if (calculateButton) calculateButton.disabled = false;
-                    socket?.close(); // Close socket on error
+                    socket?.close();
                     break;
                 default:
                     console.warn(`Unknown message type: ${message.type}`);
+                    addLog(`Received unknown message type: ${message.type}`);
             }
         } catch (error) {
             console.error('Error processing message:', error);
             if (errorOutput) errorOutput.textContent = 'Error processing server message.';
+            addLog(`Error processing message: ${error}`);
         }
     };
 
@@ -175,17 +180,21 @@ function connectWebSocket(requestData: any): void {
         console.error('WebSocket Error:', error);
         if (errorOutput) errorOutput.textContent = 'WebSocket connection error. Check console.';
         updateStatus('Connection error.');
+        addLog('WebSocket connection error.');
         if (calculateButton) calculateButton.disabled = false;
         socket = null;
     };
 
     socket.onclose = (event) => {
         console.log(`WebSocket connection closed (Code: ${event.code}).`);
-        // Don't necessarily show "Connection closed" as status if it closed cleanly after result/error
         if (!event.wasClean) {
             updateStatus('Connection closed unexpectedly.');
+            addLog('WebSocket connection closed unexpectedly.');
+        } else {
+             updateStatus('Connection closed.'); // Indicate clean close if needed
+             // addLog('WebSocket connection closed.'); // Optional log for clean close
         }
-        if (calculateButton && calculateButton.disabled) { // Re-enable button if closed unexpectedly mid-process
+        if (calculateButton && calculateButton.disabled) {
              calculateButton.disabled = false;
         }
         socket = null;
@@ -200,13 +209,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Form submission handler - Initiates WebSocket connection
+    // Form submission handler
     form.addEventListener('submit', (event) => {
         event.preventDefault();
 
         // Clear previous results/errors
         if (resultsTableDiv) resultsTableDiv.innerHTML = ''; // Clear table
         if (statusMessageDiv) updateStatus('Initiating calculation...');
+        if (logContainerDiv) logContainerDiv.style.display = 'none'; // Hide log container initially
+        if (logOutput) logOutput.textContent = ''; // Clear log content
         if (errorOutput) errorOutput.textContent = '';
         if (calculateButton) calculateButton.disabled = true;
 
@@ -223,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
             destination,
             startDate: departureDate,
             endDate: returnDate,
-            price: ticketPrice || "0" // Send "0" if empty
+            price: ticketPrice || "0"
         };
 
         // Connect WebSocket and send data

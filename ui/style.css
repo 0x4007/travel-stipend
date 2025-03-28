@@ -87,6 +87,24 @@ button:disabled {
     font-weight: bold;
 }
 
+/* Re-add Log Styles */
+#log-container {
+    /* Styles for the container */
+}
+#log-output {
+    background-color: #333; /* Dark background for log */
+    color: #e0e0e0; /* Light text */
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9em;
+    max-height: 300px; /* Limit height */
+    overflow-y: auto; /* Add scrollbar if needed */
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border: 1px solid #444;
+}
+
 /* Removed Table Styles */
 /* Removed Loading Indicator Styles */
 /* Removed Spinner Styles */

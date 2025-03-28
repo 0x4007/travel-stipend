@@ -36,8 +36,12 @@
     <div id="status-container">
         <h2>Status</h2>
         <div id="status-message"><p>Enter trip details and click "Trigger Workflow".</p></div>
+        <div id="log-container" style="margin-top: 15px; display: none;"> <!-- Add log container, hidden initially -->
+             <h3>Progress Log:</h3>
+             <pre id="log-output"></pre>
+        </div>
         <div id="error-output" class="error"></div>
-        <p><small>Check the <a href="https://github.com/0x4007/travel-stipend/actions" target="_blank" rel="noopener noreferrer">Actions tab</a> in your GitHub repository for progress.</small></p>
+        <p><small>Check the <a href="https://github.com/0x4007/travel-stipend/actions" target="_blank" rel="noopener noreferrer">Actions tab</a> in your GitHub repository for detailed run logs.</small></p> <!-- Adjusted text -->
     </div>
 
     <script src="script.js" type="module"></script> <!-- Keep using compiled JS -->
