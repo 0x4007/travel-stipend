@@ -23,7 +23,7 @@ interface StipendBreakdown {
 
 // Type for WebSocket messages from server
 interface WebSocketMessage {
-    type: 'log' | 'status' | 'result' | 'error';
+    type: 'log' | 'status' | 'result' | 'error'; // Added 'status'
     payload: any;
 }
 
@@ -40,7 +40,7 @@ const statusMessageDiv = document.getElementById('status-message') as HTMLDivEle
 const errorOutput = document.getElementById('error-output') as HTMLDivElement;
 
 let socket: WebSocket | null = null;
-let clientId: string | null = null;
+let clientId: string | null = null; // Store client ID for the session
 
 // Helper to format currency
 function formatCurrency(value: number | undefined): string {
@@ -54,16 +54,15 @@ function formatLabel(key: string): string {
 }
 
 // Function to render the results table
-function renderResultsTable(result: StipendBreakdown | StipendBreakdown[]): void { // Can accept single or array
+function renderResultsTable(result: StipendBreakdown | StipendBreakdown[]): void {
     if (!resultsTableDiv) return;
     resultsTableDiv.innerHTML = '';
     resultsTableDiv.style.display = 'block';
 
-    // If the result from the callback is an array (e.g., from consolidate), handle it
-    // For now, assume the callback sends a single StipendBreakdown object
-    const resultData = Array.isArray(result) ? result[0] : result; // Use first result if array for now
+    // Handle potential array from consolidation (though proxy currently sends single object)
+    const resultData = Array.isArray(result) ? result[0] : result;
     if (!resultData) {
-        resultsTableDiv.innerHTML = '<p>Received empty results.</p>';
+        resultsTableDiv.innerHTML = '<p>Received empty or invalid results.</p>';
         return;
     }
 
@@ -110,26 +109,31 @@ function updateStatus(message: string, isSuccess = false): void {
 function connectWebSocket(requestData: any): void {
     if (!clientId) {
         clientId = crypto.randomUUID(); // Generate unique ID for this client session
+        console.log("Generated Client ID:", clientId);
     }
 
-    if (socket && socket.readyState !== WebSocket.CLOSED && socket.readyState !== WebSocket.CLOSING) {
-        console.log("WebSocket already open or connecting. Sending request.");
+    // If socket exists and is open/connecting, just send the message
+    if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+        console.log("WebSocket exists. Sending request.");
         socket.send(JSON.stringify({ type: 'request_calculation', clientId, payload: requestData }));
-        updateStatus('Re-sending calculation request...');
+        updateStatus('Sending calculation request...');
         if (calculateButton) calculateButton.disabled = true;
         return;
     }
 
+    // Determine WebSocket protocol and URL
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${window.location.host}/ws`; // Connect to /ws endpoint
+    // Use relative path for same-origin deployment (Deno Deploy), or absolute for separate deployments
+    const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
 
     updateStatus('Connecting to server...');
+    console.log(`Attempting to connect WebSocket to: ${wsUrl}`);
     socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
         console.log('WebSocket connection established.');
         updateStatus('Connection established. Sending calculation request...');
-        // Register client and send request immediately
+        // Send request immediately after opening
         socket?.send(JSON.stringify({ type: 'request_calculation', clientId, payload: requestData }));
         if (calculateButton) calculateButton.disabled = true;
     };
@@ -139,7 +143,7 @@ function connectWebSocket(requestData: any): void {
             const message: WebSocketMessage = JSON.parse(event.data);
             console.log("WS Message Received:", message);
             switch (message.type) {
-                case 'log': // Generic log messages (could be used for detailed progress later)
+                case 'log': // Currently unused on client, but could be added
                     console.log('LOG:', message.payload);
                     break;
                 case 'status':
@@ -177,9 +181,11 @@ function connectWebSocket(requestData: any): void {
 
     socket.onclose = (event) => {
         console.log(`WebSocket connection closed (Code: ${event.code}).`);
-        updateStatus('Connection closed.');
-        // Only re-enable button if closed unexpectedly and calculation wasn't finished
-        if (!event.wasClean && calculateButton && calculateButton.disabled) {
+        // Don't necessarily show "Connection closed" as status if it closed cleanly after result/error
+        if (!event.wasClean) {
+            updateStatus('Connection closed unexpectedly.');
+        }
+        if (calculateButton && calculateButton.disabled) { // Re-enable button if closed unexpectedly mid-process
              calculateButton.disabled = false;
         }
         socket = null;
