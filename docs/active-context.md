@@ -2,150 +2,74 @@
 
 ## Current Status
 
-The Travel Stipend Calculator is a functional TypeScript application that calculates fair travel stipends for conference trips. The application is currently in a stable state with core functionality implemented.
+The project has undergone a significant architectural shift. The primary method for triggering calculations is now intended to be a static Web UI (`ui/`) that communicates with a serverless proxy function (`api/trigger-workflow.ts`). This proxy authenticates using a GitHub App and triggers the main calculation workflow (`batch-travel-stipend.yml`) via `workflow_dispatch`. The workflow then runs the calculations and posts the results back to the proxy, which relays them to the UI via WebSockets.
+
+The CLI (`src/travel-stipend-cli.ts`) and direct GitHub Actions triggers (`push`, `workflow_dispatch` without UI) remain as alternative usage methods.
 
 ## Recent Work
 
-The most recent development has focused on:
+Development has focused heavily on implementing and troubleshooting the new UI-driven workflow:
 
-1. **Implementing the core stipend calculation logic** that factors in:
+1.  **Web UI Implementation (`ui/`):**
+    *   Created `index.html` with input form and status/results display areas.
+    *   Added dark mode styling (`style.css`).
+    *   Developed frontend logic (`script.ts`) to:
+        *   Handle form submission.
+        *   Establish WebSocket connection to the proxy.
+        *   Send calculation requests with a unique client ID.
+        *   Receive and display status updates and final results table via WebSocket messages.
+    *   Added a build script (`build:ui`) to compile `script.ts` to `script.js`.
 
-   - Flight costs (via Google Flights scraper or distance-based calculation)
-   - Lodging costs adjusted by location's cost of living
-   - Meal costs with basic and business entertainment components
-   - Local transportation costs based on taxi data
-   - Conference ticket prices
+2.  **Proxy Function (`api/trigger-workflow.ts`):**
+    *   Created a Deno function designed for serverless deployment (e.g., Deno Deploy).
+    *   Serves the static UI files (`ui/index.html`, `ui/style.css`, `ui/script.js`).
+    *   Manages WebSocket connections, mapping client IDs to sockets.
+    *   Handles incoming WebSocket calculation requests:
+        *   Authenticates with GitHub using GitHub App credentials (App ID, Installation ID, Private Key from env vars).
+        *   Generates JWT and obtains installation token.
+        *   Triggers the `batch-travel-stipend.yml` workflow via `workflow_dispatch`, passing trip details and `clientId`.
+    *   Includes an HTTP endpoint (`/api/workflow-complete`) to receive results posted back from the completed GitHub Action.
+    *   Authenticates the callback using a shared secret (`PROXY_CALLBACK_SECRET`).
+    *   Forwards results to the correct client via WebSocket.
+    *   Created a Bun/Node-compatible version for local testing (`start:proxy` script).
 
-2. **Building a robust caching system** to improve performance:
+3.  **GitHub Actions Workflow (`batch-travel-stipend.yml`):**
+    *   Added `clientId` to `workflow_dispatch` inputs.
+    *   Ensured unique filenames and artifact names using origin, destination, and job index to prevent overwrites/conflicts.
+    *   Added a final step to the `consolidate` job to POST results back to the proxy's callback URL (`PROXY_CALLBACK_URL`), including the `clientId` and authenticating with `PROXY_CALLBACK_SECRET`.
 
-   - Distance cache to avoid recalculating distances
-   - Cost-of-living cache for frequently accessed locations
-   - Coordinates cache for city location data
-   - Stipend cache for complete calculation results
+4.  **Authentication:** Switched proxy authentication method from PAT to GitHub App. Added script (`convert-key-to-pkcs8.sh`) to help ensure correct private key format (PKCS#8).
 
-3. **Adding command-line options** for sorting and filtering results:
+5.  **Documentation (`README.md`, etc.):** Updated significantly to reflect the new architecture, GitHub App setup, deployment procedures for UI and proxy (especially Deno Deploy), environment variable requirements, and local testing steps.
 
-   - Sort by any column in the output
-   - Reverse sort order option
-   - Filtering for upcoming conferences
-
-4. **Implementing fallback mechanisms** for resilience:
-
-   - Flight cost calculation defaults to `0` when scraping fails (Note: Distance-based fallback is documented but not currently implemented in the main calculation path).
-   - Fuzzy matching for city names when exact matches aren't found.
-
-5. **Integrating the Google Flights scraper**:
-   - Replaced SerpAPI with custom Google Flights scraper
-   - Added flight price source tracking in the output
-   - Implemented average price calculation for multiple flights
-   - Enhanced caching for scraped flight prices
-   - Improved error handling: Implemented `try...catch` around the scraper call in `travel-stipend-calculator.ts` to return `0` flight cost on failure (including null price results) instead of throwing an error.
-   - Updated output structure (`StipendBreakdown` type, CSV, console table) to include `origin` and rename `location` to `destination`.
+6.  **Troubleshooting:** Addressed various issues related to GitHub Actions filename/artifact conflicts, Deno Deploy errors (private key import, `deployctl` installation), and UI functionality (page reloads, timeouts).
 
 ## Current Focus
 
-The current development focus is on:
+The immediate focus is on ensuring the newly implemented UI -> Proxy -> Actions -> Proxy -> UI flow works reliably in a deployed environment. This includes:
 
-1. **Refining the flight price lookup** to provide more accurate estimates:
-
-   - Enhancing the Google Flights scraper reliability
-   - Handling edge cases for less common destinations
-   - Improving error handling and recovery (partially addressed by recent `try...catch` implementation)
-   - Optimizing scraper performance
-
-2. **Enhancing the cost-of-living adjustments** for better accuracy:
-
-   - Expanding the cost_of_living.csv dataset
-   - Implementing more nuanced adjustments for different expense types
-
-3. **Improving the output formats** for better usability:
-   - Enhanced CSV output with more detailed breakdowns (Added 'Origin', renamed 'Location' to 'Destination')
-   - Updated console table output (Added 'Origin', renamed 'Location' to 'Destination')
-   - Potential for additional output formats (JSON, HTML)
+1.  Verifying the Deno Deploy deployment of `api/trigger-workflow.ts`.
+2.  Confirming the static UI deployment.
+3.  Testing the end-to-end calculation trigger and result callback via WebSockets.
+4.  Ensuring secure handling of credentials (GitHub App key, callback secret).
 
 ## Active Decisions
 
-Several key decisions are currently being considered:
-
-1. **Origin City Configuration**:
-
-   - Currently hardcoded as "Seoul, Korea" in constants
-   - Considering making this a command-line parameter
-   - Potential for supporting multiple origin cities
-
-2. **Cost Adjustment Factors**:
-
-   - Evaluating the current weekend rate multiplier (0.9)
-   - Considering seasonal adjustments for high/low travel seasons
-   - Exploring additional factors like conference popularity
-
-3. **Historical Data Analysis**:
-
-   - Exploring ways to leverage historical stipend data
-   - Considering trend analysis for budget forecasting
-   - Potential for machine learning to improve estimates
-
-4. **Web Scraping Strategy**:
-   - Evaluating the multi-approach strategy for web element selection
-   - Considering more robust selectors for different UI patterns
-   - Balancing between specific and generic selectors
+-   **Callback Payload:** Currently sending the full consolidated `results` array back. Consider if a different format or subset of data is more appropriate.
+-   **Error Handling:** Refine error reporting back to the UI via WebSockets for both proxy errors and potential calculation errors reported by the Action callback.
+-   **Local Testing Callback:** The current local testing setup notes that the GitHub Action runner might not be able to reach `localhost:8000` for the callback. Need to confirm if tools like `ngrok` are necessary or if alternative testing strategies exist.
 
 ## Known Issues
 
-Current known issues that need attention:
-
-1. **City Name Matching**:
-
-   - Some edge cases where fuzzy matching fails to find the correct city
-   - Need for more robust city name normalization
-
-2. **Flight Price Volatility**:
-
-   - Flight prices from scraping can vary significantly
-   - Need for strategies to handle price fluctuations
-
-3. **Currency Conversion**:
-
-   - All calculations currently in USD
-   - Need for handling multiple currencies
-
-4. **Scraper Reliability**:
-   - Google Flights UI can change, breaking selectors
-   - Some destinations fail to scrape consistently
-   - Need for more robust error handling and recovery (partially addressed by `try...catch` in calculator, but underlying scraper issues may persist).
-   - **Documentation Discrepancy:** Distance-based flight cost fallback is documented but not implemented in the current calculation flow.
+-   **Proxy Deployment:** Potential issues deploying `api/trigger-workflow.ts` related to environment variable handling (especially the multi-line private key) or Deno Deploy specifics.
+-   **Callback Reliability:** Network issues could prevent the GitHub Action from successfully POSTing results back to the proxy. Need robust error handling/logging around the `curl` step in the workflow.
+-   **WebSocket State:** The current server implementation has basic WebSocket connection management; more robust handling (e.g., heartbeats, reconnection logic) might be needed for production.
+-   **Scraper Reliability:** The underlying issues with Google Flights UI changes potentially breaking the scraper still exist.
 
 ## Next Steps
 
-The immediate next steps for development are:
-
-1. **Expand Test Coverage**:
-
-   - Add more unit tests for utility functions
-   - Create integration tests for end-to-end calculation
-   - Test edge cases and error handling
-   - Add more comprehensive tests for the Google Flights scraper
-
-2. **Improve Documentation**:
-
-   - Add more detailed comments to complex functions
-   - Create comprehensive README with examples
-   - Document configuration options
-   - Document the web scraping strategies
-
-3. **Enhance Data Validation**:
-
-   - Add validation for input CSV files
-   - Implement better error messages for malformed data
-   - Create data integrity checks
-
-4. **Optimize Performance**:
-
-   - Profile the application to identify bottlenecks
-   - Improve caching strategies
-   - Consider parallel processing for batch calculations
-
-5. **User Experience Improvements**:
-   - Add progress indicators for long-running calculations
-   - Improve error reporting
-   - Enhance console output formatting
+1.  **Complete Deployment:** Ensure the static UI and Deno Deploy proxy function are correctly deployed and configured with all necessary environment variables/secrets.
+2.  **End-to-End Test:** Thoroughly test the flow: submit via UI -> verify Action trigger -> verify Action completion -> verify callback to proxy -> verify results appear in UI.
+3.  **Refine Error Handling:** Improve how errors from the GitHub API calls, workflow execution, or callback are communicated back to the user via the UI/WebSocket.
+4.  **Update Documentation:** Finalize documentation based on successful deployment and testing.
+5.  **(Future)** Address other known issues like currency conversion, city name matching, etc., as prioritized.

@@ -26,6 +26,12 @@ on:
         required: false
         type: string
         default: ""
+      # Input for WebSocket callback
+      clientId:
+        description: "Internal client ID for WebSocket callback"
+        required: false # Only required if triggered via UI/proxy
+        type: string
+        default: ""
 
 defaults:
   run:
@@ -110,6 +116,9 @@ jobs:
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   calculate:
+    # Pass clientId through if provided by dispatch
+    env:
+      CLIENT_ID: ${{ github.event.inputs.clientId }}
     needs: setup
     runs-on: ubuntu-latest
     strategy:
@@ -129,13 +138,18 @@ jobs:
 
       - name: Calculate Stipend
         env:
+          # Pass matrix vars
           INPUT_ORIGIN: ${{ matrix.origin }}
           INPUT_DESTINATION: ${{ matrix.destination }}
           INPUT_CONFERENCE_START: ${{ matrix.startDate }}
           INPUT_CONFERENCE_END: ${{ matrix.endDate }}
           INPUT_TICKET_PRICE: ${{ matrix.price }}
-          INPUT_OUTPUT_FORMAT: "json"
-        id: calculate_step # Changed id for clarity
+          INPUT_OUTPUT_FORMAT: "json" # Keep JSON for file output
+          # Pass callback info needed by github-action-handler.ts
+          CLIENT_ID: ${{ env.CLIENT_ID }} # Use job-level env var
+          PROXY_CALLBACK_URL: ${{ secrets.PROXY_CALLBACK_URL }} # Use repo secret
+          PROXY_CALLBACK_SECRET: ${{ secrets.PROXY_CALLBACK_SECRET }} # Use repo secret
+        id: calculate_step
         run: |
           echo "::group::Starting calculation for ${{ matrix.destination }} (${{ matrix.startDate }})"
           echo "Input parameters:"
@@ -176,6 +190,12 @@ jobs:
           retention-days: 5
 
   consolidate:
+    # Pass clientId through if provided by dispatch
+    env:
+      CLIENT_ID: ${{ github.event.inputs.clientId }}
+      # Use secret names defined in GitHub Secrets
+      PROXY_CALLBACK_SECRET: ${{ secrets.PROXY_CALLBACK_SECRET }} # Reverted to use PROXY_CALLBACK_SECRET
+      PROXY_CALLBACK_URL: ${{ secrets.PROXY_CALLBACK_URL }}
     needs: [calculate]
     if: always()
     runs-on: ubuntu-latest
@@ -230,3 +250,35 @@ jobs:
             consolidated-results.md
             consolidated-results/
           retention-days: 5
+
+      # New Step: Send results back to proxy via callback URL
+      - name: Send Results to Proxy (if clientId provided)
+        if: env.CLIENT_ID != '' && env.PROXY_CALLBACK_SECRET != '' && env.PROXY_CALLBACK_URL != ''
+        run: |
+          echo "Client ID found, attempting to send results back to proxy..."
+          # Prepare JSON payload - use consolidated JSON results
+          # Ensure jq is available or use alternative JSON processing
+          if ! command -v jq &> /dev/null; then
+            echo "jq could not be found, installing..."
+            sudo apt-get update && sudo apt-get install -y jq
+          fi
+
+          # Extract the 'results' array from the consolidated JSON
+          RESULTS_JSON=$(jq -c '.results' consolidated-results/results.json)
+
+          # Construct the callback payload
+          CALLBACK_PAYLOAD=$(jq -n --argjson results "$RESULTS_JSON" --arg clientId "$CLIENT_ID" \
+            '{clientId: $clientId, results: $results}')
+
+          echo "Callback URL: $PROXY_CALLBACK_URL"
+          echo "Sending payload:"
+          echo "$CALLBACK_PAYLOAD"
+
+          # Send POST request with shared secret header
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Callback-Secret: $PROXY_CALLBACK_SECRET" \
+            -d "$CALLBACK_PAYLOAD" \
+            "$PROXY_CALLBACK_URL"
+
+          echo "Callback request sent."

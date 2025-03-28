@@ -8,9 +8,9 @@ The Travel Stipend Calculator is a TypeScript application designed to calculate 
 
 1. **Calculate comprehensive travel stipends** that include:
 
-   - Flight costs based on distance or API lookup
-   - Lodging costs adjusted by location's cost of living
-   - Meal costs adjusted by location's cost of living
+   - Flight costs based on Google Flights scraping (with fallback to $0 on failure).
+   - Lodging costs adjusted by location's cost of living and weekend rates.
+   - Meal costs (basic & business entertainment) adjusted by location's cost of living.
    - Local transportation costs
    - Conference ticket prices
 
@@ -34,8 +34,10 @@ The Travel Stipend Calculator is a TypeScript application designed to calculate 
    - Save stipend calculations for reuse
 
 5. **Flexible output options** including:
-   - CSV export with timestamp and sort information
-   - Console table display of results
+   - Console table display (via CLI).
+   - JSON output (via CLI or API).
+   - CSV export (via CLI).
+   - Consolidated Markdown report (via GitHub Actions workflow).
 
 ## Technical Goals
 
@@ -50,8 +52,9 @@ The Travel Stipend Calculator is a TypeScript application designed to calculate 
 2. **Data persistence** through JSON-based caching for:
 
    - Reducing redundant calculations
-   - Improving performance for repeated queries
-   - Storing historical data
+   - Improving performance for repeated queries.
+   - Storing reference data (cost of living, coordinates, taxi fares) in an SQLite database.
+   - Storing calculation results (stipends, flight prices, etc.) in JSON files.
 
 3. **Configurable parameters** through constants for:
 

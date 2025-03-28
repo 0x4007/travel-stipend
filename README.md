@@ -24,12 +24,15 @@ This travel stipend calculator helps provide fair and consistent travel stipends
 -   **Caching**: Implements persistent caching for flight prices, distances, coordinates, and cost-of-living data to improve performance and reduce redundant lookups.
 -   **Flexible Output**: Supports JSON, CSV, and formatted console table outputs via the CLI and generates a consolidated Markdown report in the batch workflow.
 -   **Modular Design**: Calculations are separated into utility functions for maintainability.
+-   **Web UI Trigger**: A simple web interface (`ui/`) allows triggering the GitHub Actions workflow via a secure proxy function, with results delivered back via WebSockets.
 
 ## Requirements
 
 -   [Bun](https://bun.sh/) runtime (v1.0.0 or higher)
 -   Node.js (v20.10.0 or higher, primarily for compatibility if Bun isn't used)
 -   Git (for submodules and hooks)
+-   [Deno](https://deno.land/) (if deploying the proxy function to Deno Deploy)
+-   `openssl` command-line tool (if needing to convert private key format)
 
 ## Setup
 
@@ -50,6 +53,7 @@ This travel stipend calculator helps provide fair and consistent travel stipends
     cd ../../..
     ```
 4.  Initialize the database (if empty): The application automatically imports data from CSV files in `fixtures/` into the SQLite database (`db/travel-stipend.db`) on first run if tables are empty.
+5.  Install Deno (if deploying proxy function): Ensure [Deno](https://deno.land/) is installed if you plan to deploy the proxy function to Deno Deploy.
 
 ## Input Data (Fixtures for Database)
 
@@ -77,9 +81,102 @@ Key calculation parameters are defined as constants in `src/utils/constants.ts`:
 
 ## Usage
 
-### Command Line Interface (CLI)
+There are three main ways to use the calculator:
 
-Use `bun src/travel-stipend-cli.ts` for single trip calculations.
+### 1. Web Interface (Recommended)
+
+A simple web UI allows triggering calculations via GitHub Actions and receiving results back in real-time via WebSockets.
+
+**Architecture:**
+
+1.  **Static UI & Proxy/WebSocket Server (Single Deployment):** The Deno Deploy function (`api/trigger-workflow.ts`) serves the static UI files (`ui/`), handles WebSocket connections (`/ws`), triggers the GitHub Actions workflow via API (`/api/trigger-workflow`), and receives results from the Action via a secure callback endpoint (`/api/workflow-complete`).
+2.  **GitHub Actions Workflow:** The `batch-travel-stipend.yml` workflow runs the calculation, triggered by `workflow_dispatch`. Its final step POSTs the results back to the proxy's callback URL.
+
+**Setup:**
+
+1.  **Create GitHub App:** (Recommended over PAT)
+    *   Go to your GitHub Settings -> Developer settings -> GitHub Apps -> New GitHub App.
+    *   Give it a name (e.g., "Travel Stipend Trigger").
+    *   Set Homepage URL (can be your repository URL).
+    *   **Disable Webhook.**
+    *   **Permissions:** Under "Repository permissions", grant `Actions: Read & write`.
+    *   **Installation:** Choose "Only on this account" or select specific repositories.
+    *   Click "Create GitHub App".
+    *   On the app's page, **generate a private key** (.pem file) and download it. Store this securely. **Do not commit this file to Git.** Add `keys/` or the specific `.pem` filename to your `.gitignore`.
+    *   **Install the App:** Install the app on the account/organization containing your `travel-stipend` repository. During installation, note the **Installation ID** (visible in the URL after installing, e.g., `.../installations/12345678`).
+    *   Note your **App ID** from the app's settings page.
+    *   **Convert Private Key (If Necessary):** The proxy function expects the private key in unencrypted PKCS#8 PEM format (`-----BEGIN PRIVATE KEY-----`). Keys downloaded from GitHub should already be in this format. If your key starts with something else (like `-----BEGIN RSA PRIVATE KEY-----`), convert it using the provided script:
+        ```bash
+        # Ensure openssl is installed
+        chmod +x scripts/convert-key-to-pkcs8.sh
+        bun run convert:key [path/to/your/original-key.pem] # Optional path
+        ```
+        Use the content of the generated `_pkcs8.pem` file for the environment variable below.
+2.  **Deploy to Deno Deploy:**
+    1.  Go to [dash.deno.com](https://dash.deno.com/) and create a new project.
+    2.  Link the project to your GitHub repository (`0x4007/travel-stipend`).
+    3.  Select the branch to deploy from (e.g., `main`).
+    4.  Set the **Entry point** to `api/trigger-workflow.ts`.
+    5.  Go to the project's **Settings** -> **Environment Variables**.
+    6.  Add the following **secrets**:
+        *   `GITHUB_APP_ID`: Your App ID (`975031`).
+        *   `GITHUB_APP_INSTALLATION_ID`: Your Installation ID (`60991083`).
+        *   `GITHUB_APP_PRIVATE_KEY`: Paste the **entire content** of your **PKCS#8 formatted** `.pem` private key file.
+        *   `GITHUB_OWNER`: Your GitHub username or organization (`0x4007`).
+        *   `GITHUB_REPO`: The repository name (`travel-stipend`).
+        *   `WORKFLOW_ID`: The workflow filename (`batch-travel-stipend.yml`).
+        *   `PROXY_CALLBACK_SECRET`: A strong, unique secret string you generate (e.g., using `openssl rand -hex 32`). This authenticates the callback from GitHub Actions.
+    7.  Deno Deploy will automatically build and deploy the `api/trigger-workflow.ts` function upon pushes to the selected branch.
+    *   Note the **URL** of your deployed project (e.g., `https://your-project-name.deno.dev`).
+3.  **Configure GitHub Secrets:** Go to your `0x4007/travel-stipend` repository settings -> Secrets and variables -> Actions -> New repository secret. Add the following secrets:
+    *   `PROXY_CALLBACK_URL`: The full URL of your deployed proxy function's callback endpoint (e.g., `https://your-project-name.deno.dev/api/workflow-complete`).
+    *   `PROXY_CALLBACK_SECRET`: The same secret string you configured as `PROXY_CALLBACK_SECRET` in Deno Deploy's environment variables.
+4.  **Compile UI:** Ensure the latest UI script is compiled before committing/pushing:
+    ```bash
+    bun run build:ui
+    ```
+
+**Using the Deployed UI:**
+
+1.  Navigate to the URL of your deployed Deno Deploy project (e.g., `https://your-project-name.deno.dev`).
+2.  Fill in the form and click "Calculate Stipend".
+3.  The UI will connect via WebSocket and show status messages ("Triggering workflow...", "Workflow triggered successfully. Waiting for results...").
+4.  Monitor the workflow run in the GitHub Actions tab if desired.
+5.  Once the workflow completes and calls back to the proxy, the results table should appear automatically in the UI.
+
+**Local Testing (UI + Proxy + Actions):**
+
+Testing the full callback loop locally is challenging as GitHub Actions cannot easily reach `localhost`.
+
+1.  **Create `.env` file:** In the project root, create a `.env` file (add to `.gitignore`) with secrets:
+    ```dotenv
+    # GitHub App Credentials
+    GITHUB_APP_ID=975031
+    GITHUB_APP_INSTALLATION_ID=60991083
+    GITHUB_APP_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PKCS8_KEY...\n-----END PRIVATE KEY-----\n" # Literal \n needed for Bun/Node version
+    GITHUB_OWNER=0x4007
+    GITHUB_REPO=travel-stipend
+    WORKFLOW_ID=batch-travel-stipend.yml
+    # Shared secret for Action->Proxy callback (matches PROXY_CALLBACK_SECRET in GitHub Secrets)
+    PROXY_CALLBACK_SECRET="your_strong_random_secret_string"
+    ```
+2.  **Run the Proxy Server (Bun/Node version):**
+    ```bash
+    bun run start:proxy
+    ```
+    This starts the local proxy on `http://localhost:8000`. It serves the UI and handles WebSocket connections/API calls.
+3.  **Compile UI:** `bun run build:ui`
+4.  **Test UI -> Proxy -> Action Trigger:** Open `http://localhost:8000`. Submitting the form should trigger the Action. Check proxy logs and GitHub Actions tab.
+5.  **Testing Action -> Proxy Callback:** This requires exposing your local proxy server (e.g., using `ngrok http 8000`).
+    *   Get the public ngrok URL (e.g., `https://your-ngrok-subdomain.ngrok.io`).
+    *   Temporarily set the `PROXY_CALLBACK_URL` secret in your GitHub repository settings to `https://your-ngrok-subdomain.ngrok.io/api/workflow-complete`.
+    *   Trigger the workflow (via UI or manually on GitHub).
+    *   Observe if the `curl` step in the completed Action successfully POSTs data to your local proxy (check ngrok and proxy logs) and if the result appears in the UI.
+    *   **Remember to remove the ngrok URL from GitHub secrets afterwards.**
+
+### 2. Command Line Interface (CLI)
+
+Use `bun src/travel-stipend-cli.ts` for single trip calculations directly on your local machine. This requires the full setup (Bun, Node, submodules, dependencies).
 
 **Required Arguments:**
 
@@ -116,9 +213,9 @@ bun run src/travel-stipend-cli.ts \
   -o json
 ```
 
-### Batch Processing (GitHub Actions)
+### 3. Batch Processing via GitHub Actions (Directly)
 
-The `.github/workflows/batch-travel-stipend.yml` workflow handles batch calculations.
+The `.github/workflows/batch-travel-stipend.yml` workflow handles batch calculations automatically or manually within GitHub.
 
 -   **On Push:** Reads trip data from `.github/test-events.json` and runs calculations for each entry.
 -   **Manual Trigger (`workflow_dispatch`):** Allows specifying lists of origins, destinations, dates, and prices via GitHub UI inputs.

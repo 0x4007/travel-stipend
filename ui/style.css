@@ -1,0 +1,110 @@
+body {
+    font-family: sans-serif;
+    line-height: 1.6;
+    margin: 20px;
+    background-color: #1a1a1a; /* Dark background */
+    color: #e0e0e0; /* Light text */
+}
+
+h1, h2 {
+    color: #ffffff; /* White headings */
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+}
+
+#stipend-form,
+#results-container {
+    background: #2b2b2b; /* Darker element background */
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #444; /* Subtle border */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #cccccc; /* Lighter grey label */
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"] {
+    width: calc(100% - 22px); /* Adjust for padding and border */
+    padding: 10px;
+    border: 1px solid #555; /* Darker border */
+    border-radius: 4px;
+    background-color: #333; /* Dark input background */
+    color: #e0e0e0; /* Light input text */
+}
+
+button {
+    display: inline-block;
+    background-color: #007bff; /* Keep blue for contrast */
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+button:disabled {
+    background-color: #555; /* Darker disabled button */
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+#status-container { /* Renamed from results-container */
+    background: #2b2b2b;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #444;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+#status-message p {
+    margin: 0;
+    color: #cccccc;
+}
+
+#status-message.success p {
+    color: #5cb85c; /* Green for success */
+}
+
+.error {
+    color: #ff6b6b; /* Brighter red for errors */
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* Re-add Log Styles */
+#log-container {
+    /* Styles for the container */
+}
+#log-output {
+    background-color: #333; /* Dark background for log */
+    color: #e0e0e0; /* Light text */
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9em;
+    max-height: 300px; /* Limit height */
+    overflow-y: auto; /* Add scrollbar if needed */
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border: 1px solid #444;
+}
+
+/* Removed Table Styles */
+/* Removed Loading Indicator Styles */
+/* Removed Spinner Styles */

@@ -2,14 +2,40 @@
 
 ## Architecture Overview
 
-The Travel Stipend Calculator follows a modular, functional architecture with clear separation of concerns. The system is organized around core calculation functions that process input data through a pipeline of transformations.
+The system uses different entry points (CLI, Web UI via Proxy) to trigger calculations, primarily executed within a GitHub Actions environment. The core calculation logic remains modular.
+
+**High-Level Flow (UI Trigger):**
 
 ```mermaid
-flowchart TD
-    Input[CSV Input] --> Parser[CSV Parser]
-    Parser --> Filter[Filter Upcoming Conferences]
-    Filter --> Calculator[Stipend Calculator]
-    Calculator --> Output[CSV/Console Output]
+graph LR
+    UI[Web UI (ui/)] -- POST Request (Trip Details) --> Proxy[Proxy Function (api/trigger-workflow.ts @ Deno Deploy)];
+    Proxy -- GitHub API Call (workflow_dispatch) --> GH_API[GitHub API];
+    GH_API -- Triggers Workflow --> Actions[GitHub Actions Runner (batch-travel-stipend.yml)];
+    Actions -- Runs Calculator --> Calculator[Core Calculator (src/travel-stipend-calculator.ts)];
+    Calculator -- Uses --> DB[(SQLite DB)];
+    Calculator -- Uses --> Cache[(JSON Caches)];
+    Calculator -- Uses --> Scraper[Flight Scraper];
+    Actions -- Saves Results --> Artifacts[GitHub Artifacts];
+    Actions -- POST Results --> Proxy_Callback[Proxy Function (/api/workflow-complete)];
+    Proxy_Callback -- WebSocket Push --> UI;
+
+    subgraph "Calculation Core (Runs in GitHub Actions)"
+        Calculator
+        DB
+        Cache
+        Scraper
+    end
+
+    subgraph "Deployment"
+        Proxy
+    end
+```
+
+**Core Calculation Components:**
+
+```mermaid
+graph TD
+    Calculator[Stipend Calculator] --> Utils;
 
     subgraph Utilities
         Distance[Distance Calculator]
@@ -47,13 +73,15 @@ flowchart TD
 - **Core Calculation Logic**: Pure functions that transform input data into output data without side effects.
 - **Imperative Shell**: Handles I/O operations, file reading/writing, and command-line interactions.
 
-### 2. Caching Strategy
+### 2. Data Persistence Strategy
 
-The application implements a persistent caching system to optimize performance:
+The application uses multiple methods for data persistence:
 
-- **Cache Classes**: Implemented as generic classes that can store any type of data.
-- **Disk Persistence**: Caches are saved to JSON files for reuse between runs.
-- **Hash-Based Keys**: Cache entries use hash keys generated from input parameters to ensure uniqueness.
+- **SQLite Database (`db/travel-stipend.db`):** Stores reference data like cost-of-living indices, city coordinates, and taxi fares. Populated initially from `fixtures/*.csv`.
+- **JSON Caching (`fixtures/cache/*.json`):** Implements persistent caching for calculated values (stipends, flight prices, distances) to optimize performance and avoid redundant computations/scraping.
+    - **Cache Classes**: Implemented as generic classes (`PersistentCache`) that can store any type of data.
+    - **Disk Persistence**: Caches are saved to JSON files for reuse between runs.
+    - **Hash-Based Keys**: Cache entries use hash keys generated from input parameters to ensure uniqueness.
 
 ```mermaid
 classDiagram
@@ -71,11 +99,11 @@ classDiagram
 
 ### 3. Data Transformation Pipeline
 
-The application processes data through a series of transformations:
+The application processes data through a series of transformations, primarily within the GitHub Actions workflow:
 
-1. **Input Parsing**: CSV data is parsed into structured objects.
-2. **Filtering**: Past conferences are filtered out.
-3. **Enrichment**: Basic data is enriched with calculated fields.
+1. **Input Acquisition**: Receives trip parameters via CLI arguments, `workflow_dispatch` inputs (from UI/Proxy), or reads from `.github/test-events.json`.
+2. **Matrix Generation**: The `setup` job in the workflow generates a matrix of calculation jobs based on the inputs.
+3. **Calculation**: Each `calculate` job runs the core `calculateStipend` function, fetching necessary data from the SQLite DB and JSON caches, and performing flight scraping.
 4. **Calculation**: Core stipend calculations are performed.
 5. **Formatting**: Results are formatted for output.
 
@@ -145,16 +173,30 @@ flowchart TD
     Scraper --> WebAutomation[Puppeteer Browser Automation]
 ```
 
-### Data Flow
+### Data Flow (UI Trigger Example)
 
 ```mermaid
-flowchart LR
-    CSV[CSV Files] --> Parser[CSV Parser]
-    Parser --> Records[Conference Records]
-    Records --> Calculator[Stipend Calculator]
-    Calculator --> Results[Stipend Results]
-    Results --> CSVOutput[CSV Output]
-    Results --> ConsoleOutput[Console Table]
+graph LR
+    A[UI: User enters trip details] --> B(Proxy: Receives POST /api/trigger-workflow);
+    B --> C{Proxy: Authenticates via GitHub App};
+    C --> D[Proxy: Calls GitHub API workflow_dispatch];
+    D --> E(GitHub Actions: Workflow starts);
+    E --> F{Actions: Setup job generates matrix};
+    F --> G[Actions: Calculate job(s) run];
+    G -- Reads --> H[(SQLite DB)];
+    G -- Reads/Writes --> I[(JSON Caches)];
+    G -- Calls --> J[Flight Scraper];
+    G --> K[Actions: Saves result JSON];
+    K --> L(Actions: Uploads artifact);
+    G --> M{Actions: Consolidate job runs};
+    M -- Downloads --> L;
+    M --> N[Actions: Generates consolidated report];
+    N --> O(Actions: Uploads report artifact);
+    N --> P[Actions: POSTs result to Proxy /api/workflow-complete];
+    P --> Q{Proxy: Finds WebSocket client};
+    Q --> R[UI: Receives result via WebSocket];
+    R --> S[UI: Displays results table];
+
 ```
 
 ## Error Handling Strategy
