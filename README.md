@@ -1,121 +1,162 @@
 # Travel Stipend Calculator
 
-A TypeScript application that calculates fair travel stipends for conference trips, factoring in variable travel expenses based on location.
+A TypeScript application using Bun that calculates fair travel stipends for conference trips, factoring in variable travel expenses based on location, flight costs, lodging, meals, local transport, and other allowances.
 
 ## Overview
 
-This travel stipend calculator helps seed-stage startups provide fair travel stipends for employees attending conferences. It calculates stipends based on:
+This travel stipend calculator helps provide fair and consistent travel stipends for employees attending conferences. It aims to automate calculations based on:
 
-- **Flight Cost**: Calculated using a per-kilometer rate applied to the travel distance.
-- **Lodging Cost**: Based on a standard per-night rate, adjusted by a cost-of-living multiplier.
-- **Meals Cost**: Based on a standard per-day rate, adjusted by a cost-of-living multiplier.
-- **Conference Ticket Price**: Manually input from CSV data.
+-   **Flight Cost**: Looked up via Google Flights scraping (falls back to $0 if scraping fails or is not applicable).
+-   **Lodging Cost**: Based on a standard per-night rate, adjusted by the destination's cost-of-living index and potential weekend multipliers.
+-   **Meals Cost**: Based on standard daily rates (basic and business entertainment), adjusted by the destination's cost-of-living index.
+-   **Local Transportation Cost**: Estimated based on destination city taxi fare data.
+-   **Conference Ticket Price**: Provided as input.
+-   **Allowances**: Includes standard amounts for internet/data and incidentals.
+-   **Travel Duration**: Accounts for conference duration plus configurable buffer days before and after.
 
 ## Features
 
-- **Distance Calculation**: Uses the Haversine formula to calculate distances between cities based on their coordinates.
-- **Cost-of-Living Adjustments**: Uses open-source data to adjust lodging and meal costs based on the destination's cost of living.
-- **Date Calculations**: Automatically calculates the number of lodging nights and meal days based on conference start and end dates.
-- **Modular Design**: Each calculation is encapsulated in its own function for easy maintenance and extensibility.
+-   **CLI Tool**: Calculate stipends for individual trips with flexible date inputs and options.
+-   **Batch Processing**: A GitHub Actions workflow (`.github/workflows/batch-travel-stipend.yml`) processes multiple trips defined in `.github/test-events.json` (on push) or via `workflow_dispatch` inputs.
+-   **Real-time Flight Data**: Integrates a Google Flights scraper for dynamic flight cost estimation.
+-   **Cost-of-Living Adjustments**: Uses index data to adjust lodging and meal costs.
+-   **Database Integration**: Uses a SQLite database (`db/travel-stipend.db`) to store and query reference data (conferences, cost of living, coordinates, taxi fares).
+-   **Caching**: Implements persistent caching for flight prices, distances, coordinates, and cost-of-living data to improve performance and reduce redundant lookups.
+-   **Flexible Output**: Supports JSON, CSV, and formatted console table outputs via the CLI and generates a consolidated Markdown report in the batch workflow.
+-   **Modular Design**: Calculations are separated into utility functions for maintainability.
 
 ## Requirements
 
-- [Bun](https://bun.sh/) runtime
-- TypeScript
+-   [Bun](https://bun.sh/) runtime (v1.0.0 or higher)
+-   Node.js (v20.10.0 or higher, primarily for compatibility if Bun isn't used)
+-   Git (for submodules and hooks)
 
 ## Setup
 
-1. Clone the repository
-2. Install dependencies:
-   ```
-   bun install
-   ```
+1.  Clone the repository:
+    ```bash
+    git clone <repository-url>
+    cd travel-stipend
+    ```
+2.  Initialize submodules (for the Google Flights scraper):
+    ```bash
+    git submodule update --init --recursive
+    ```
+3.  Install dependencies in the main project and the submodule:
+    ```bash
+    bun install
+    cd src/utils/google-flights-scraper
+    bun install
+    cd ../../..
+    ```
+4.  Initialize the database (if empty): The application automatically imports data from CSV files in `fixtures/` into the SQLite database (`db/travel-stipend.db`) on first run if tables are empty.
 
-## Input Files
+## Input Data (Fixtures for Database)
 
-The calculator requires two CSV files:
+The calculator relies on data stored in the SQLite database, initially populated from these CSV files in the `fixtures/` directory:
 
-### 1. conferences.csv
-
-Contains information about conferences:
-
-```csv
-Category,Start,End,Conference,Location,Description,Ticket Price
-Tech,2025-03-15,2025-03-18,"DevCon 2025","San Francisco, USA","Annual Developer Conference",1200
-```
-
-Fields:
-
-- **Category**: Type of conference (e.g., Tech, Blockchain)
-- **Start**: Conference start date (YYYY-MM-DD)
-- **End**: Conference end date (YYYY-MM-DD)
-- **Conference**: Name of the conference
-- **Location**: City and country
-- **Description**: Brief description of the conference
-- **Ticket Price**: Price of the conference ticket in USD
-
-### 2. cost_of_living.csv
-
-Contains cost-of-living indices for different locations:
-
-```csv
-Location,Index
-"Seoul, Korea",1.0
-"San Francisco, USA",1.5
-```
-
-Fields:
-
-- **Location**: City and country
-- **Index**: Cost-of-living index (1.0 is baseline)
+-   **`conferences.csv`**: Default conference data.
+-   **`cost_of_living.csv`**: Cost-of-living indices relative to a baseline (e.g., Seoul=1.0).
+-   **`coordinates.csv`**: Latitude and longitude for cities.
+-   **`taxis.csv`**: Base fare and per-kilometer taxi costs for cities.
 
 ## Configuration
 
-The calculator uses several configuration constants that can be adjusted in the code:
+Key calculation parameters are defined as constants in `src/utils/constants.ts`:
 
-- **ORIGIN**: Fixed origin for travel (default: "Seoul, Korea")
-- **COST_PER_KM**: Cost per kilometer for flights (default: 0.2 USD)
-- **BASE_LODGING_PER_NIGHT**: Base rate for lodging per night (default: 100 USD)
-- **BASE_MEALS_PER_DAY**: Base rate for meals per day (default: 50 USD)
+-   `ORIGIN`: Default origin city (can be overridden).
+-   `COST_PER_KM`: Fallback cost per kilometer if flight scraping fails (currently fallback is $0).
+-   `BASE_LODGING_PER_NIGHT`: Base rate before CoL adjustment.
+-   `BASE_MEALS_PER_DAY`: Base rate for basic meals before CoL adjustment.
+-   `BASE_LOCAL_TRANSPORT_PER_DAY`: Base rate used if taxi data is unavailable.
+-   `BUSINESS_ENTERTAINMENT_PER_DAY`: Additional daily allowance for business meals/entertainment.
+-   `PRE_CONFERENCE_DAYS`, `POST_CONFERENCE_DAYS`: Default buffer days for travel.
+-   `DEFAULT_TICKET_PRICE`: Used if ticket price is not provided.
+-   `WEEKEND_RATE_MULTIPLIER`: Factor applied to lodging on weekend nights.
+-   `INTERNET_DATA_ALLOWANCE_PER_DAY`, `INCIDENTALS_ALLOWANCE_PER_DAY`: Daily allowances.
 
 ## Usage
 
-Run the calculator with:
+### Command Line Interface (CLI)
 
+Use `bun src/travel-stipend-cli.ts` for single trip calculations.
+
+**Required Arguments:**
+
+-   `--origin <city>`: Origin city (e.g., 'seoul')
+-   `--destination <city>`: Destination city (e.g., 'singapore')
+-   `--departure-date <date>`: Departure date (flexible format, e.g., '15 april', '2025-09-18')
+-   `--return-date <date>`: Return date (flexible format)
+
+**Optional Arguments:**
+
+-   `--buffer-before <days>`: Override default pre-conference buffer days.
+-   `--buffer-after <days>`: Override default post-conference buffer days.
+-   `--ticket-price <price>`: Specify event ticket price.
+-   `-o, --output <format>`: Output format (`json`, `csv`, `table` - default: `table`).
+-   `-v, --verbose`: Show detailed debug logging.
+
+**Examples:**
+
+```bash
+# Basic calculation (Seoul to Singapore)
+bun run src/travel-stipend-cli.ts \
+  --origin seoul \
+  --destination singapore \
+  --departure-date "17 Sep" \
+  --return-date "20 Sep"
+
+# Calculation with ticket price and JSON output
+bun run src/travel-stipend-cli.ts \
+  --origin seoul \
+  --destination "san francisco" \
+  --departure-date "Oct 28" \
+  --return-date "Oct 31" \
+  --ticket-price 1300 \
+  -o json
 ```
-bun src/travel-stipend-calculator.ts
-```
 
-## Output
+### Batch Processing (GitHub Actions)
 
-The calculator outputs a structured JSON object with a breakdown of costs for each conference:
+The `.github/workflows/batch-travel-stipend.yml` workflow handles batch calculations.
+
+-   **On Push:** Reads trip data from `.github/test-events.json` and runs calculations for each entry.
+-   **Manual Trigger (`workflow_dispatch`):** Allows specifying lists of origins, destinations, dates, and prices via GitHub UI inputs.
+
+The workflow generates individual JSON results for each calculation, uploads them as artifacts, downloads them in a consolidation job, and runs `.github/scripts/consolidate-stipend-results.ts` to produce:
+    -   `consolidated-results.md`: A Markdown summary report (also uploaded as `travel-stipend-results`).
+    -   `consolidated-results/results.json`: Combined JSON output.
+    -   `consolidated-results/results.csv`: Combined CSV output.
+
+## Output Example (JSON - Single Trip)
 
 ```json
 {
-  "results": [
-    {
-      "conference": "DevCon 2025",
-      "location": "San Francisco, USA",
-      "distance_km": 9028.9,
-      "flight_cost": 1805.78,
-      "lodging_cost": 450,
-      "meals_cost": 300,
-      "ticket_price": 1200,
-      "total_stipend": 3755.78
-    }
-  ]
+  "conference": "Conference in singapore",
+  "origin": "seoul",
+  "destination": "singapore",
+  "conference_start": "Sep 18",
+  "conference_end": "Sep 19",
+  "flight_departure": "17 September",
+  "flight_return": "20 September",
+  "flight_cost": 347,
+  "flight_price_source": "Google Flights",
+  "lodging_cost": 450,
+  "basic_meals_cost": 210.15,
+  "business_entertainment_cost": 140.1,
+  "local_transport_cost": 140,
+  "ticket_price": 599,
+  "internet_data_allowance": 20,
+  "incidentals_allowance": 100,
+  "total_stipend": 1656.25,
+  "meals_cost": 350.25
 }
 ```
 
 ## Extending the Calculator
 
-### Adding New Cities
-
-To add new cities, update the `cityCoordinates` object in the code with the city name and its latitude/longitude coordinates.
-
-### Updating Cost-of-Living Data
-
-To update cost-of-living data, modify the `cost_of_living.csv` file with new locations and indices.
+-   **Adding/Updating Cities/Data**: Modify the CSV files in `fixtures/` (`coordinates.csv`, `cost_of_living.csv`, `taxis.csv`, `conferences.csv`). You may need to clear the database (`db/travel-stipend.db`) or implement specific update scripts for changes to take effect on subsequent runs.
+-   **Adjusting Constants**: Modify values in `src/utils/constants.ts`.
 
 ## License
 
