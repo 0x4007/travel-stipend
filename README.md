@@ -30,8 +30,7 @@ This travel stipend calculator helps provide fair and consistent travel stipends
 -   [Bun](https://bun.sh/) runtime (v1.0.0 or higher)
 -   Node.js (v20.10.0 or higher, primarily for compatibility if Bun isn't used)
 -   Git (for submodules and hooks)
--   [Deno](https://deno.land/) (for running/deploying the proxy function)
--   [deployctl](https://deno.com/deploy/docs/deployctl) (Deno Deploy CLI, for manual proxy deployment script)
+-   [Deno](https://deno.land/) (if deploying the proxy function to Deno Deploy)
 
 ## Setup
 
@@ -52,10 +51,7 @@ This travel stipend calculator helps provide fair and consistent travel stipends
     cd ../../..
     ```
 4.  Initialize the database (if empty): The application automatically imports data from CSV files in `fixtures/` into the SQLite database (`db/travel-stipend.db`) on first run if tables are empty.
-5.  Install Deno Deploy CLI (optional, for manual deployment script):
-    ```bash
-    deno install -A --no-check -r -f https://deno.land/x/deploy/deployctl.ts
-    ```
+5.  Install Deno (if deploying proxy function): Ensure [Deno](https://deno.land/) is installed if you plan to deploy the proxy function to Deno Deploy.
 
 ## Input Data (Fixtures for Database)
 
@@ -91,18 +87,12 @@ A simple web UI allows triggering calculations via GitHub Actions. This is the r
 
 **Architecture:**
 
-1.  **Static UI:** The HTML, CSS, and JS files in the `ui/` directory are served as static assets. These can be hosted on any static hosting provider (GitHub Pages, Netlify, Vercel, Cloudflare Pages, etc.).
-2.  **Proxy Function:** A serverless function (example provided in `api/trigger-workflow.ts` for Deno Deploy) acts as a secure proxy. It receives calculation requests from the UI and uses the GitHub API to trigger the `batch-travel-stipend.yml` workflow via `workflow_dispatch`.
-3.  **GitHub Actions Workflow:** The `batch-travel-stipend.yml` workflow runs the actual calculation using the inputs provided by the proxy function. Results are available in the Actions tab of the repository and as uploaded artifacts.
+1.  **Static UI & Proxy Function (Single Deployment):** The Deno Deploy function (`api/trigger-workflow.ts`) serves both the static UI files (`ui/`) and acts as a secure proxy to trigger the GitHub Actions workflow.
+2.  **GitHub Actions Workflow:** The `batch-travel-stipend.yml` workflow runs the actual calculation using the inputs provided by the proxy function. Results are available in the Actions tab of the repository and as uploaded artifacts.
 
 **Setup:**
 
-1.  **Deploy Static UI:** Host the contents of the `ui/` directory (specifically `index.html`, `style.css`, and the compiled `script.js`) on a static hosting provider. You'll need to compile the script first:
-    ```bash
-    bun run build:ui
-    # Now deploy the ui/ directory contents
-    ```
-2.  **Create GitHub App:** (Recommended over PAT)
+1.  **Create GitHub App:** (Recommended over PAT)
     *   Go to your GitHub Settings -> Developer settings -> GitHub Apps -> New GitHub App.
     *   Give it a name (e.g., "Travel Stipend Trigger").
     *   Set Homepage URL (can be your repository URL).
@@ -113,45 +103,57 @@ A simple web UI allows triggering calculations via GitHub Actions. This is the r
     *   On the app's page, **generate a private key** (.pem file) and download it. Store this securely. **Do not commit this file to Git.** Add `keys/` or the specific `.pem` filename to your `.gitignore`.
     *   **Install the App:** Install the app on the account/organization containing your `travel-stipend` repository. During installation, note the **Installation ID** (visible in the URL after installing, e.g., `.../installations/12345678`).
     *   Note your **App ID** from the app's settings page.
-3.  **Deploy Proxy Function:**
-    *   Choose a serverless platform. **Deno Deploy** is a good option as the proxy function (`api/trigger-workflow.ts`) is written for the Deno runtime. Alternatively, adapt the script for Node.js/Bun if using platforms like Vercel or Netlify Functions.
-    *   **Deploying to Deno Deploy (Recommended):**
-        1.  Go to [dash.deno.com](https://dash.deno.com/) and create a new project.
-        2.  Link the project to your GitHub repository (`0x4007/travel-stipend`).
-        3.  Select the branch to deploy from (e.g., `main`).
-        4.  Set the **Entry point** to `api/trigger-workflow.ts`.
-        5.  Go to the project's **Settings** -> **Environment Variables**.
-        6.  Add the following **secrets**:
-            *   `GITHUB_APP_ID`: Your App ID (`975031`).
-            *   `GITHUB_APP_INSTALLATION_ID`: Your Installation ID (`60991083`).
-            *   `GITHUB_APP_PRIVATE_KEY`: Paste the **entire content** of your `.pem` private key file.
-            *   `GITHUB_OWNER`: Your GitHub username or organization (`0x4007`).
-            *   `GITHUB_REPO`: The repository name (`travel-stipend`).
-            *   `WORKFLOW_ID`: The workflow filename (`batch-travel-stipend.yml`).
-        7.  Deno Deploy will automatically build and deploy upon pushes to the selected branch, OR you can use the manual deployment script (see below).
-    *   **Manual Deployment using `deployctl` (Optional):**
-        1.  Ensure `deployctl` is installed (see Setup section).
-        2.  Create a Deno Deploy access token at [dash.deno.com/account/access-tokens](https://dash.deno.com/account/access-tokens).
-        3.  Set the required environment variables locally:
-            ```bash
-            export DENO_DEPLOY_TOKEN="your_deno_deploy_token"
-            export DENO_DEPLOY_PROJECT="your-deno-project-name" # The name of your project on Deno Deploy
-            # Ensure GITHUB_APP_* secrets are set in the Deno Deploy dashboard first!
-            ```
-        4.  Run the deployment script:
-            ```bash
-            bun run deploy:proxy
-            ```
-    *   **Deploying to Other Platforms:** You would need to adapt `api/trigger-workflow.ts` to use Node.js APIs (e.g., using `node-fetch`, a JWT library like `jsonwebtoken`, and a server framework like Express or Fastify) and configure the same environment variables on that platform.
-    *   Note the **URL** of your deployed proxy function (e.g., `your-project-name.deno.dev`).
-4.  **Update UI Script:** Modify the `proxyApiUrl` constant in `ui/script.ts` to point to the URL of your deployed proxy function. Re-compile using `bun run build:ui` and re-deploy the static UI.
+2.  **Deploy to Deno Deploy:**
+    1.  Go to [dash.deno.com](https://dash.deno.com/) and create a new project.
+    2.  Link the project to your GitHub repository (`0x4007/travel-stipend`).
+    3.  Select the branch to deploy from (e.g., `main`).
+    4.  Set the **Entry point** to `api/trigger-workflow.ts`.
+    5.  Go to the project's **Settings** -> **Environment Variables**.
+    6.  Add the following **secrets**:
+        *   `GITHUB_APP_ID`: Your App ID (`975031`).
+        *   `GITHUB_APP_INSTALLATION_ID`: Your Installation ID (`60991083`).
+        *   `GITHUB_APP_PRIVATE_KEY`: Paste the **entire content** of your `.pem` private key file.
+        *   `GITHUB_OWNER`: Your GitHub username or organization (`0x4007`).
+        *   `GITHUB_REPO`: The repository name (`travel-stipend`).
+        *   `WORKFLOW_ID`: The workflow filename (`batch-travel-stipend.yml`).
+    7.  Deno Deploy will automatically build and deploy the `api/trigger-workflow.ts` function (which also serves the UI) upon pushes to the selected branch.
+    *   Note the **URL** of your deployed project (e.g., `your-project-name.deno.dev`).
+3.  **Update UI Script (if needed):** The `proxyApiUrl` constant in `ui/script.ts` currently points to `/api/trigger-workflow` (a relative path). This works correctly when the UI and API are served from the same domain by Deno Deploy. If you were to host the UI separately, you would need to update this to the full URL of your deployed proxy function and re-compile (`bun run build:ui`).
 
-**Using the UI:**
+**Using the Deployed UI:**
 
-1.  Navigate to the URL where you deployed the static UI.
+1.  Navigate to the URL of your deployed Deno Deploy project (e.g., `https://your-project-name.deno.dev`).
 2.  Fill in the form and click "Calculate Stipend".
 3.  A status message will indicate if the workflow was triggered successfully.
-4.  Go to the "Actions" tab in your GitHub repository (`https://github.com/0x4007/travel-stipend/actions`) to monitor the workflow run and view the results/artifacts.
+4.  Go to the **Actions** tab in your GitHub repository (`https://github.com/0x4007/travel-stipend/actions`) to monitor the workflow run and view the results/artifacts.
+
+**Local Testing (UI + Proxy + Actions):**
+
+It's possible to test the UI-to-Actions flow locally, but requires careful setup:
+
+1.  **Create `.env` file:** In the project root, create a `.env` file (and add it to `.gitignore`). Populate it with the required secrets:
+    ```dotenv
+    GITHUB_APP_ID=975031
+    GITHUB_APP_INSTALLATION_ID=60991083
+    # Paste the *entire* content of your .pem file below, replacing newlines with \n literal characters
+    GITHUB_APP_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_KEY_LINE_1\nYOUR_KEY_LINE_2\n...\n-----END PRIVATE KEY-----\n"
+    GITHUB_OWNER=0x4007
+    GITHUB_REPO=travel-stipend
+    WORKFLOW_ID=batch-travel-stipend.yml
+    ```
+    *Security Note:* Be extremely careful with the `.env` file and never commit it.
+2.  **Run the Proxy Server:** Open a terminal and run:
+    ```bash
+    # This script uses Bun/Node APIs and requires the .env file
+    bun run start:proxy
+    ```
+    This starts the local proxy server on `http://localhost:8000`. This server now *also* serves the static UI files from the `ui/` directory.
+3.  **Compile UI:** Ensure the latest UI script is compiled:
+    ```bash
+    bun run build:ui
+    ```
+4.  **Configure UI:** Ensure `proxyApiUrl` in `ui/script.ts` points to `http://localhost:8000/api/trigger-workflow`. Re-compile if needed (`bun run build:ui`).
+5.  **Test:** Open `http://localhost:8000` in your browser. The UI should load. Submitting the form will hit the *same* local server on the `/api/trigger-workflow` path, which will then attempt to trigger the GitHub Actions workflow using the credentials from your `.env` file. Check the proxy server's terminal logs and the GitHub Actions tab for results.
 
 ### 2. Command Line Interface (CLI)
 

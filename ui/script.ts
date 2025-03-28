@@ -46,10 +46,10 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            // Make API call to the proxy endpoint (replace with your actual proxy URL)
-            // For local testing, you might run the proxy on a different port or path
-            // For deployment, this would be the URL of your deployed function
-            const proxyApiUrl = '/api/trigger-workflow'; // Example path
+            // Make API call to the proxy endpoint
+            // For local testing, use localhost:8000
+            // For deployment, replace with your deployed function URL
+            const proxyApiUrl = 'http://localhost:8000/api/trigger-workflow';
 
             const response = await fetch(proxyApiUrl, {
                 method: 'POST',
