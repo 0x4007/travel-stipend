@@ -33,22 +33,13 @@
         <button type="submit" id="calculate-button">Calculate Stipend</button>
     </form>
 
-    <div id="results-container">
-        <h2>Results</h2>
-        <div id="loading-indicator" style="display: none;">
-             <p>Checking Google Flights for the latest price data... <span id="countdown-timer"></span></p>
-             <div class="progress-bar-container">
-                 <div class="progress-bar-value"></div>
-             </div>
-        </div>
-        <div id="results-table">
-            <!-- Table will be generated here by script.js -->
-            <p>Calculation results will appear here...</p>
-        </div>
-        <!-- Removed log container -->
+    <div id="status-container">
+        <h2>Status</h2>
+        <div id="status-message"><p>Enter trip details and click "Trigger Workflow".</p></div>
         <div id="error-output" class="error"></div>
+        <p><small>Check the <a href="https://github.com/0x4007/travel-stipend/actions" target="_blank" rel="noopener noreferrer">Actions tab</a> in your GitHub repository for progress.</small></p>
     </div>
 
-    <script src="script.js" type="module"></script>
+    <script src="script.js" type="module"></script> <!-- Keep using compiled JS -->
 </body>
 </html>

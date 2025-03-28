@@ -30,6 +30,8 @@ This travel stipend calculator helps provide fair and consistent travel stipends
 -   [Bun](https://bun.sh/) runtime (v1.0.0 or higher)
 -   Node.js (v20.10.0 or higher, primarily for compatibility if Bun isn't used)
 -   Git (for submodules and hooks)
+-   [Deno](https://deno.land/) (for running/deploying the proxy function)
+-   [deployctl](https://deno.com/deploy/docs/deployctl) (Deno Deploy CLI, for manual proxy deployment script)
 
 ## Setup
 
@@ -50,6 +52,10 @@ This travel stipend calculator helps provide fair and consistent travel stipends
     cd ../../..
     ```
 4.  Initialize the database (if empty): The application automatically imports data from CSV files in `fixtures/` into the SQLite database (`db/travel-stipend.db`) on first run if tables are empty.
+5.  Install Deno Deploy CLI (optional, for manual deployment script):
+    ```bash
+    deno install -A --no-check -r -f https://deno.land/x/deploy/deployctl.ts
+    ```
 
 ## Input Data (Fixtures for Database)
 
@@ -77,9 +83,79 @@ Key calculation parameters are defined as constants in `src/utils/constants.ts`:
 
 ## Usage
 
-### Command Line Interface (CLI)
+There are three main ways to use the calculator:
 
-Use `bun src/travel-stipend-cli.ts` for single trip calculations.
+### 1. Web Interface (Recommended)
+
+A simple web UI allows triggering calculations via GitHub Actions. This is the recommended way for most users as it leverages the robust backend environment provided by Actions.
+
+**Architecture:**
+
+1.  **Static UI:** The HTML, CSS, and JS files in the `ui/` directory are served as static assets. These can be hosted on any static hosting provider (GitHub Pages, Netlify, Vercel, Cloudflare Pages, etc.).
+2.  **Proxy Function:** A serverless function (example provided in `api/trigger-workflow.ts` for Deno Deploy) acts as a secure proxy. It receives calculation requests from the UI and uses the GitHub API to trigger the `batch-travel-stipend.yml` workflow via `workflow_dispatch`.
+3.  **GitHub Actions Workflow:** The `batch-travel-stipend.yml` workflow runs the actual calculation using the inputs provided by the proxy function. Results are available in the Actions tab of the repository and as uploaded artifacts.
+
+**Setup:**
+
+1.  **Deploy Static UI:** Host the contents of the `ui/` directory (specifically `index.html`, `style.css`, and the compiled `script.js`) on a static hosting provider. You'll need to compile the script first:
+    ```bash
+    bun run build:ui
+    # Now deploy the ui/ directory contents
+    ```
+2.  **Create GitHub App:** (Recommended over PAT)
+    *   Go to your GitHub Settings -> Developer settings -> GitHub Apps -> New GitHub App.
+    *   Give it a name (e.g., "Travel Stipend Trigger").
+    *   Set Homepage URL (can be your repository URL).
+    *   **Disable Webhook.**
+    *   **Permissions:** Under "Repository permissions", grant `Actions: Read & write`.
+    *   **Installation:** Choose "Only on this account" or select specific repositories.
+    *   Click "Create GitHub App".
+    *   On the app's page, **generate a private key** (.pem file) and download it. Store this securely. **Do not commit this file to Git.** Add `keys/` or the specific `.pem` filename to your `.gitignore`.
+    *   **Install the App:** Install the app on the account/organization containing your `travel-stipend` repository. During installation, note the **Installation ID** (visible in the URL after installing, e.g., `.../installations/12345678`).
+    *   Note your **App ID** from the app's settings page.
+3.  **Deploy Proxy Function:**
+    *   Choose a serverless platform. **Deno Deploy** is a good option as the proxy function (`api/trigger-workflow.ts`) is written for the Deno runtime. Alternatively, adapt the script for Node.js/Bun if using platforms like Vercel or Netlify Functions.
+    *   **Deploying to Deno Deploy (Recommended):**
+        1.  Go to [dash.deno.com](https://dash.deno.com/) and create a new project.
+        2.  Link the project to your GitHub repository (`0x4007/travel-stipend`).
+        3.  Select the branch to deploy from (e.g., `main`).
+        4.  Set the **Entry point** to `api/trigger-workflow.ts`.
+        5.  Go to the project's **Settings** -> **Environment Variables**.
+        6.  Add the following **secrets**:
+            *   `GITHUB_APP_ID`: Your App ID (`975031`).
+            *   `GITHUB_APP_INSTALLATION_ID`: Your Installation ID (`60991083`).
+            *   `GITHUB_APP_PRIVATE_KEY`: Paste the **entire content** of your `.pem` private key file.
+            *   `GITHUB_OWNER`: Your GitHub username or organization (`0x4007`).
+            *   `GITHUB_REPO`: The repository name (`travel-stipend`).
+            *   `WORKFLOW_ID`: The workflow filename (`batch-travel-stipend.yml`).
+        7.  Deno Deploy will automatically build and deploy upon pushes to the selected branch, OR you can use the manual deployment script (see below).
+    *   **Manual Deployment using `deployctl` (Optional):**
+        1.  Ensure `deployctl` is installed (see Setup section).
+        2.  Create a Deno Deploy access token at [dash.deno.com/account/access-tokens](https://dash.deno.com/account/access-tokens).
+        3.  Set the required environment variables locally:
+            ```bash
+            export DENO_DEPLOY_TOKEN="your_deno_deploy_token"
+            export DENO_DEPLOY_PROJECT="your-deno-project-name" # The name of your project on Deno Deploy
+            # Ensure GITHUB_APP_* secrets are set in the Deno Deploy dashboard first!
+            ```
+        4.  Run the deployment script:
+            ```bash
+            bun run deploy:proxy
+            ```
+    *   **Deploying to Other Platforms:** You would need to adapt `api/trigger-workflow.ts` to use Node.js APIs (e.g., using `node-fetch`, a JWT library like `jsonwebtoken`, and a server framework like Express or Fastify) and configure the same environment variables on that platform.
+    *   Note the **URL** of your deployed proxy function (e.g., `your-project-name.deno.dev`).
+4.  **Update UI Script:** Modify the `proxyApiUrl` constant in `ui/script.ts` to point to the URL of your deployed proxy function. Re-compile using `bun run build:ui` and re-deploy the static UI.
+
+**Using the UI:**
+
+1.  Navigate to the URL where you deployed the static UI.
+2.  Fill in the form and click "Calculate Stipend".
+3.  A status message will indicate if the workflow was triggered successfully.
+4.  Go to the "Actions" tab in your GitHub repository (`https://github.com/0x4007/travel-stipend/actions`) to monitor the workflow run and view the results/artifacts.
+
+### 2. Command Line Interface (CLI)
+
+Use `bun src/travel-stipend-cli.ts` for single trip calculations directly on your local machine. This requires the full setup (Bun, Node, submodules, dependencies).
 
 **Required Arguments:**
 
@@ -116,29 +192,9 @@ bun run src/travel-stipend-cli.ts \
   -o json
 ```
 
-### Web Interface (Development)
+### 3. Batch Processing via GitHub Actions (Directly)
 
-A simple web UI is available for interactive calculations during development.
-
-1.  **Start the UI Server:**
-    -   For development (with watching for server changes):
-        ```bash
-        bun run ui:dev
-        ```
-        This command first compiles the UI script (`ui/script.ts` to `ui/script.js`) and then runs the API server (`ui/api.ts`) with `--watch`. Note: Changes to `ui/script.ts` still require restarting the command to re-compile the frontend.
-    -   To run without watching:
-        ```bash
-        bun run start:ui
-        ```
-        This compiles the UI script once and then starts the API server.
-
-2.  **Open in Browser:** Navigate to `http://localhost:3000` in your web browser.
-
-3.  **Use the Form:** Enter the origin, destination, dates, and optional ticket price, then click "Calculate Stipend". The JSON result will be displayed below the form.
-
-### Batch Processing (GitHub Actions)
-
-The `.github/workflows/batch-travel-stipend.yml` workflow handles batch calculations.
+The `.github/workflows/batch-travel-stipend.yml` workflow handles batch calculations automatically or manually within GitHub.
 
 -   **On Push:** Reads trip data from `.github/test-events.json` and runs calculations for each entry.
 -   **Manual Trigger (`workflow_dispatch`):** Allows specifying lists of origins, destinations, dates, and prices via GitHub UI inputs.
