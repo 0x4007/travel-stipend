@@ -47,9 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // Make API call to the proxy endpoint
-            // For local testing, use localhost:8000
-            // For deployment, replace with your deployed function URL
-            const proxyApiUrl = 'http://localhost:8000/api/trigger-workflow';
+            // Use relative path when UI and API are served from the same domain (e.g., Deno Deploy)
+            // For separate deployment, use the full URL of the deployed proxy function.
+            const proxyApiUrl = '/api/trigger-workflow'; // Use relative path
 
             const response = await fetch(proxyApiUrl, {
                 method: 'POST',

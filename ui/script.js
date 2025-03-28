@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
       price: ticketPrice
     };
     try {
-      const proxyApiUrl = "http://localhost:8000/api/trigger-workflow";
+      const proxyApiUrl = "/api/trigger-workflow";
       const response = await fetch(proxyApiUrl, {
         method: "POST",
         headers: {
