@@ -7,7 +7,9 @@ var returnDateInput = document.getElementById("return-date");
 var ticketPriceInput = document.getElementById("ticket-price");
 var calculateButton = document.getElementById("calculate-button");
 var resultsTableDiv = document.getElementById("results-table");
+var logOutput = document.getElementById("log-output");
 var errorOutput = document.getElementById("error-output");
+var socket = null;
 function formatCurrency(value) {
   if (value === undefined || isNaN(value))
     return "$0.00";
@@ -54,8 +56,6 @@ function renderResultsTable(result) {
     th.textContent = formatLabel(key);
     if (key.endsWith("_cost") || key.endsWith("_price") || key.endsWith("_allowance") || key === "total_stipend") {
       td.textContent = formatCurrency(value);
-    } else if (key === "flight_price_source" && typeof value === "string") {
-      td.textContent = `${result.flight_price_source}`;
     } else {
       td.textContent = String(value);
     }
@@ -66,6 +66,77 @@ function renderResultsTable(result) {
   table.appendChild(tbody);
   resultsTableDiv.appendChild(table);
 }
+function addLog(message) {
+  if (!logOutput)
+    return;
+  logOutput.textContent += message + `
+`;
+  logOutput.scrollTop = logOutput.scrollHeight;
+}
+function connectWebSocket(data) {
+  if (socket && socket.readyState !== WebSocket.CLOSED) {
+    socket.close();
+  }
+  const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
+  socket = new WebSocket(wsUrl);
+  socket.onopen = () => {
+    addLog("WebSocket connection established.");
+    addLog("Sending calculation request...");
+    socket?.send(JSON.stringify(data));
+    if (calculateButton)
+      calculateButton.disabled = true;
+  };
+  socket.onmessage = (event) => {
+    try {
+      const message = JSON.parse(event.data);
+      switch (message.type) {
+        case "log":
+          addLog(message.payload);
+          break;
+        case "result":
+          addLog("Calculation complete.");
+          renderResultsTable(message.payload);
+          if (calculateButton)
+            calculateButton.disabled = false;
+          socket?.close();
+          break;
+        case "error":
+          addLog(`ERROR: ${message.payload}`);
+          if (errorOutput)
+            errorOutput.textContent = `Error: ${message.payload}`;
+          if (resultsTableDiv)
+            resultsTableDiv.innerHTML = "<p>Calculation failed.</p>";
+          if (calculateButton)
+            calculateButton.disabled = false;
+          socket?.close();
+          break;
+        default:
+          addLog(`Unknown message type: ${message.type}`);
+      }
+    } catch (error) {
+      addLog(`Error processing message: ${error}`);
+      console.error("WebSocket message error:", error);
+    }
+  };
+  socket.onerror = (error) => {
+    addLog("WebSocket error. See console for details.");
+    console.error("WebSocket Error:", error);
+    if (errorOutput)
+      errorOutput.textContent = "WebSocket connection error.";
+    if (resultsTableDiv)
+      resultsTableDiv.innerHTML = "<p>Calculation failed.</p>";
+    if (calculateButton)
+      calculateButton.disabled = false;
+  };
+  socket.onclose = (event) => {
+    addLog(`WebSocket connection closed (Code: ${event.code}).`);
+    if (!event.wasClean && calculateButton) {
+      calculateButton.disabled = false;
+    }
+    socket = null;
+  };
+}
 document.addEventListener("DOMContentLoaded", () => {
   if (!form) {
     console.error("Error: Could not find form element #stipend-form");
@@ -73,10 +144,13 @@ document.addEventListener("DOMContentLoaded", () => {
       errorOutput.textContent = "Initialization Error: Form not found.";
     return;
   }
-  form.addEventListener("submit", async (event) => {
+  form.addEventListener("submit", (event) => {
     event.preventDefault();
     if (resultsTableDiv)
-      resultsTableDiv.innerHTML = "<p>Calculating...</p>";
+      resultsTableDiv.innerHTML = "<p>Calculation results will appear here...</p>";
+    if (logOutput)
+      logOutput.textContent = `Initiating calculation...
+`;
     if (errorOutput)
       errorOutput.textContent = "";
     if (calculateButton)
@@ -86,32 +160,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const departureDate = departureDateInput.value.trim();
     const returnDate = returnDateInput.value.trim();
     const ticketPrice = ticketPriceInput.value.trim();
-    const params = new URLSearchParams({
+    const requestData = {
       origin,
       destination,
       departureDate,
-      returnDate
-    });
-    if (ticketPrice) {
-      params.append("ticketPrice", ticketPrice);
-    }
-    try {
-      const response = await fetch(`/calculate?${params.toString()}`);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: response.statusText }));
-        throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
-      }
-      const result = await response.json();
-      renderResultsTable(result);
-    } catch (error) {
-      console.error("Calculation error:", error);
-      if (errorOutput)
-        errorOutput.textContent = `Error: ${error instanceof Error ? error.message : "An unknown error occurred"}`;
-      if (resultsTableDiv)
-        resultsTableDiv.innerHTML = "<p>Calculation failed.</p>";
-    } finally {
-      if (calculateButton)
-        calculateButton.disabled = false;
-    }
+      returnDate,
+      ticketPrice: ticketPrice || undefined
+    };
+    connectWebSocket(requestData);
   });
 });

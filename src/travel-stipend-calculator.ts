@@ -14,6 +14,9 @@ const log = {
   info: (message: string) => console.log(message),
 };
 
+// Type for the logger callback
+type LogCallback = (message: string) => void;
+
 // Initialize cache
 const stipendCache = new PersistentCache<StipendBreakdown>("fixtures/cache/stipend-cache.json");
 
@@ -23,32 +26,45 @@ async function calculateFlightCostForConference(
   destination: string,
   flightDates: { outbound: string; return: string },
   isOriginCity: boolean,
-  includeBudget: boolean = false
+  includeBudget: boolean = false,
+  logCallback?: LogCallback // Added callback
 ): Promise<{ cost: number; source: string }> {
+  logCallback?.(`Checking flight cost: ${origin} -> ${destination}`); // Log start
   if (isOriginCity) {
-    log.info(`No flight cost for ${destination} (same as origin)`);
+    const msg = `No flight cost for ${destination} (same as origin)`;
+    log.info(msg);
+    logCallback?.(msg); // Log info
     return { cost: 0, source: "No flight needed" };
   }
 
   log.debug(`Searching flights from ${origin} to ${destination}`);
   log.debug(`Dates: ${flightDates.outbound} to ${flightDates.return}`);
+  logCallback?.(`Searching flights: ${origin} -> ${destination} (${flightDates.outbound} to ${flightDates.return})`); // Log search
+
   try {
+    // Pass logCallback down to scrapeFlightPrice if it accepts it (needs modification there too)
+    // For now, we log before and after the call
+    logCallback?.(`Calling flight scraper...`);
     const scrapedResult = await scrapeFlightPrice(origin, destination, flightDates, includeBudget);
+    logCallback?.(`Flight scraper returned: ${scrapedResult.source}`);
 
-    // Flight data is now logged directly from the flights.ts file
-
-    // Defensive check in case scrapeFlightPrice resolves with null instead of rejecting
     if (scrapedResult.price === null) {
-      log.info(`Scraping returned null price for ${destination}. Setting cost to 0.`);
+      const msg = `Scraping returned null price for ${destination}. Setting cost to 0.`;
+      log.info(msg);
+      logCallback?.(msg); // Log null price
       return { cost: 0, source: "Scraping returned null" };
     }
 
-    log.info(`Flight cost for ${destination}: ${scrapedResult.price} (from ${scrapedResult.source})`);
+    const msg = `Flight cost for ${destination}: ${scrapedResult.price} (from ${scrapedResult.source})`;
+    log.info(msg);
+    logCallback?.(msg); // Log success
     log.debug(`Flight details: ${JSON.stringify(scrapedResult, null, 2)}`);
     return { cost: scrapedResult.price, source: scrapedResult.source };
   } catch (error) {
     console.error(`Error scraping flight price for ${destination}:`, error);
-    log.info(`Setting flight cost to 0 due to scraping error for ${destination}.`);
+    const msg = `Setting flight cost to 0 due to scraping error for ${destination}.`;
+    log.info(msg);
+    logCallback?.(`ERROR scraping flights: ${error instanceof Error ? error.message : 'Unknown scraping error'}`); // Log error
     return { cost: 0, source: "Scraping failed" };
   }
 }
@@ -57,14 +73,18 @@ async function calculateFlightDetails(
   origin: string,
   destination: string,
   isOriginCity: boolean,
-  record: Conference & { includeBudget?: boolean }
+  record: Conference & { includeBudget?: boolean },
+  logCallback?: LogCallback // Pass callback down
 ): Promise<{
   flightCost: number;
   flightPriceSource: string;
   flightDates: { outbound: string; return: string };
 }> {
+  logCallback?.("Generating flight dates...");
   const flightDates = generateFlightDates(record, isOriginCity);
-  const flightResult = await calculateFlightCostForConference(origin, destination, flightDates, isOriginCity, record.includeBudget);
+  logCallback?.(`Generated dates: Depart ${flightDates.outbound}, Return ${flightDates.return}`);
+
+  const flightResult = await calculateFlightCostForConference(origin, destination, flightDates, isOriginCity, record.includeBudget, logCallback);
 
   return {
     flightCost: flightResult.cost,
@@ -75,18 +95,15 @@ async function calculateFlightDetails(
 
 function calculateNights(startDate: string, totalDays: number, preConferenceDays: number): { weekdayNights: number; weekendNights: number } {
   const currentYear = new Date().getFullYear();
-  // Parse the start date using our custom parseDate function from dates.ts
   const start = new Date(startDate);
-  // Ensure we're using the current or next year
   start.setFullYear(currentYear);
   let weekendNights = 0;
-  const numberOfNights = totalDays - 1; // One less night than days
+  const numberOfNights = totalDays - 1;
 
   for (let i = 0; i < numberOfNights; i++) {
     const currentDate = new Date(start);
     currentDate.setDate(start.getDate() - preConferenceDays + i);
     if ([0, 6].includes(currentDate.getDay())) {
-      // 0 = Sunday, 6 = Saturday
       weekendNights++;
     }
   }
@@ -97,23 +114,31 @@ function calculateNights(startDate: string, totalDays: number, preConferenceDays
   };
 }
 
-function calculateMealsCosts(totalDays: number, conferenceDays: number, colFactor: number): MealCosts {
+function calculateMealsCosts(totalDays: number, conferenceDays: number, colFactor: number, logCallback?: LogCallback): MealCosts {
+  logCallback?.(`Calculating meal costs for ${totalDays} days...`);
   let basicMealsCost = 0;
   for (let i = 0; i < totalDays; i++) {
-    // Apply duration-based scaling (100% for days 1-3, 85% for days 4+)
     const dailyMealCost = i < 3 ? TRAVEL_STIPEND.costs.meals * colFactor : TRAVEL_STIPEND.costs.meals * colFactor * 0.85;
     basicMealsCost += dailyMealCost;
   }
 
   const businessEntertainmentCost = TRAVEL_STIPEND.costs.businessEntertainment * conferenceDays;
+  logCallback?.(`Basic Meals: ${basicMealsCost.toFixed(2)}, Business Entertainment: ${businessEntertainmentCost.toFixed(2)}`);
   return {
     basicMealsCost,
     businessEntertainmentCost,
   };
 }
 
-export async function calculateStipend(record: Conference & { origin?: string }): Promise<StipendBreakdown> {
+// Main function with optional log callback
+export async function calculateStipend(
+    record: Conference & { origin?: string },
+    logCallback?: LogCallback // Added optional callback
+): Promise<StipendBreakdown> {
+  logCallback?.("Starting stipend calculation..."); // Initial log
+
   if (!record.origin) {
+    logCallback?.("ERROR: Origin city is required.");
     throw new Error("Origin city is required for travel stipend calculation");
   }
   const origin = record.origin;
@@ -126,59 +151,99 @@ export async function calculateStipend(record: Conference & { origin?: string })
     TRAVEL_STIPEND.costs.hotel,
     TRAVEL_STIPEND.costs.meals,
     record.ticket_price ?? TRAVEL_STIPEND.costs.ticket,
-    "v11",
+    "v11", // Cache version - bump this if calculation logic changes significantly
   ]);
 
   const destination = record.location;
   log.debug(`Calculating stipend for ${record.conference}`);
   log.debug(`Cache key: ${cacheKey}`);
   log.info(`Processing conference: ${record.conference}`);
+  logCallback?.(`Processing: ${record.conference} (${origin} -> ${destination})`);
+
+  // Check cache first
+  const cachedResult = stipendCache.get(cacheKey);
+  if (cachedResult) {
+      log.info("Returning cached result.");
+      logCallback?.("Found cached result.");
+      return cachedResult;
+  }
+  logCallback?.("No cached result found, proceeding with calculation.");
+
 
   // Check if conference is in origin city
   const isOriginCity = origin === destination;
+  logCallback?.(isOriginCity ? "Destination is the same as origin." : "Destination differs from origin.");
 
   // Get flight details
-  const { flightCost, flightPriceSource, flightDates } = await calculateFlightDetails(origin, destination, isOriginCity, record);
+  logCallback?.("Calculating flight details...");
+  const { flightCost, flightPriceSource, flightDates } = await calculateFlightDetails(origin, destination, isOriginCity, record, logCallback);
 
   // Get cost-of-living multiplier for the destination
+  logCallback?.(`Fetching cost of living factor for ${destination}...`);
   const colFactor = await getCostOfLivingFactor(destination);
+  logCallback?.(`Cost of living factor: ${colFactor}`);
 
   // Calculate conference and travel days
+  logCallback?.("Calculating travel duration...");
   const conferenceDays = calculateDateDiff(record.start_date, record.end_date) + 1;
-
-  // Use custom buffer days if provided, otherwise use defaults
   const preConferenceDays = isOriginCity ? 0 : (record.buffer_days_before ?? TRAVEL_STIPEND.conference.preDays);
   const postConferenceDays = isOriginCity ? 0 : (record.buffer_days_after ?? TRAVEL_STIPEND.conference.postDays);
   const totalDays = conferenceDays + preConferenceDays + postConferenceDays;
   const numberOfNights = totalDays - 1;
 
-  log.info(`Conference duration: ${conferenceDays} days, Total stay: ${totalDays} days (${numberOfNights} nights)`);
-  log.info(`Travel dates: ${flightDates.outbound} to ${flightDates.return}`);
+  const durationMsg = `Conference: ${conferenceDays} days, Total Stay: ${totalDays} days (${numberOfNights} nights)`;
+  log.info(durationMsg);
+  logCallback?.(durationMsg);
+  const travelDatesMsg = `Travel dates: ${flightDates.outbound} to ${flightDates.return}`;
+  log.info(travelDatesMsg);
+  logCallback?.(travelDatesMsg);
   log.debug(`Cost of living factor for ${destination}: ${colFactor}`);
 
   // Calculate nights breakdown
+  logCallback?.("Calculating lodging nights breakdown...");
   const { weekdayNights, weekendNights } = calculateNights(record.start_date, totalDays, preConferenceDays);
+  logCallback?.(`Lodging: ${weekdayNights} weekday nights, ${weekendNights} weekend nights.`);
 
-  // Adjust lodging rates with cost of living factor and weekend rates
+  // Adjust lodging rates
   const baseWeekdayRate = TRAVEL_STIPEND.costs.hotel * colFactor;
   const baseWeekendRate = baseWeekdayRate * TRAVEL_STIPEND.rules.weekendRateMultiplier;
-
-  log.debug(`Nights breakdown: ${weekdayNights} weekday, ${weekendNights} weekend`);
   log.debug(`Base rates: Weekday=${baseWeekdayRate}, Weekend=${baseWeekendRate}`);
 
   // Calculate costs
+  logCallback?.("Calculating lodging cost...");
   const lodgingCost = isOriginCity ? 0 : weekdayNights * baseWeekdayRate + weekendNights * baseWeekendRate;
-  const { basicMealsCost, businessEntertainmentCost } = calculateMealsCosts(totalDays, conferenceDays, colFactor);
+  logCallback?.(`Lodging cost: ${lodgingCost.toFixed(2)}`);
+
+  logCallback?.("Calculating meals cost...");
+  const { basicMealsCost, businessEntertainmentCost } = calculateMealsCosts(totalDays, conferenceDays, colFactor, logCallback);
+
+  logCallback?.("Calculating local transport cost...");
   const localTransportCost = await calculateLocalTransportCost(destination, totalDays, colFactor, TRAVEL_STIPEND.costs.transport);
+  logCallback?.(`Local transport cost: ${localTransportCost.toFixed(2)}`);
+
   const ticketPrice = record.ticket_price ? parseFloat(record.ticket_price.replace("$", "")) : TRAVEL_STIPEND.costs.ticket;
+  logCallback?.(`Ticket price: ${ticketPrice.toFixed(2)}`);
 
   // International travel allowances
+  logCallback?.("Calculating allowances...");
   const isInternational = !isOriginCity;
   const internetDataAllowance = isInternational ? TRAVEL_STIPEND.rules.internationalInternet * totalDays : 0;
   const incidentalsAllowance = totalDays * TRAVEL_STIPEND.costs.incidentals;
+  logCallback?.(`Allowances: Internet=${internetDataAllowance.toFixed(2)}, Incidentals=${incidentalsAllowance.toFixed(2)}`);
 
   // Calculate total stipend
-  const totalStipend = flightCost + lodgingCost + localTransportCost + ticketPrice + internetDataAllowance + incidentalsAllowance;
+  logCallback?.("Calculating total stipend...");
+  // Ensure all components are numbers before summing
+  const totalStipend = (flightCost || 0) +
+                       (lodgingCost || 0) +
+                       (basicMealsCost || 0) +
+                       (businessEntertainmentCost || 0) +
+                       (localTransportCost || 0) +
+                       (ticketPrice || 0) +
+                       (internetDataAllowance || 0) +
+                       (incidentalsAllowance || 0);
+  logCallback?.(`Total Stipend Calculated: ${totalStipend.toFixed(2)}`);
+
 
   // Format dates consistently
   function formatDate(dateStr: string) {
@@ -190,8 +255,8 @@ export async function calculateStipend(record: Conference & { origin?: string })
 
   const result: StipendBreakdown = {
     conference: record.conference,
-    origin: origin, // Add origin city
-    destination: destination, // Rename location to destination
+    origin: origin,
+    destination: destination,
     conference_start: record.start_date,
     conference_end: record.end_date ?? record.start_date,
     flight_departure: formatDate(flightDates.outbound),
@@ -199,19 +264,21 @@ export async function calculateStipend(record: Conference & { origin?: string })
     flight_cost: parseFloat(flightCost.toFixed(2)),
     flight_price_source: flightPriceSource,
     lodging_cost: parseFloat(lodgingCost.toFixed(2)),
-    meals_cost: parseFloat((basicMealsCost + businessEntertainmentCost).toFixed(2)),
+    meals_cost: parseFloat((basicMealsCost + businessEntertainmentCost).toFixed(2)), // Recalculate for consistency
     basic_meals_cost: parseFloat(basicMealsCost.toFixed(2)),
     business_entertainment_cost: parseFloat(businessEntertainmentCost.toFixed(2)),
     local_transport_cost: parseFloat(localTransportCost.toFixed(2)),
     ticket_price: ticketPrice,
-    internet_data_allowance: internetDataAllowance,
-    incidentals_allowance: incidentalsAllowance,
+    internet_data_allowance: parseFloat(internetDataAllowance.toFixed(2)),
+    incidentals_allowance: parseFloat(incidentalsAllowance.toFixed(2)),
     total_stipend: parseFloat(totalStipend.toFixed(2)),
   };
 
   log.debug("Final stipend breakdown:");
   log.debug(JSON.stringify(result, null, 2));
 
+  logCallback?.("Saving result to cache...");
   stipendCache.set(cacheKey, result);
+  logCallback?.("Calculation complete.");
   return result;
 }

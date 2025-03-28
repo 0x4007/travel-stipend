@@ -101,3 +101,17 @@ button:disabled {
 #results-table tr:nth-child(even) {
     background-color: #f9f9f9;
 }
+
+/* Log Styles */
+#log-output {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9em;
+    max-height: 300px; /* Limit height */
+    overflow-y: auto; /* Add scrollbar if needed */
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
