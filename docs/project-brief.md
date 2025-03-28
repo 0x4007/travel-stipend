@@ -61,9 +61,9 @@ The Travel Stipend Calculator is a TypeScript application designed to calculate 
    - Weekend rate adjustments
 
 4. **Robust error handling** to:
-   - Gracefully handle missing data
-   - Provide fallback calculations when APIs fail
-   - Log errors without crashing the application
+   - Gracefully handle missing data.
+   - Provide fallback calculations when external data sources fail (e.g., flight scraping currently falls back to `0` cost).
+   - Log errors without crashing the application.
 
 ## Success Criteria
 

@@ -32,17 +32,25 @@ async function calculateFlightCostForConference(
 
   log.debug(`Searching flights from ${origin} to ${destination}`);
   log.debug(`Dates: ${flightDates.outbound} to ${flightDates.return}`);
-  const scrapedResult = await scrapeFlightPrice(origin, destination, flightDates, includeBudget);
+  try {
+    const scrapedResult = await scrapeFlightPrice(origin, destination, flightDates, includeBudget);
 
-  // Flight data is now logged directly from the flights.ts file
+    // Flight data is now logged directly from the flights.ts file
 
-  if (scrapedResult.price === null) {
-    throw new Error(`Failed to get flight price for ${destination} from Google Flights`);
+    // Defensive check in case scrapeFlightPrice resolves with null instead of rejecting
+    if (scrapedResult.price === null) {
+      log.info(`Scraping returned null price for ${destination}. Setting cost to 0.`);
+      return { cost: 0, source: "Scraping returned null" };
+    }
+
+    log.info(`Flight cost for ${destination}: ${scrapedResult.price} (from ${scrapedResult.source})`);
+    log.debug(`Flight details: ${JSON.stringify(scrapedResult, null, 2)}`);
+    return { cost: scrapedResult.price, source: scrapedResult.source };
+  } catch (error) {
+    console.error(`Error scraping flight price for ${destination}:`, error);
+    log.info(`Setting flight cost to 0 due to scraping error for ${destination}.`);
+    return { cost: 0, source: "Scraping failed" };
   }
-
-  log.info(`Flight cost for ${destination}: ${scrapedResult.price} (from ${scrapedResult.source})`);
-  log.debug(`Flight details: ${JSON.stringify(scrapedResult, null, 2)}`);
-  return { cost: scrapedResult.price, source: scrapedResult.source };
 }
 
 async function calculateFlightDetails(
@@ -182,7 +190,8 @@ export async function calculateStipend(record: Conference & { origin?: string })
 
   const result: StipendBreakdown = {
     conference: record.conference,
-    location: destination,
+    origin: origin, // Add origin city
+    destination: destination, // Rename location to destination
     conference_start: record.start_date,
     conference_end: record.end_date ?? record.start_date,
     flight_departure: formatDate(flightDates.outbound),

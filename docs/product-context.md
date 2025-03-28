@@ -26,7 +26,7 @@ The Travel Stipend Calculator addresses these challenges by:
 
 4. **Enabling batch processing** of multiple conferences, allowing finance teams to plan travel budgets in advance.
 
-5. **Incorporating real-world data** like flight prices (when available) and local transportation costs to ensure stipends reflect actual expenses.
+5. **Incorporating real-world data** like flight prices (when available via scraping, otherwise defaulting to 0) and local transportation costs to ensure stipends reflect actual expenses.
 
 ## User Experience Goals
 

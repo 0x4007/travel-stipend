@@ -119,7 +119,8 @@ function outputResults(results: StipendBreakdown[], format = "table"): void {
     case "csv": {
       const header = [
         "conference",
-        "location",
+        "origin", // Added origin
+        "destination", // Renamed from location
         "conference_start",
         "conference_end",
         "flight_departure",
@@ -140,7 +141,8 @@ function outputResults(results: StipendBreakdown[], format = "table"): void {
       const rows = results.map((r) =>
         [
           `"${r.conference}"`,
-          `"${r.location}"`,
+          `"${r.origin}"`, // Added origin
+          `"${r.destination}"`, // Renamed from location
           `"${r.conference_start}"`,
           `"${r.conference_end ?? ""}"`,
           `"${r.flight_departure}"`,
@@ -192,7 +194,8 @@ function outputResults(results: StipendBreakdown[], format = "table"): void {
       console.table(
         results.map((r) => ({
           conference: r.conference,
-          location: r.location,
+          origin: r.origin, // Added origin
+          destination: r.destination, // Renamed from location
           dates: `${r.conference_start} - ${r.conference_end ?? r.conference_start}`,
           flight: Number(r.flight_cost).toFixed(2),
           lodging: Number(r.lodging_cost).toFixed(2),

@@ -40,7 +40,8 @@ export interface FlightResults {
 
 export interface StipendBreakdown {
   conference: string;
-  location: string;
+  origin: string; // Added origin city
+  destination: string; // Renamed from location
   conference_start: string;
   conference_end: string;
   flight_departure: string;

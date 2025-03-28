@@ -36,7 +36,8 @@
     "tsc:no-emit": "tsc --noEmit",
     "remove-jsdoc": "bun scripts/remove-jsdoc-direct.ts",
     "remove-jsdoc:src": "bun scripts/remove-jsdoc-direct.ts src",
-    "remove-jsdoc:file": "bun scripts/remove-jsdoc-from-file.ts"
+    "remove-jsdoc:file": "bun scripts/remove-jsdoc-from-file.ts",
+    "watch:workflows": "nodemon --watch .github/workflows/ --ext yml --exec \"./scripts/test-workflow.sh\" --delay 1"
   },
   "keywords": [
     "github-action",
@@ -80,8 +81,8 @@
     "@types/node": "^20.11.19",
     "bun-types": "^1.2.5",
     "cspell": "^8.4.0",
-    "esbuild": "^0.20.1",
     "enquirer": "^2.4.1",
+    "esbuild": "^0.20.1",
     "eslint": "9.14.0",
     "eslint-plugin-check-file": "^2.8.0",
     "eslint-plugin-sonarjs": "^2.0.4",
@@ -90,6 +91,7 @@
     "jsdom": "^26.0.0",
     "knip": "^5.0.1",
     "lint-staged": "^15.2.2",
+    "nodemon": "^3.1.9",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.2.5",
     "simple-git": "^3.27.0",

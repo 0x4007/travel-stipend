@@ -44,41 +44,39 @@ function formatMarkdownTable(consolidatedResults: ConsolidatedResults): string {
 
   // Create the main table
   markdown += "## Detailed Results\n\n";
-  markdown += "| Conference | Location | Dates | Flight | Lodging | Meals | Transport | Misc. | Total |\n";
-  markdown += "|------------|----------|-------|--------|---------|-------|-----------|-------|-------|\n";
+  markdown += "| Conference | Origin | Destination | Dates | Flight | Lodging | Meals | Transport | Ticket | Internet | Incidentals | Total |\n"; // Replaced Misc. with individual columns
+  markdown += "|------------|--------|-------------|-------|--------|---------|-------|-----------|--------|----------|-------------|-------|\n"; // Adjusted separator lengths
 
   // Add a row for each result
   for (const result of results) {
     const dates = `${result.flight_departure} - ${result.flight_return}`;
-    const misc = formatCurrency(
-      result.ticket_price +
-      result.internet_data_allowance +
-      result.incidentals_allowance
-    );
+    // Removed misc calculation
 
-    markdown += `| ${result.conference} | ${result.location} | ${dates} | ` +
+    markdown += `| ${result.conference} | ${result.origin} | ${result.destination} | ${dates} | ` + // Added result.origin
       `${formatCurrency(result.flight_cost)} | ${formatCurrency(result.lodging_cost)} | ` +
       `${formatCurrency(result.meals_cost)} | ${formatCurrency(result.local_transport_cost)} | ` +
-      `${misc} | ${formatCurrency(result.total_stipend)} |\n`;
+      `${formatCurrency(result.ticket_price)} | ${formatCurrency(result.internet_data_allowance)} | ${formatCurrency(result.incidentals_allowance)} | ` + // Added individual columns
+      `${formatCurrency(result.total_stipend)} |\n`;
   }
 
   // Add a totals row
-  markdown += `| **TOTALS** | | | ${formatCurrency(totals.flight_cost)} | ` +
+  markdown += `| **TOTALS** | | | | ${formatCurrency(totals.flight_cost)} | ` + // Added empty cell for Origin column
     `${formatCurrency(totals.lodging_cost)} | ${formatCurrency(totals.meals_cost)} | ` +
     `${formatCurrency(totals.local_transport_cost)} | ` +
-    `${formatCurrency(totals.ticket_price + totals.internet_data_allowance + totals.incidentals_allowance)} | ` +
+    `${formatCurrency(totals.ticket_price)} | ${formatCurrency(totals.internet_data_allowance)} | ${formatCurrency(totals.incidentals_allowance)} | ` + // Added individual totals
     `${formatCurrency(totals.total_stipend)} |\n\n`;
 
   // Add detailed section for each trip
   markdown += "## Individual Trip Details\n\n";
 
   for (const result of results) {
-    markdown += `### ${result.conference} (${result.location})\n\n`;
+    markdown += `### ${result.conference} (${result.destination})\n\n`; // Changed result.location to result.destination
 
     markdown += "| Category | Amount |\n";
     markdown += "|----------|--------|\n";
     markdown += `| Conference | ${result.conference} |\n`;
-    markdown += `| Location | ${result.location} |\n`;
+    markdown += `| Origin | ${result.origin} |\n`; // Added Origin row
+    markdown += `| Destination | ${result.destination} |\n`; // Changed Location to Destination and result.location to result.destination
     markdown += `| Conference Start | ${result.conference_start} |\n`;
     markdown += `| Conference End | ${result.conference_end} |\n`;
     markdown += `| Flight Departure | ${result.flight_departure} |\n`;
@@ -108,7 +106,8 @@ function formatCSV(consolidatedResults: ConsolidatedResults): string {
   // Create header row
   const headers = [
     "Conference",
-    "Location",
+    "Origin", // Added Origin
+    "Destination", // Changed Location to Destination
     "Start Date",
     "End Date",
     "Flight Departure",
@@ -130,7 +129,8 @@ function formatCSV(consolidatedResults: ConsolidatedResults): string {
   for (const result of results) {
     const row = [
       `"${result.conference}"`,
-      `"${result.location}"`,
+      `"${result.origin}"`, // Added result.origin
+      `"${result.destination}"`, // Changed result.location to result.destination
       `"${result.conference_start}"`,
       `"${result.conference_end}"`,
       `"${result.flight_departure}"`,
@@ -169,28 +169,49 @@ async function consolidateResults() {
     // Check if running in GitHub Actions
     if (process.env.GITHUB_STEP_SUMMARY) {
       // Get the workflow json
-      const workflowJsonPath = process.env.GITHUB_OUTPUT || "";
+      // This check was incorrect - GITHUB_OUTPUT points to a file for setting outputs,
+      // not the directory containing results. We should always try to read if in Actions.
+      // const workflowJsonPath = process.env.GITHUB_OUTPUT || "";
+      // if (fs.existsSync(workflowJsonPath)) {
 
-      if (fs.existsSync(workflowJsonPath)) {
-        const files = fs.readdirSync(path.join(process.cwd(), "matrix-results"));
+      const resultsDir = path.join(process.cwd(), "matrix-results");
+      if (fs.existsSync(resultsDir)) { // Check if the results directory exists
+        const files = fs.readdirSync(resultsDir);
         for (const file of files) {
           if (file.endsWith('.json')) {
+            const filePath = path.join(resultsDir, file); // Use resultsDir variable
+            console.log(`Processing file: ${filePath}`); // Log file being processed
             try {
-              const content = fs.readFileSync(path.join(process.cwd(), "matrix-results", file), 'utf8');
-              const result = JSON.parse(content) as StipendBreakdown;
+              const content = fs.readFileSync(filePath, 'utf8');
+              const result = JSON.parse(content); // Parse first, then validate type
 
-              // Validate that this is a StipendBreakdown object
-              if (result.conference && result.location && typeof result.total_stipend === 'number') {
-                results.push(result);
+              // More detailed validation
+              const isValid = result &&
+                              typeof result.conference === 'string' &&
+                              typeof result.origin === 'string' &&
+                              typeof result.destination === 'string' &&
+                              typeof result.total_stipend === 'number';
+
+              if (isValid) {
+                console.log(`Validation PASSED for ${file}`);
+                results.push(result as StipendBreakdown);
               } else {
-                console.error(`File ${file} does not contain valid StipendBreakdown data`);
+                console.error(`Validation FAILED for ${file}. Missing/invalid fields:`);
+                if (!result) console.error(' - Result object is null or undefined');
+                if (typeof result?.conference !== 'string') console.error(' - Invalid or missing conference');
+                if (typeof result?.origin !== 'string') console.error(' - Invalid or missing origin');
+                if (typeof result?.destination !== 'string') console.error(' - Invalid or missing destination');
+                if (typeof result?.total_stipend !== 'number') console.error(' - Invalid or missing total_stipend');
               }
             } catch (e) {
-              console.error(`Failed to parse ${file}:`, e);
+              console.error(`Failed to read or parse ${file}:`, e);
             }
           }
         }
+      } else {
+        console.warn(`Warning: Results directory not found at ${resultsDir}`);
       }
+      // } // End of original incorrect if block
     } else {
       // Dev/test mode - check for files in a specific directory
       console.log("Running in development/testing mode");
@@ -221,7 +242,8 @@ async function consolidateResults() {
         console.log("No result files found, using sample data");
         results.push({
           conference: "Sample Conference",
-          location: "Tokyo, Japan",
+          origin: "Seoul, South Korea", // Added missing origin
+          destination: "Tokyo, Japan", // Changed location to destination
           conference_start: "May 15",
           conference_end: "May 17",
           flight_departure: "14 May",
@@ -241,7 +263,8 @@ async function consolidateResults() {
 
         results.push({
           conference: "Sample Conference 2",
-          location: "San Francisco, USA",
+          origin: "Seoul, South Korea", // Added missing origin
+          destination: "San Francisco, USA", // Changed location to destination
           conference_start: "Jun 20",
           conference_end: "Jun 22",
           flight_departure: "19 June",
