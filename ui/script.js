@@ -1,4 +1,3 @@
-// ui/script.ts
 var form = document.getElementById("stipend-form");
 var originInput = document.getElementById("origin");
 var destinationInput = document.getElementById("destination");
