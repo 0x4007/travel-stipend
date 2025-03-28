@@ -21,12 +21,6 @@ interface StipendBreakdown {
     distance_km?: number;
 }
 
-// Type for WebSocket messages from server
-interface WebSocketMessage {
-    type: 'log' | 'result' | 'error';
-    payload: any;
-}
-
 // DOM Elements
 const form = document.getElementById('stipend-form') as HTMLFormElement;
 const originInput = document.getElementById('origin') as HTMLInputElement;
@@ -36,10 +30,8 @@ const returnDateInput = document.getElementById('return-date') as HTMLInputEleme
 const ticketPriceInput = document.getElementById('ticket-price') as HTMLInputElement;
 const calculateButton = document.getElementById('calculate-button') as HTMLButtonElement;
 const resultsTableDiv = document.getElementById('results-table') as HTMLDivElement;
-const logOutput = document.getElementById('log-output') as HTMLPreElement; // Added log element
+// Removed logOutput element reference
 const errorOutput = document.getElementById('error-output') as HTMLDivElement;
-
-let socket: WebSocket | null = null;
 
 // Helper to format currency
 function formatCurrency(value: number | undefined): string {
@@ -91,78 +83,26 @@ function renderResultsTable(result: StipendBreakdown): void {
     resultsTableDiv.appendChild(table);
 }
 
-// Function to add log messages
-function addLog(message: string): void {
-    if (!logOutput) return;
-    logOutput.textContent += message + '\n';
-    logOutput.scrollTop = logOutput.scrollHeight; // Auto-scroll to bottom
+// Function to show loading state
+function showLoading() {
+    if (resultsTableDiv) {
+        // Simple text and spinner (could be enhanced with CSS)
+        resultsTableDiv.innerHTML = `
+            <div class="spinner"></div>
+            <p>Checking Google Flights for the latest price data...</p>
+        `;
+    }
+    if (errorOutput) errorOutput.textContent = '';
+    if (calculateButton) calculateButton.disabled = true;
 }
 
-// Function to handle WebSocket connection and messages
-function connectWebSocket(data: any): void {
-    // Close existing socket if any
-    if (socket && socket.readyState !== WebSocket.CLOSED) {
-        socket.close();
-    }
-
-    // Determine WebSocket protocol based on window location
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${window.location.host}/ws`; // Use /ws endpoint
-
-    socket = new WebSocket(wsUrl);
-
-    socket.onopen = () => {
-        addLog('WebSocket connection established.');
-        addLog('Sending calculation request...');
-        socket?.send(JSON.stringify(data)); // Send form data
-        if (calculateButton) calculateButton.disabled = true; // Disable button during calculation
-    };
-
-    socket.onmessage = (event) => {
-        try {
-            const message: WebSocketMessage = JSON.parse(event.data);
-            switch (message.type) {
-                case 'log':
-                    addLog(message.payload);
-                    break;
-                case 'result':
-                    addLog('Calculation complete.');
-                    renderResultsTable(message.payload as StipendBreakdown);
-                    if (calculateButton) calculateButton.disabled = false; // Re-enable button
-                    socket?.close(); // Close socket after getting result
-                    break;
-                case 'error':
-                    addLog(`ERROR: ${message.payload}`);
-                    if (errorOutput) errorOutput.textContent = `Error: ${message.payload}`;
-                    if (resultsTableDiv) resultsTableDiv.innerHTML = '<p>Calculation failed.</p>';
-                    if (calculateButton) calculateButton.disabled = false; // Re-enable button
-                    socket?.close(); // Close socket on error
-                    break;
-                default:
-                    addLog(`Unknown message type: ${message.type}`);
-            }
-        } catch (error) {
-            addLog(`Error processing message: ${error}`);
-            console.error('WebSocket message error:', error);
-        }
-    };
-
-    socket.onerror = (error) => {
-        addLog('WebSocket error. See console for details.');
-        console.error('WebSocket Error:', error);
-        if (errorOutput) errorOutput.textContent = 'WebSocket connection error.';
-        if (resultsTableDiv) resultsTableDiv.innerHTML = '<p>Calculation failed.</p>';
-        if (calculateButton) calculateButton.disabled = false;
-    };
-
-    socket.onclose = (event) => {
-        addLog(`WebSocket connection closed (Code: ${event.code}).`);
-        // Optionally re-enable button if closed unexpectedly
-        if (!event.wasClean && calculateButton) {
-             calculateButton.disabled = false;
-        }
-        socket = null; // Clear socket reference
-    };
+// Function to hide loading state (clear results area)
+function hideLoading(errorOccurred = false) {
+     if (resultsTableDiv && !errorOccurred) {
+        // Clear loading message if no error, otherwise let error message show
+         resultsTableDiv.innerHTML = '<p>Calculation results will appear here...</p>';
+     }
+    if (calculateButton) calculateButton.disabled = false;
 }
 
 
@@ -174,15 +114,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Form submission handler - Now initiates WebSocket connection
-    form.addEventListener('submit', (event) => {
+    // Form submission handler - Back to simple HTTP Fetch
+    form.addEventListener('submit', async (event) => {
         event.preventDefault();
-
-        // Clear previous results/errors
-        if (resultsTableDiv) resultsTableDiv.innerHTML = '<p>Calculation results will appear here...</p>';
-        if (logOutput) logOutput.textContent = 'Initiating calculation...\n'; // Clear/reset log
-        if (errorOutput) errorOutput.textContent = '';
-        if (calculateButton) calculateButton.disabled = true; // Disable button immediately
+        showLoading(); // Show spinner and message
 
         // Get form data
         const origin = originInput.value.trim();
@@ -191,16 +126,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const returnDate = returnDateInput.value.trim();
         const ticketPrice = ticketPriceInput.value.trim();
 
-        // Data to send via WebSocket
-        const requestData = {
+        // Construct query parameters
+        const params = new URLSearchParams({
             origin,
             destination,
             departureDate,
             returnDate,
-            ticketPrice: ticketPrice || undefined // Send undefined if empty
-        };
+        });
+        if (ticketPrice) {
+            params.append('ticketPrice', ticketPrice);
+        }
 
-        // Connect WebSocket and send data
-        connectWebSocket(requestData);
+        try {
+            // Make API call
+            const response = await fetch(`/calculate?${params.toString()}`);
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+            }
+
+            const result: StipendBreakdown = await response.json();
+
+            // Display results (hide loading implicitly by rendering table)
+            renderResultsTable(result);
+
+        } catch (error) {
+            console.error('Calculation error:', error);
+            if (errorOutput) errorOutput.textContent = `Error: ${error instanceof Error ? error.message : 'An unknown error occurred'}`;
+            hideLoading(true); // Hide loading but indicate error occurred
+        } finally {
+             // Ensure button is re-enabled even if render/hideLoading fails
+             if (calculateButton) calculateButton.disabled = false;
+        }
     });
 });

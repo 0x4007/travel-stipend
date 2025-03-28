@@ -1,45 +1,16 @@
-import type { ServerWebSocket } from "bun";
 import { calculateStipend } from "../src/travel-stipend-calculator";
 import { Conference } from "../src/types";
 import { DatabaseService } from "../src/utils/database";
 
-console.log("Starting WebSocket server...");
+console.log("Starting API server...");
 
-// Type for WebSocket messages from server
-interface WebSocketMessage {
-    type: 'log' | 'result' | 'error';
-    payload: any;
-}
-
-// Helper to send structured messages
-function sendWsMessage(ws: ServerWebSocket<any>, type: WebSocketMessage['type'], payload: any) {
-    const message: WebSocketMessage = { type, payload };
-    ws.send(JSON.stringify(message));
-}
-
-
-const server = Bun.serve({ // Removed incorrect type argument
+const server = Bun.serve({
   port: 3000,
-  idleTimeout: 255, // Keep increased timeout
-
-  // --- HTTP Fetch Handler (for static files) ---
-  fetch(req, server) {
+  idleTimeout: 255, // Keep increased timeout from previous step
+  async fetch(req) {
     const url = new URL(req.url);
 
-    // Upgrade to WebSocket if requested
-    if (url.pathname === "/ws") {
-      const success = server.upgrade(req, {
-          data: { startTime: Date.now() } // Pass initial data if needed
-      });
-      if (success) {
-        // Bun automatically handles the response for successful upgrades
-        return;
-      } else {
-        return new Response("WebSocket upgrade failed", { status: 400 });
-      }
-    }
-
-    // Serve static files
+    // Serve static files (HTML, CSS, JS) from ui directory
     if (url.pathname === "/") {
       return new Response(Bun.file("ui/index.html"));
     }
@@ -50,89 +21,66 @@ const server = Bun.serve({ // Removed incorrect type argument
       return new Response(Bun.file("ui/script.js"));
     }
 
-    // Fallback for other HTTP paths
-    return new Response("Not Found", { status: 404 });
-  },
-
-  // --- WebSocket Handler ---
-  websocket: {
-    open(ws) {
-      console.log(`WebSocket opened by ${ws.remoteAddress}`);
-      sendWsMessage(ws, 'log', 'Connection established. Ready for calculation request.');
-    },
-    async message(ws, message) {
-        console.log(`Received message: ${message}`);
-        let requestData: any;
-
-        try {
-            requestData = JSON.parse(message.toString());
-        } catch (e) {
-            console.error("Failed to parse incoming WebSocket message:", e);
-            sendWsMessage(ws, 'error', 'Invalid request format. Please send JSON.');
-            return;
-        }
-
-        const { origin, destination, departureDate, returnDate, ticketPrice } = requestData;
+    // API endpoint for calculation (HTTP GET)
+    if (url.pathname === "/calculate") {
+      try {
+        const params = url.searchParams;
+        const origin = params.get("origin");
+        const destination = params.get("destination");
+        const departureDate = params.get("departureDate");
+        const returnDate = params.get("returnDate");
+        const ticketPrice = params.get("ticketPrice");
 
         if (!origin || !destination || !departureDate || !returnDate) {
-            sendWsMessage(ws, 'error', 'Missing required parameters: origin, destination, departureDate, returnDate');
-            return;
+          return new Response(
+            JSON.stringify({ message: "Missing required parameters: origin, destination, departureDate, returnDate" }),
+            { status: 400, headers: { "Content-Type": "application/json" } }
+          );
         }
 
-        try {
-            sendWsMessage(ws, 'log', `Received request: ${origin} -> ${destination} (${departureDate} - ${returnDate})`);
+        // Construct Conference object
+        const conference: Conference = {
+          category: "UI Request",
+          conference: `Trip to ${destination}`,
+          location: destination,
+          origin: origin,
+          start_date: departureDate,
+          end_date: returnDate,
+          ticket_price: ticketPrice ?? undefined,
+        };
 
-            // Construct Conference object
-            const conference: Conference = {
-                category: "UI Request",
-                conference: `Trip to ${destination}`,
-                location: destination,
-                origin: origin,
-                start_date: departureDate,
-                end_date: returnDate,
-                ticket_price: ticketPrice || undefined,
-            };
+        console.log("Calculating for:", conference);
+        // Call original calculateStipend (no callback)
+        const result = await calculateStipend(conference);
+        console.log("Calculation successful");
 
-            sendWsMessage(ws, 'log', 'Ensuring database is initialized...');
-            // Call a DB method to trigger initialization if not already done
-            await DatabaseService.getInstance().getCostOfLiving(origin); // Using origin, but any valid call works
-            sendWsMessage(ws, 'log', 'Database ready. Starting stipend calculation...');
+        // Close DB connection after calculation
+        // Consider if this is the best place in a server context
+        await DatabaseService.getInstance().close();
 
-            // Define the log callback function for this specific WebSocket connection
-            const logCallback = (logMessage: string) => {
-                sendWsMessage(ws, 'log', logMessage);
-            };
+        return new Response(JSON.stringify(result), {
+          headers: { "Content-Type": "application/json" },
+        });
 
-            // --- Call the core calculation logic ---
-            const result = await calculateStipend(conference, logCallback); // Pass the callback
-            // ---------------------------------------
+      } catch (error) {
+        console.error("API Calculation Error:", error);
+        // Ensure DB is closed on error too
+        await DatabaseService.getInstance().close().catch(dbErr => console.error("DB close error:", dbErr));
 
-            // Send final log message (calculateStipend sends its own final one now)
-            // sendWsMessage(ws, 'log', 'Calculation finished successfully.');
-            sendWsMessage(ws, 'result', result); // Send the final result
-
-            // Note: Not closing DB connection here to allow reuse for subsequent requests
-            // await DatabaseService.getInstance().close();
-
-        } catch (error) {
-            console.error("WebSocket Calculation Error:", error);
-            const errorMessage = error instanceof Error ? error.message : "An unknown calculation error occurred";
-            sendWsMessage(ws, 'error', errorMessage);
-            // Ensure DB connection is potentially closed or handled on error if necessary
-            // await DatabaseService.getInstance().close().catch(dbErr => console.error("DB close error:", dbErr));
-        }
-    },
-    close(ws, code, reason) {
-      console.log(`WebSocket closed by ${ws.remoteAddress}. Code: ${code}, Reason: ${reason}`);
+        return new Response(
+          JSON.stringify({ message: error instanceof Error ? error.message : "Internal server error" }),
+          { status: 500, headers: { "Content-Type": "application/json" } }
+        );
+      }
     }
-    // Removed invalid 'error' property specific to websocket handler
-  }, // End of websocket handler
 
-  // --- General Server Error Handler ---
+    // Fallback for other paths
+    return new Response("Not Found", { status: 404 });
+  },
   error(error) {
     console.error("Server Error:", error);
     return new Response("Internal Server Error", { status: 500 });
   },
 });
 
-console.log(`WebSocket server listening on http://localhost:${server.port}`);
+console.log(`API server listening on http://localhost:${server.port}`);
