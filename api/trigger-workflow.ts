@@ -15,18 +15,26 @@ function getEnv(key: string): string {
   return value;
 }
 
-// --- GitHub App Authentication (remains the same) ---
+// --- GitHub App Authentication ---
 async function getInstallationToken(appId: string, installationId: string, privateKeyPem: string): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const expiration = now + (10 * 60);
   const payload = { iat: now - 60, exp: expiration, iss: appId };
   let privateKey: CryptoKey;
   try {
-    const pemFormatted = privateKeyPem.replace(/\\n/g, '\n');
-    privateKey = await crypto.subtle.importKey("pkcs8", pemToArrayBuffer(pemFormatted), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+    // Use the key directly from env var, assuming Deno Deploy handles newlines correctly
+    // const pemFormatted = privateKeyPem.replace(/\\n/g, '\n'); // Removed replacement
+    privateKey = await crypto.subtle.importKey("pkcs8", pemToArrayBuffer(privateKeyPem), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
   } catch (e) {
     console.error("Error importing private key:", e);
-    throw new Error("Failed to import GitHub App private key.");
+    // Provide more specific error message if possible
+    let errMsg = "Failed to import GitHub App private key.";
+    if (e instanceof Error && e.message.includes("ASN.1")) {
+        errMsg += " Ensure the key is in correct PKCS8 PEM format and newlines are preserved correctly in the environment variable.";
+    } else if (e instanceof Error) {
+        errMsg += ` (${e.message})`;
+    }
+    throw new Error(errMsg);
   }
   const jwt = await djwt.create({ alg: "RS256", typ: "JWT" }, payload, privateKey);
   const tokenUrl = `https://api.github.com/app/installations/${installationId}/access_tokens`;
@@ -39,7 +47,7 @@ async function getInstallationToken(appId: string, installationId: string, priva
     return data.token;
   } catch (error) { console.error("Error fetching installation token:", error); throw error; }
 }
-function pemToArrayBuffer(pem: string): ArrayBuffer { /* ... (remains the same) ... */
+function pemToArrayBuffer(pem: string): ArrayBuffer {
     const base64 = pem.replace(/-----BEGIN PRIVATE KEY-----/g, "").replace(/-----END PRIVATE KEY-----/g, "").replace(/\s/g, "");
     const binaryString = atob(base64);
     const len = binaryString.length;
@@ -59,7 +67,7 @@ async function handler(req: Request): Promise<Response> {
   // --- CORS Headers ---
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, GET, OPTIONS", // Allow GET for static files
+    "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   };
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -113,26 +121,15 @@ async function handler(req: Request): Promise<Response> {
   // --- End API Endpoint ---
 
   // --- Static File Serving ---
-  // Serve files from the 'ui' directory relative to this script's location
   try {
-      // Construct path relative to the script file's directory
       const scriptDir = path.dirname(path.fromFileUrl(import.meta.url));
-      const uiDir = path.join(scriptDir, "..", "ui"); // Go up one level from api/ to project root, then into ui/
-
-      // Use serveDir to handle static file requests
-      return await serveDir(req, {
-          fsRoot: uiDir,
-          urlRoot: "", // Serve files directly from the root path ('/')
-          showDirListing: false, // Don't show directory listings
-          quiet: true, // Suppress serveDir's own logs
-      });
+      const uiDir = path.join(scriptDir, "..", "ui");
+      return await serveDir(req, { fsRoot: uiDir, urlRoot: "", showDirListing: false, quiet: true });
   } catch (error) {
-      // Specifically handle file not found errors from serveDir
       if (error instanceof Deno.errors.NotFound) {
           console.log(`Static file not found for path: ${pathname}`);
           return new Response("Not Found", { status: 404, headers: corsHeaders });
       }
-      // Log other potential errors during static file serving
       console.error(`Error serving static file for path ${pathname}:`, error);
       return new Response("Internal Server Error", { status: 500, headers: corsHeaders });
   }
