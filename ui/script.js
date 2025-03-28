@@ -6,19 +6,81 @@ var departureDateInput = document.getElementById("departure-date");
 var returnDateInput = document.getElementById("return-date");
 var ticketPriceInput = document.getElementById("ticket-price");
 var calculateButton = document.getElementById("calculate-button");
-var resultsOutput = document.getElementById("results-output");
+var resultsTableDiv = document.getElementById("results-table");
 var errorOutput = document.getElementById("error-output");
+function formatCurrency(value) {
+  if (value === undefined || isNaN(value))
+    return "$0.00";
+  return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+function formatLabel(key) {
+  return key.replace(/_/g, " ").replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
+}
+function renderResultsTable(result) {
+  if (!resultsTableDiv)
+    return;
+  resultsTableDiv.innerHTML = "";
+  const table = document.createElement("table");
+  const tbody = document.createElement("tbody");
+  const displayOrder = [
+    "conference",
+    "origin",
+    "destination",
+    "conference_start",
+    "conference_end",
+    "flight_departure",
+    "flight_return",
+    "flight_cost",
+    "flight_price_source",
+    "lodging_cost",
+    "meals_cost",
+    "basic_meals_cost",
+    "business_entertainment_cost",
+    "local_transport_cost",
+    "ticket_price",
+    "internet_data_allowance",
+    "incidentals_allowance",
+    "total_stipend"
+  ];
+  displayOrder.forEach((key) => {
+    const value = result[key];
+    if (value === undefined || value === null) {
+      if (key === "distance_km")
+        return;
+    }
+    const tr = document.createElement("tr");
+    const th = document.createElement("th");
+    const td = document.createElement("td");
+    th.textContent = formatLabel(key);
+    if (key.endsWith("_cost") || key.endsWith("_price") || key.endsWith("_allowance") || key === "total_stipend") {
+      td.textContent = formatCurrency(value);
+    } else if (key === "flight_price_source" && typeof value === "string") {
+      td.textContent = `${result.flight_price_source}`;
+    } else {
+      td.textContent = String(value);
+    }
+    tr.appendChild(th);
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  resultsTableDiv.appendChild(table);
+}
 document.addEventListener("DOMContentLoaded", () => {
   if (!form) {
     console.error("Error: Could not find form element #stipend-form");
-    errorOutput.textContent = "Initialization Error: Form not found.";
+    if (errorOutput)
+      errorOutput.textContent = "Initialization Error: Form not found.";
     return;
   }
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    resultsOutput.textContent = "Calculating...";
-    errorOutput.textContent = "";
-    calculateButton.disabled = true;
+    if (resultsTableDiv)
+      resultsTableDiv.innerHTML = "<p>Calculating...</p>";
+    if (errorOutput)
+      errorOutput.textContent = "";
+    if (calculateButton)
+      calculateButton.disabled = true;
     const origin = originInput.value.trim();
     const destination = destinationInput.value.trim();
     const departureDate = departureDateInput.value.trim();
@@ -40,11 +102,13 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
       }
       const result = await response.json();
-      resultsOutput.textContent = JSON.stringify(result, null, 2);
+      renderResultsTable(result);
     } catch (error) {
       console.error("Calculation error:", error);
-      errorOutput.textContent = `Error: ${error instanceof Error ? error.message : "An unknown error occurred"}`;
-      resultsOutput.textContent = "Calculation failed.";
+      if (errorOutput)
+        errorOutput.textContent = `Error: ${error instanceof Error ? error.message : "An unknown error occurred"}`;
+      if (resultsTableDiv)
+        resultsTableDiv.innerHTML = "<p>Calculation failed.</p>";
     } finally {
       if (calculateButton)
         calculateButton.disabled = false;
