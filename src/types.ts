@@ -66,3 +66,6 @@ export interface FlightCostCacheEntry {
   price: number;
   timestamp: number;
 }
+
+// Type for logging callback functions used for streaming progress
+export type LogCallback = (message: string) => void;

@@ -121,10 +121,16 @@ bun run src/travel-stipend-cli.ts \
 A simple web UI is available for interactive calculations during development.
 
 1.  **Start the UI Server:**
-    ```bash
-    bun run ui:dev
-    ```
-    This command first compiles the UI script (`ui/script.ts` to `ui/script.js`) and then uses Bun to run the API server (`ui/api.ts`), watching the server file for changes. (Note: Changes to `ui/script.ts` require restarting the command to re-compile).
+    -   For development (with watching for server changes):
+        ```bash
+        bun run ui:dev
+        ```
+        This command first compiles the UI script (`ui/script.ts` to `ui/script.js`) and then runs the API server (`ui/api.ts`) with `--watch`. Note: Changes to `ui/script.ts` still require restarting the command to re-compile the frontend.
+    -   To run without watching:
+        ```bash
+        bun run start:ui
+        ```
+        This compiles the UI script once and then starts the API server.
 
 2.  **Open in Browser:** Navigate to `http://localhost:3000` in your web browser.
 

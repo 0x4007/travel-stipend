@@ -35,8 +35,14 @@
 
     <div id="results-container">
         <h2>Results</h2>
+        <div id="loading-indicator" style="display: none;">
+             <p>Checking Google Flights for the latest price data... <span id="countdown-timer"></span></p>
+             <div class="progress-bar-container">
+                 <div class="progress-bar-value"></div>
+             </div>
+        </div>
         <div id="results-table">
-            <!-- Table or loading message will be generated here by script.js -->
+            <!-- Table will be generated here by script.js -->
             <p>Calculation results will appear here...</p>
         </div>
         <!-- Removed log container -->

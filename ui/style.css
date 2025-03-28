@@ -96,7 +96,31 @@ button:disabled {
     background-color: #303030; /* Slightly lighter dark row */
 }
 
-/* Spinner Styles */
+/* Loading Indicator Styles */
+#loading-indicator p {
+    text-align: center;
+    color: #aaa;
+    margin-bottom: 10px;
+}
+.progress-bar-container {
+    width: 100%;
+    background-color: #555; /* Darker background for the bar */
+    border-radius: 5px;
+    overflow: hidden;
+    height: 20px;
+    border: 1px solid #666; /* Add slight border */
+}
+.progress-bar-value {
+    height: 100%;
+    width: 0%; /* Start at 0% */
+    background-color: #3498db; /* Blue progress */
+    text-align: center; /* Optional: show percentage */
+    line-height: 20px; /* Optional: center text vertically */
+    color: white; /* Optional: text color */
+    transition: width 0.5s ease-in-out; /* Smooth transition for updates */
+}
+
+/* Spinner Styles (Keep for potential future use or alternative) */
 .spinner {
   border: 4px solid #555; /* Darker grey */
   border-top: 4px solid #3498db; /* Blue */
@@ -112,8 +136,8 @@ button:disabled {
   100% { transform: rotate(360deg); }
 }
 
-/* Loading message style */
-#results-table p {
+/* Loading message style (Adjusted selector) */
+#loading-indicator p { /* Target p inside loading indicator */
     text-align: center;
     color: #aaa;
 }

@@ -32,6 +32,7 @@
     "test:fast": "bun test",
     "test:watch": "bun test --watch",
     "build:ui": "bun build ui/script.ts --outfile=ui/script.js",
+    "start:ui": "bun run build:ui && bun ui/api.ts",
     "ui:dev": "bun run build:ui && bun --watch ui/api.ts",
     "rename-to-kebab": "bun rename-to-kebab-case.ts",
     "rename-to-kebab:dry-run": "bun rename-to-kebab-case.ts --dry-run --verbose",

@@ -7,7 +7,11 @@ var returnDateInput = document.getElementById("return-date");
 var ticketPriceInput = document.getElementById("ticket-price");
 var calculateButton = document.getElementById("calculate-button");
 var resultsTableDiv = document.getElementById("results-table");
+var loadingIndicatorDiv = document.getElementById("loading-indicator");
+var progressBarValue = loadingIndicatorDiv?.querySelector(".progress-bar-value");
+var countdownTimerSpan = document.getElementById("countdown-timer");
 var errorOutput = document.getElementById("error-output");
+var progressInterval = null;
 function formatCurrency(value) {
   if (value === undefined || isNaN(value))
     return "$0.00";
@@ -20,6 +24,7 @@ function renderResultsTable(result) {
   if (!resultsTableDiv)
     return;
   resultsTableDiv.innerHTML = "";
+  resultsTableDiv.style.display = "block";
   const table = document.createElement("table");
   const tbody = document.createElement("tbody");
   const displayOrder = [
@@ -65,19 +70,57 @@ function renderResultsTable(result) {
   resultsTableDiv.appendChild(table);
 }
 function showLoading() {
-  if (resultsTableDiv) {
-    resultsTableDiv.innerHTML = `
-            <div class="spinner"></div>
-            <p>Checking Google Flights for the latest price data...</p>
-        `;
-  }
+  const totalDuration = 53000;
+  let elapsedTime = 0;
+  if (resultsTableDiv)
+    resultsTableDiv.style.display = "none";
+  if (loadingIndicatorDiv)
+    loadingIndicatorDiv.style.display = "block";
   if (errorOutput)
     errorOutput.textContent = "";
   if (calculateButton)
     calculateButton.disabled = true;
+  if (progressBarValue) {
+    progressBarValue.style.width = "0%";
+    progressBarValue.textContent = "0%";
+  }
+  if (countdownTimerSpan) {
+    countdownTimerSpan.textContent = `(${Math.ceil(totalDuration / 1000)}s left)`;
+  }
+  if (progressInterval !== null) {
+    clearInterval(progressInterval);
+  }
+  const updateInterval = 500;
+  const steps = totalDuration / updateInterval;
+  const increment = 100 / steps;
+  progressInterval = window.setInterval(() => {
+    elapsedTime += updateInterval;
+    let currentProgress = elapsedTime / totalDuration * 100;
+    let remainingSeconds = Math.ceil((totalDuration - elapsedTime) / 1000);
+    if (currentProgress >= 100) {
+      currentProgress = 100;
+      remainingSeconds = 0;
+      if (progressInterval !== null)
+        clearInterval(progressInterval);
+    }
+    if (progressBarValue) {
+      progressBarValue.style.width = `${currentProgress}%`;
+      progressBarValue.textContent = `${Math.round(currentProgress)}%`;
+    }
+    if (countdownTimerSpan) {
+      countdownTimerSpan.textContent = `(${remainingSeconds}s left)`;
+    }
+  }, updateInterval);
 }
-function hideLoading(errorOccurred = false) {
-  if (resultsTableDiv && !errorOccurred) {
+function hideLoading(showResultsPlaceholder = false) {
+  if (progressInterval !== null) {
+    clearInterval(progressInterval);
+    progressInterval = null;
+  }
+  if (loadingIndicatorDiv)
+    loadingIndicatorDiv.style.display = "none";
+  if (resultsTableDiv && showResultsPlaceholder) {
+    resultsTableDiv.style.display = "block";
     resultsTableDiv.innerHTML = "<p>Calculation results will appear here...</p>";
   }
   if (calculateButton)
@@ -109,11 +152,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     try {
       const response = await fetch(`/calculate?${params.toString()}`);
+      if (progressInterval !== null) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      if (progressBarValue) {
+        progressBarValue.style.width = "100%";
+        progressBarValue.textContent = "100%";
+      }
+      if (countdownTimerSpan) {
+        countdownTimerSpan.textContent = "";
+      }
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: response.statusText }));
         throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
       }
       const result = await response.json();
+      hideLoading(false);
       renderResultsTable(result);
     } catch (error) {
       console.error("Calculation error:", error);
@@ -123,6 +178,8 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       if (calculateButton)
         calculateButton.disabled = false;
+      if (progressInterval !== null)
+        clearInterval(progressInterval);
     }
   });
 });

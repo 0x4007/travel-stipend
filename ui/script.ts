@@ -30,8 +30,13 @@ const returnDateInput = document.getElementById('return-date') as HTMLInputEleme
 const ticketPriceInput = document.getElementById('ticket-price') as HTMLInputElement;
 const calculateButton = document.getElementById('calculate-button') as HTMLButtonElement;
 const resultsTableDiv = document.getElementById('results-table') as HTMLDivElement;
-// Removed logOutput element reference
+const loadingIndicatorDiv = document.getElementById('loading-indicator') as HTMLDivElement;
+const progressBarValue = loadingIndicatorDiv?.querySelector('.progress-bar-value') as HTMLDivElement | null;
+const countdownTimerSpan = document.getElementById('countdown-timer') as HTMLSpanElement | null;
 const errorOutput = document.getElementById('error-output') as HTMLDivElement;
+
+let progressInterval: number | null = null;
+const DEFAULT_DURATION_MS = 53000; // Fallback duration
 
 // Helper to format currency
 function formatCurrency(value: number | undefined): string {
@@ -49,8 +54,11 @@ function formatLabel(key: string): string {
 
 // Function to render the results table
 function renderResultsTable(result: StipendBreakdown): void {
+    // ... (renderResultsTable function remains the same) ...
     if (!resultsTableDiv) return;
-    resultsTableDiv.innerHTML = ''; // Clear previous content
+    resultsTableDiv.innerHTML = '';
+    resultsTableDiv.style.display = 'block';
+
     const table = document.createElement('table');
     const tbody = document.createElement('tbody');
     const displayOrder: (keyof StipendBreakdown)[] = [
@@ -83,26 +91,75 @@ function renderResultsTable(result: StipendBreakdown): void {
     resultsTableDiv.appendChild(table);
 }
 
-// Function to show loading state
-function showLoading() {
-    if (resultsTableDiv) {
-        // Simple text and spinner (could be enhanced with CSS)
-        resultsTableDiv.innerHTML = `
-            <div class="spinner"></div>
-            <p>Checking Google Flights for the latest price data...</p>
-        `;
-    }
+// Function to show loading state and start progress bar/timer
+function showLoading(totalDurationMs: number) { // Accept duration
+    let elapsedTime = 0;
+    const totalDuration = totalDurationMs > 0 ? totalDurationMs : DEFAULT_DURATION_MS; // Use fetched or default
+
+    if (resultsTableDiv) resultsTableDiv.style.display = 'none';
+    if (loadingIndicatorDiv) loadingIndicatorDiv.style.display = 'block';
     if (errorOutput) errorOutput.textContent = '';
     if (calculateButton) calculateButton.disabled = true;
+
+    // Reset progress bar and timer
+    if (progressBarValue) {
+        progressBarValue.style.width = '0%';
+        progressBarValue.textContent = '0%';
+    }
+     if (countdownTimerSpan) {
+        countdownTimerSpan.textContent = `(~${Math.ceil(totalDuration / 1000)}s left)`; // Indicate estimate
+     }
+
+    // Clear any existing interval
+    if (progressInterval !== null) {
+        clearInterval(progressInterval);
+    }
+
+    // Start new interval for progress bar and timer
+    const updateInterval = 500;
+    const steps = totalDuration / updateInterval;
+    const increment = 100 / steps;
+
+    progressInterval = window.setInterval(() => {
+        elapsedTime += updateInterval;
+        let currentProgress = (elapsedTime / totalDuration) * 100;
+        let remainingSeconds = Math.ceil((totalDuration - elapsedTime) / 1000);
+
+        if (currentProgress >= 100) {
+            currentProgress = 100;
+            remainingSeconds = 0;
+            if (progressInterval !== null) clearInterval(progressInterval);
+            // Don't clear timer text immediately, let fetch completion handle it
+        }
+
+        if (progressBarValue) {
+            progressBarValue.style.width = `${currentProgress}%`;
+            progressBarValue.textContent = `${Math.round(currentProgress)}%`;
+        }
+        if (countdownTimerSpan) {
+            // Update timer text, handle pluralization
+            countdownTimerSpan.textContent = `(~${remainingSeconds}s left)`;
+        }
+
+    }, updateInterval);
 }
 
-// Function to hide loading state (clear results area)
-function hideLoading(errorOccurred = false) {
-     if (resultsTableDiv && !errorOccurred) {
-        // Clear loading message if no error, otherwise let error message show
+// Function to hide loading state
+function hideLoading(showResultsPlaceholder = false) {
+    if (progressInterval !== null) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+    }
+     if (loadingIndicatorDiv) loadingIndicatorDiv.style.display = 'none';
+     if (resultsTableDiv && showResultsPlaceholder) {
+         resultsTableDiv.style.display = 'block';
          resultsTableDiv.innerHTML = '<p>Calculation results will appear here...</p>';
      }
     if (calculateButton) calculateButton.disabled = false;
+    // Clear timer text when hiding loading indicator
+    if (countdownTimerSpan) {
+        countdownTimerSpan.textContent = '';
+    }
 }
 
 
@@ -114,10 +171,23 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Form submission handler - Back to simple HTTP Fetch
+    // Form submission handler
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        showLoading(); // Show spinner and message
+
+        let estimatedDuration = DEFAULT_DURATION_MS;
+        try {
+            // Fetch estimated duration (median) before showing loading
+            const durationResponse = await fetch('/estimated-duration'); // Updated endpoint
+            if (durationResponse.ok) {
+                const data = await durationResponse.json();
+                estimatedDuration = data.durationMs || DEFAULT_DURATION_MS;
+            }
+        } catch (e) {
+            console.warn("Could not fetch last duration, using default.", e);
+        }
+
+        showLoading(estimatedDuration); // Show progress bar with estimated duration
 
         // Get form data
         const origin = originInput.value.trim();
@@ -141,6 +211,24 @@ document.addEventListener('DOMContentLoaded', () => {
             // Make API call
             const response = await fetch(`/calculate?${params.toString()}`);
 
+            // Stop progress bar immediately when response received
+            if (progressInterval !== null) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+             // Force bar to 100% visually
+            if (progressBarValue) {
+                 progressBarValue.style.width = '100%';
+                 progressBarValue.textContent = 'Done!'; // Change text on completion
+            }
+             // Clear timer text
+             if (countdownTimerSpan) {
+                 countdownTimerSpan.textContent = '';
+             }
+
+            // Short delay before hiding loading and showing results
+            await new Promise(resolve => setTimeout(resolve, 300));
+
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ message: response.statusText }));
                 throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
@@ -148,16 +236,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result: StipendBreakdown = await response.json();
 
-            // Display results (hide loading implicitly by rendering table)
+            // Hide loading indicator and display results table
+            hideLoading(false);
             renderResultsTable(result);
 
         } catch (error) {
             console.error('Calculation error:', error);
             if (errorOutput) errorOutput.textContent = `Error: ${error instanceof Error ? error.message : 'An unknown error occurred'}`;
-            hideLoading(true); // Hide loading but indicate error occurred
+            hideLoading(true);
         } finally {
-             // Ensure button is re-enabled even if render/hideLoading fails
              if (calculateButton) calculateButton.disabled = false;
+             if (progressInterval !== null) clearInterval(progressInterval);
         }
     });
 });
