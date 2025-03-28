@@ -125,12 +125,12 @@ A simple web UI allows triggering calculations via GitHub Actions and receiving 
         *   `GITHUB_OWNER`: Your GitHub username or organization (`0x4007`).
         *   `GITHUB_REPO`: The repository name (`travel-stipend`).
         *   `WORKFLOW_ID`: The workflow filename (`batch-travel-stipend.yml`).
-        *   `CALLBACK_SECRET`: A strong, unique secret string you generate (e.g., using `openssl rand -hex 32`). This authenticates the callback from GitHub Actions.
+        *   `PROXY_CALLBACK_SECRET`: A strong, unique secret string you generate (e.g., using `openssl rand -hex 32`). This authenticates the callback from GitHub Actions.
     7.  Deno Deploy will automatically build and deploy the `api/trigger-workflow.ts` function upon pushes to the selected branch.
     *   Note the **URL** of your deployed project (e.g., `https://your-project-name.deno.dev`).
 3.  **Configure GitHub Secrets:** Go to your `0x4007/travel-stipend` repository settings -> Secrets and variables -> Actions -> New repository secret. Add the following secrets:
     *   `PROXY_CALLBACK_URL`: The full URL of your deployed proxy function's callback endpoint (e.g., `https://your-project-name.deno.dev/api/workflow-complete`).
-    *   `PROXY_CALLBACK_SECRET`: The same secret string you configured in Deno Deploy's environment variables.
+    *   `PROXY_CALLBACK_SECRET`: The same secret string you configured as `PROXY_CALLBACK_SECRET` in Deno Deploy's environment variables.
 4.  **Compile UI:** Ensure the latest UI script is compiled before committing/pushing:
     ```bash
     bun run build:ui
@@ -156,7 +156,7 @@ Testing the full callback loop locally is challenging as GitHub Actions cannot e
     GITHUB_OWNER=0x4007
     GITHUB_REPO=travel-stipend
     WORKFLOW_ID=batch-travel-stipend.yml
-    CALLBACK_SECRET="your_strong_random_secret_string"
+    PROXY_CALLBACK_SECRET="your_strong_random_secret_string"
     ```
 2.  **Run the Proxy Server (Bun/Node version):**
     ```bash

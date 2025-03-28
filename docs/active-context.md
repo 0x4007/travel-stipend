@@ -29,7 +29,7 @@ Development has focused heavily on implementing and troubleshooting the new UI-d
         *   Generates JWT and obtains installation token.
         *   Triggers the `batch-travel-stipend.yml` workflow via `workflow_dispatch`, passing trip details and `clientId`.
     *   Includes an HTTP endpoint (`/api/workflow-complete`) to receive results posted back from the completed GitHub Action.
-    *   Authenticates the callback using a shared secret (`CALLBACK_SECRET`).
+    *   Authenticates the callback using a shared secret (`PROXY_CALLBACK_SECRET`).
     *   Forwards results to the correct client via WebSocket.
     *   Created a Bun/Node-compatible version for local testing (`start:proxy` script).
 

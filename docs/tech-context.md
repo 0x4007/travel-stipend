@@ -138,7 +138,7 @@ travel-stipend/
 - **Runtime:** Deno (intended for Deno Deploy). A Bun/Node compatible version is used for local testing via `bun run start:proxy`.
 - **Authentication:** Uses GitHub App credentials (App ID, Installation ID, Private Key) read from environment variables to generate JWTs and obtain installation tokens for API calls.
 - **Workflow Trigger:** Calls the GitHub API `workflow_dispatch` endpoint.
-- **Result Callback:** Includes an endpoint (`/api/workflow-complete`) for the GitHub Action to POST results back, which are then relayed to the correct UI client via WebSocket. Requires a shared secret (`CALLBACK_SECRET`) for authentication.
+- **Result Callback:** Includes an endpoint (`/api/workflow-complete`) for the GitHub Action to POST results back, which are then relayed to the correct UI client via WebSocket. Requires a shared secret (`PROXY_CALLBACK_SECRET`) for authentication.
 
 ## Technical Constraints
 

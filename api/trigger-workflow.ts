@@ -190,7 +190,7 @@ async function handler(req: Request): Promise<Response> {
   // --- API Endpoint: Workflow Completion Callback ---
   if (pathname === "/api/workflow-complete" && req.method === "POST") {
       // Authenticate the request (e.g., using a shared secret)
-      const sharedSecret = getEnv("CALLBACK_SECRET"); // Needs to be set in Deno Deploy & GitHub Secrets
+      const sharedSecret = getEnv("PROXY_CALLBACK_SECRET"); // Needs to be set in Deno Deploy & GitHub Secrets
       const incomingSecret = req.headers.get("X-Callback-Secret");
 
       if (!incomingSecret || incomingSecret !== sharedSecret) {

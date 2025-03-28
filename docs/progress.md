@@ -50,7 +50,7 @@
     -   Authenticates with GitHub using GitHub App credentials.
     -   Triggers `batch-travel-stipend.yml` via `workflow_dispatch`, passing UI inputs and a unique `clientId`.
     -   Receives results back from the Action via HTTP POST callback (`/api/workflow-complete`).
-    -   Authenticates callback using a shared secret (`CALLBACK_SECRET`).
+    -   Authenticates callback using a shared secret (`PROXY_CALLBACK_SECRET`).
     -   Forwards results to the correct UI client via WebSocket.
 -   **Local Proxy (`start:proxy` script):** Bun/Node version of the proxy for local testing (requires `.env` file).
 

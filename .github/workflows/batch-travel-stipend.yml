@@ -188,10 +188,9 @@ jobs:
     # Pass clientId through if provided by dispatch
     env:
       CLIENT_ID: ${{ github.event.inputs.clientId }}
-      # Add shared secret for callback authentication
-      CALLBACK_SECRET: ${{ secrets.PROXY_CALLBACK_SECRET }} # Needs to be set in GitHub repo secrets
-      # Add proxy URL for callback
-      PROXY_CALLBACK_URL: ${{ secrets.PROXY_CALLBACK_URL }} # Needs to be set in GitHub repo secrets (e.g., https://travel-stipend.deno.dev/api/workflow-complete)
+      # Use secret names defined in GitHub Secrets
+      PROXY_CALLBACK_SECRET: ${{ secrets.PROXY_CALLBACK_SECRET }} # Reverted to use PROXY_CALLBACK_SECRET
+      PROXY_CALLBACK_URL: ${{ secrets.PROXY_CALLBACK_URL }}
     needs: [calculate]
     if: always()
     runs-on: ubuntu-latest
@@ -249,7 +248,7 @@ jobs:
 
       # New Step: Send results back to proxy via callback URL
       - name: Send Results to Proxy (if clientId provided)
-        if: env.CLIENT_ID != '' && env.CALLBACK_SECRET != '' && env.PROXY_CALLBACK_URL != ''
+        if: env.CLIENT_ID != '' && env.PROXY_CALLBACK_SECRET != '' && env.PROXY_CALLBACK_URL != ''
         run: |
           echo "Client ID found, attempting to send results back to proxy..."
           # Prepare JSON payload - use consolidated JSON results
@@ -273,7 +272,7 @@ jobs:
           # Send POST request with shared secret header
           curl -X POST \
             -H "Content-Type: application/json" \
-            -H "X-Callback-Secret: $CALLBACK_SECRET" \
+            -H "X-Callback-Secret: $PROXY_CALLBACK_SECRET" \
             -d "$CALLBACK_PAYLOAD" \
             "$PROXY_CALLBACK_URL"
 
