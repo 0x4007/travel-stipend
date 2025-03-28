@@ -1,2 +1,18 @@
-# dependencies
+# macOS
+.DS_Store
+# node
 node_modules
+.pnp.cjs
+.pnp.loader.mjs
+.env
+static/dist
+coverage
+junit.xml
+cypress/screenshots
+outputs
+logs
+test-screenshots
+*.log
+dom-captures
+*.txt
+*.pem

@@ -1,0 +1,89 @@
+name: Calculate Travel Stipend
+
+on:
+  workflow_dispatch:
+    inputs:
+      origin:
+        description: "Origin city for travel calculations (i.e. Seoul)"
+        required: true
+        type: string
+      destination:
+        description: "Conference destination city (i.e. Singapore)"
+        required: true
+        type: string
+      conference_start:
+        description: "Conference start date (i.e. 1 May)"
+        required: true
+        type: string
+      conference_end:
+        description: "Conference end date (i.e. 3 May)"
+        required: false
+        type: string
+      days_before:
+        description: "Travel days before conference"
+        required: false
+        type: number
+        default: 1
+      days_after:
+        description: "Travel days after conference"
+        required: false
+        type: number
+        default: 1
+      output_format:
+        description: "Output format (table, json, csv)"
+        required: false
+        type: choice
+        options:
+          - table
+          - json
+          - csv
+        default: "table"
+      ticket_price:
+        description: "Conference ticket price (if applicable)"
+        required: false
+        type: number
+      verbose:
+        description: "Enable detailed output logging"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  calculate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Calculate Stipend
+        env:
+          INPUT_ORIGIN: ${{ inputs.origin }}
+          INPUT_DESTINATION: ${{ inputs.destination }}
+          INPUT_CONFERENCE_START: ${{ inputs.conference_start }}
+          INPUT_CONFERENCE_END: ${{ inputs.conference_end }}
+          INPUT_DAYS_BEFORE: ${{ inputs.days_before }}
+          INPUT_DAYS_AFTER: ${{ inputs.days_after }}
+          INPUT_OUTPUT_FORMAT: ${{ inputs.output_format }}
+          INPUT_TICKET_PRICE: ${{ inputs.ticket_price }}
+          INPUT_VERBOSE: ${{ inputs.verbose }}
+        run: bun src/github-action-handler.ts
+
+      - name: Upload Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-screenshots
+          path: |
+            screenshots/
+            dom-captures/
+          retention-days: 5

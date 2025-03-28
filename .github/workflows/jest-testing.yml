@@ -1,0 +1,28 @@
+name: Run Jest testing suite
+on:
+  workflow_dispatch:
+  pull_request:
+
+env:
+  NODE_ENV: "test"
+
+jobs:
+  testing:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Jest With Coverage
+        run: bun install && bun test --coverage
+
+      - name: Add Jest Report to Summary
+        if: always()
+        run: echo "$(cat test-dashboard.md)" >> $GITHUB_STEP_SUMMARY

@@ -1,23 +1,143 @@
 {
-  "name": "ts-template",
-  "version": "1.0.0",
-  "description": "Template repository with typescript support",
-  "main": "index.js",
+  "name": "travel-stipend-action",
+  "version": "0.1.0",
+  "description": "GitHub Action for calculating travel stipends for conferences and business trips",
+  "main": "build/index.ts",
+  "exports": {
+    ".": "./build/index.ts",
+    "./src/*": "./src/*"
+  },
+  "author": "Ubiquity DAO",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ubiquity/travel-stipend-action.git"
+  },
+  "engines": {
+    "node": ">=20.10.0",
+    "bun": ">=1.0.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "bun src/travel-stipend-cli.ts",
+    "db": "sqlite3 travel_data.db",
+    "calc": "bun src/travel-stipend-calculator.ts",
+    "format": "run-s format:*",
+    "format:lint": "eslint --fix .",
+    "format:prettier": "prettier --write .",
+    "format:cspell": "cspell **/*",
+    "lint": "eslint .",
+    "clean": "rm -rf outputs/stipends_* outputs/historical_stipends_*",
+    "prepare": "husky install",
+    "test": "bun test --coverage",
+    "test:fast": "bun test",
+    "test:watch": "bun test --watch",
+    "build:ui": "bun build ui/script.ts --outfile=ui/script.js",
+    "start:proxy": "bun run api/trigger-workflow.ts",
+    "convert:key": "bash scripts/convert-key-to-pkcs8.sh",
+    "rename-to-kebab": "bun rename-to-kebab-case.ts",
+    "rename-to-kebab:dry-run": "bun rename-to-kebab-case.ts --dry-run --verbose",
+    "tsc:no-emit": "tsc --noEmit",
+    "remove-jsdoc": "bun scripts/remove-jsdoc-direct.ts",
+    "remove-jsdoc:src": "bun scripts/remove-jsdoc-direct.ts src",
+    "remove-jsdoc:file": "bun scripts/remove-jsdoc-from-file.ts",
+    "watch:workflows": "nodemon --watch .github/workflows/ --ext yml --exec \"./scripts/test-workflow.sh\" --delay 1"
   },
   "keywords": [
-    "typescript",
-    "nodejs",
-    "dotenv",
-    "conventional-commits"
+    "github-action",
+    "travel",
+    "stipend",
+    "conference",
+    "business-trip",
+    "flight-costs"
   ],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/sqlite3": "^5.1.0",
+    "airport-codes": "^1.0.2",
+    "city-timezones": "^1.3.0",
+    "countries-list": "^3.1.1",
+    "country-data": "^0.0.31",
+    "csv-parse": "^5.6.0",
+    "csv-parser": "^3.2.0",
+    "dotenv": "^16.4.4",
+    "i18n-iso-countries": "^7.14.0",
+    "jsonwebtoken": "^9.0.2",
+    "puppeteer": "^24.4.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "serpapi": "^2.1.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  },
   "devDependencies": {
-    "@types/node": "^18.14.6",
-    "tsx": "^3.12.3",
-    "typescript": "^4.9.5"
+    "@actions/core": "^1.11.1",
+    "@commitlint/cli": "^18.6.1",
+    "@commitlint/config-conventional": "^18.6.2",
+    "@cspell/dict-node": "^4.0.3",
+    "@cspell/dict-software-terms": "^3.3.18",
+    "@cspell/dict-typescript": "^3.1.2",
+    "@jest/globals": "29.7.0",
+    "@mswjs/data": "0.16.1",
+    "@octokit/rest": "^21.0.2",
+    "@types/country-data": "^0.0.5",
+    "@types/jest": "29.5.12",
+    "@types/jscodeshift": "^0.12.0",
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^20.11.19",
+    "bun-types": "^1.2.5",
+    "cspell": "^8.4.0",
+    "enquirer": "^2.4.1",
+    "esbuild": "^0.20.1",
+    "eslint": "9.14.0",
+    "eslint-plugin-check-file": "^2.8.0",
+    "eslint-plugin-sonarjs": "^2.0.4",
+    "husky": "^9.0.11",
+    "jscodeshift": "^17.1.2",
+    "jsdom": "^26.0.0",
+    "knip": "^5.0.1",
+    "lint-staged": "^15.2.2",
+    "nodemon": "^3.1.9",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.2.5",
+    "simple-git": "^3.27.0",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.16.0"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "src/**.{ts,json}": [
+      "cspell"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "rules": {
+      "header-max-length": [
+        2,
+        "always",
+        500
+      ],
+      "body-max-line-length": [
+        0,
+        "always"
+      ],
+      "footer-max-line-length": [
+        0,
+        "always"
+      ],
+      "subject-case": [
+        0,
+        "always"
+      ],
+      "subject-full-stop": [
+        0,
+        "always"
+      ]
+    }
   }
 }

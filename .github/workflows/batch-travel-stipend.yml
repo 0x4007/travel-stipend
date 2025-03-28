@@ -1,0 +1,232 @@
+name: Batch Travel Stipend Calculation
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      origins:
+        description: "List of origin cities (comma-separated)"
+        required: true
+        type: string
+      destinations:
+        description: "List of destination cities (comma-separated)"
+        required: true
+        type: string
+      start_dates:
+        description: "List of conference start dates (comma-separated)"
+        required: true
+        type: string
+      end_dates:
+        description: "List of conference end dates (comma-separated), blank = same as start date"
+        required: false
+        type: string
+        default: ""
+      ticket_prices:
+        description: "List of conference ticket prices (comma-separated), blank = 0"
+        required: false
+        type: string
+        default: ""
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - uses: oven-sh/setup-bun@v1
+
+      - name: Process Inputs
+        id: set-matrix
+        run: |
+          # Enable command tracing for debugging
+          set -x
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # Use test events for push triggers
+            echo "--- Push Event Detected: Using Test Events ---"
+            TEST_EVENTS_FILE=".github/test-events.json"
+            MATRIX_SCRIPT=".github/scripts/generate-stipend-matrix.ts"
+
+            echo "Checking if test events file exists: $TEST_EVENTS_FILE"
+            if [ ! -f "$TEST_EVENTS_FILE" ]; then
+              echo "Error: Test events file not found at $TEST_EVENTS_FILE"
+              exit 1
+            fi
+            echo "Test events file found."
+
+            echo "Checking if matrix script exists: $MATRIX_SCRIPT"
+            if [ ! -f "$MATRIX_SCRIPT" ]; then
+              echo "Error: Matrix generation script not found at $MATRIX_SCRIPT"
+              exit 1
+            fi
+            echo "Matrix script found."
+
+            echo "Running matrix generation script:"
+            echo "$ bun $MATRIX_SCRIPT --test-events $TEST_EVENTS_FILE"
+            # Capture stdout and stderr separately
+            script_output=$(bun $MATRIX_SCRIPT --test-events $TEST_EVENTS_FILE 2> >(tee stderr.log >&2))
+            exit_code=$?
+            script_stderr=$(cat stderr.log)
+            rm stderr.log # Clean up log file
+
+            echo "--- Matrix Generation Script Output ---"
+            echo "Exit Code: $exit_code"
+            echo "STDOUT:"
+            echo "$script_output"
+            echo "STDERR:"
+            echo "$script_stderr"
+            echo "---------------------------------------"
+
+            if [ $exit_code -ne 0 ]; then
+              echo "Error: Matrix generation script failed with exit code $exit_code."
+              # Attempt to print stderr again just in case
+              echo "Captured STDERR during failure:"
+              echo "$script_stderr"
+              exit 1
+            fi
+            matrix=$script_output
+          else
+            # Use workflow inputs for manual triggers
+            echo "${{ inputs.origins }}" | tr ',' '\n' > origins.txt
+            echo "${{ inputs.destinations }}" | tr ',' '\n' > destinations.txt
+            echo "${{ inputs.start_dates }}" | tr ',' '\n' > start_dates.txt
+            echo "${{ inputs.end_dates }}" | tr ',' '\n' > end_dates.txt
+            echo "${{ inputs.ticket_prices }}" | tr ',' '\n' > ticket_prices.txt
+            matrix=$(bun .github/scripts/generate-stipend-matrix.ts 2>/dev/null)
+          fi
+
+          # Debug output
+          echo "Generated matrix:"
+          echo "$matrix"
+
+          # Set the output
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
+  calculate:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+      fail-fast: false # Continue other jobs if one fails
+    outputs:
+      result: ${{ steps.calculate.outputs.result }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Calculate Stipend
+        env:
+          INPUT_ORIGIN: ${{ matrix.origin }}
+          INPUT_DESTINATION: ${{ matrix.destination }}
+          INPUT_CONFERENCE_START: ${{ matrix.startDate }}
+          INPUT_CONFERENCE_END: ${{ matrix.endDate }}
+          INPUT_TICKET_PRICE: ${{ matrix.price }}
+          INPUT_OUTPUT_FORMAT: "json"
+        id: calculate_step # Changed id for clarity
+        run: |
+          echo "::group::Starting calculation for ${{ matrix.destination }} (${{ matrix.startDate }})"
+          echo "Input parameters:"
+          echo "Origin: ${{ matrix.origin }}"
+          echo "Destination: ${{ matrix.destination }}"
+          echo "Dates: ${{ matrix.startDate }} to ${{ matrix.endDate }}"
+          echo "Ticket price: ${{ matrix.price }}"
+
+          # Construct unique filename using origin, destination, and job index
+          OUTPUT_FILENAME="results-${{ matrix.origin }}-${{ matrix.destination }}-${{ strategy.job-index }}.json"
+          # SAFE_DATE is no longer needed for filename, removing related ENV var setting
+          # echo "SAFE_DATE=${SAFE_DATE}" >> $GITHUB_ENV
+          echo "OUTPUT_FILENAME=${OUTPUT_FILENAME}" >> $GITHUB_ENV # Set ENV var
+
+          # Run once with JSON output and save to file
+          echo "Running calculation and saving to $OUTPUT_FILENAME"
+          bun src/github-action-handler.ts --output-file "$OUTPUT_FILENAME"
+          echo "Calculation complete, output saved"
+
+          # For logs, run again with table format
+          echo "::group::Detailed calculation results"
+          bun src/github-action-handler.ts --output-format table
+          echo "::endgroup::"
+          echo "::endgroup::"
+
+      - name: Prepare Upload
+        run: |
+          echo "Preparing to upload result artifact: $OUTPUT_FILENAME" # Use ENV var
+          ls -la "$OUTPUT_FILENAME"
+          echo "File size: $(wc -c < "$OUTPUT_FILENAME") bytes"
+
+      - name: Upload Result
+        uses: actions/upload-artifact@v4
+        with:
+          # Match artifact name to the unique filename (which no longer includes date)
+          name: ${{ env.OUTPUT_FILENAME }}
+          path: ${{ env.OUTPUT_FILENAME }} # Use OUTPUT_FILENAME ENV var
+          retention-days: 5
+
+  consolidate:
+    needs: [calculate]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Prepare for Download
+        run: |
+          echo "Preparing to download result artifacts to matrix-results/"
+          mkdir -p matrix-results
+          ls -la matrix-results/
+
+      - name: Download All Results
+        uses: actions/download-artifact@v4
+        with:
+          path: matrix-results
+          pattern: results-* # Corrected pattern to match uploaded artifact names
+          merge-multiple: true
+
+      - name: Verify Download
+        run: |
+          echo "Downloaded artifacts:"
+          ls -la matrix-results/
+          echo "Total files: $(ls matrix-results/ | wc -l)"
+
+      - name: Create Sample Results Directory
+        run: |
+          mkdir -p sample-results
+          # Use find to handle filenames with spaces safely, matching the new pattern (without date)
+          find matrix-results -name 'results-*-*-*.json' -exec cp {} sample-results/ \; || true
+
+      - name: Consolidate Results
+        run: |
+          echo "::group::Consolidating all results"
+          echo "Input files:"
+          ls -la matrix-results/
+          bun .github/scripts/consolidate-stipend-results.ts
+          echo "Consolidation complete"
+          echo "::endgroup::"
+
+      - name: Upload Consolidated Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: travel-stipend-results
+          path: |
+            consolidated-results.md
+            consolidated-results/
+          retention-days: 5
