@@ -150,12 +150,14 @@ Testing the full callback loop locally is challenging as GitHub Actions cannot e
 
 1.  **Create `.env` file:** In the project root, create a `.env` file (add to `.gitignore`) with secrets:
     ```dotenv
+    # GitHub App Credentials
     GITHUB_APP_ID=975031
     GITHUB_APP_INSTALLATION_ID=60991083
     GITHUB_APP_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PKCS8_KEY...\n-----END PRIVATE KEY-----\n" # Literal \n needed for Bun/Node version
     GITHUB_OWNER=0x4007
     GITHUB_REPO=travel-stipend
     WORKFLOW_ID=batch-travel-stipend.yml
+    # Shared secret for Action->Proxy callback (matches PROXY_CALLBACK_SECRET in GitHub Secrets)
     PROXY_CALLBACK_SECRET="your_strong_random_secret_string"
     ```
 2.  **Run the Proxy Server (Bun/Node version):**

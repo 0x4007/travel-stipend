@@ -1,6 +1,6 @@
-// Deno Deploy Function - Serves Static UI and Handles WebSocket Communication
+// Deno Deploy Function - Serves Static UI, Handles WS, Triggers Actions, Receives Logs & Results
 
-import { crypto } from "https://deno.land/std@0.192.0/crypto/mod.ts"; // Use Deno's crypto
+import { crypto } from "https://deno.land/std@0.192.0/crypto/mod.ts";
 import { serveDir } from "https://deno.land/std@0.192.0/http/file_server.ts";
 import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 import * as path from "https://deno.land/std@0.192.0/path/mod.ts";
@@ -25,6 +25,7 @@ function getEnv(key: string): string {
 
 // --- GitHub App Authentication ---
 async function getInstallationToken(appId: string, installationId: string, privateKeyPem: string): Promise<string> {
+  // ... (getInstallationToken function remains the same) ...
   const now = Math.floor(Date.now() / 1000);
   const expiration = now + (10 * 60);
   const payload = { iat: now - 60, exp: expiration, iss: appId };
@@ -50,6 +51,7 @@ async function getInstallationToken(appId: string, installationId: string, priva
   } catch (error) { console.error("Error fetching installation token:", error); throw error; }
 }
 function pemToArrayBuffer(pem: string): ArrayBuffer {
+    // ... (pemToArrayBuffer function remains the same) ...
     const base64 = pem.replace(/\\n/g, "\n").replace(/-----BEGIN PRIVATE KEY-----/g, "").replace(/-----END PRIVATE KEY-----/g, "").replace(/\s/g, "");
     try {
         const binaryString = atob(base64);
@@ -77,7 +79,7 @@ async function handler(req: Request): Promise<Response> {
   console.log(`Request: ${req.method} ${pathname}`);
 
   // --- CORS Headers ---
-  const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, GET, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" };
+  const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, GET, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, X-Callback-Secret" }; // Added X-Callback-Secret
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   // --- WebSocket Upgrade ---
@@ -85,7 +87,7 @@ async function handler(req: Request): Promise<Response> {
     if (req.headers.get("upgrade") !== "websocket") return new Response("Expected websocket upgrade", { status: 400 });
     const { socket, response } = Deno.upgradeWebSocket(req);
     socket.onopen = () => console.log("WebSocket connected!");
-    socket.onmessage = async (event) => { /* ... WebSocket message handling ... */
+    socket.onmessage = async (event) => { /* ... WebSocket message handling for request_calculation ... */
         console.log("WebSocket message received:", event.data);
         let parsedMessage: WebSocketMessage;
         try { parsedMessage = JSON.parse(event.data); }
@@ -94,13 +96,13 @@ async function handler(req: Request): Promise<Response> {
         if (parsedMessage.type === 'request_calculation' && parsedMessage.clientId && parsedMessage.payload) {
             const clientId = parsedMessage.clientId;
             const requestData = parsedMessage.payload;
-            clients.set(clientId, socket); // Store socket
+            clients.set(clientId, socket);
             console.log(`Client registered/request received: ${clientId}`);
             sendWsMessage(socket, 'status', 'Received calculation request. Triggering workflow...');
             try {
                 const { origin, destination, startDate, endDate, price } = requestData;
                  if (!origin || !destination || !startDate) throw new Error("Missing fields.");
-                const inputs = { origins: origin, destinations: destination, start_dates: startDate, end_dates: endDate || "", ticket_prices: price || "0", clientId: clientId };
+                const inputs = { origins: origin, destinations: destination, start_dates: startDate, end_dates: endDate || "", ticket_prices: price || "0", clientId: clientId }; // Pass clientId
                 const appId = getEnv("GITHUB_APP_ID"), installationId = getEnv("GITHUB_APP_INSTALLATION_ID"), privateKey = getEnv("GITHUB_APP_PRIVATE_KEY");
                 const owner = getEnv("GITHUB_OWNER"), repo = getEnv("GITHUB_REPO"), workflowId = getEnv("WORKFLOW_ID");
                 const installationToken = await getInstallationToken(appId, installationId, privateKey);
@@ -130,26 +132,49 @@ async function handler(req: Request): Promise<Response> {
   }
   // --- End WebSocket Upgrade ---
 
+  // --- API Endpoint: Workflow Log Callback ---
+  if (pathname === "/api/log-message" && req.method === "POST") {
+      const sharedSecret = getEnv("PROXY_CALLBACK_SECRET");
+      const incomingSecret = req.headers.get("X-Callback-Secret");
+      if (!incomingSecret || incomingSecret !== sharedSecret) { console.warn("Unauthorized log callback."); return new Response("Unauthorized", { status: 401 }); }
+      try {
+          const data = await req.json();
+          const clientId = data.clientId;
+          const logMessage = data.message; // Expect 'message' field for logs
+          if (!clientId || typeof logMessage !== 'string') throw new Error("Invalid log callback payload.");
+          const clientSocket = clients.get(clientId);
+          if (clientSocket && clientSocket.readyState === WebSocket.OPEN) {
+              // Send timestamped log message
+              const timestamp = new Date().toLocaleTimeString();
+              sendWsMessage(clientSocket, 'log', `[${timestamp}] ${logMessage}`);
+          } else { console.warn(`Client ${clientId} not found/closed for log message.`); }
+          return new Response("Log received", { status: 200 });
+      } catch (error) { console.error("Error processing log callback:", error); return new Response(`Error: ${error.message}`, { status: 400 }); }
+  }
+  // --- End Workflow Log Callback ---
+
+
   // --- API Endpoint: Workflow Completion Callback ---
   if (pathname === "/api/workflow-complete" && req.method === "POST") {
-      const sharedSecret = getEnv("CALLBACK_SECRET");
+      const sharedSecret = getEnv("PROXY_CALLBACK_SECRET");
       const incomingSecret = req.headers.get("X-Callback-Secret");
-      if (!incomingSecret || incomingSecret !== sharedSecret) { console.warn("Unauthorized callback."); return new Response("Unauthorized", { status: 401 }); }
+      if (!incomingSecret || incomingSecret !== sharedSecret) { console.warn("Unauthorized result callback."); return new Response("Unauthorized", { status: 401 }); }
       try {
           const data = await req.json();
           const clientId = data.clientId; const results = data.results;
-          if (!clientId || !results) throw new Error("Invalid callback payload.");
+          if (!clientId || !results) throw new Error("Invalid result callback payload.");
           const clientSocket = clients.get(clientId);
           if (clientSocket && clientSocket.readyState === WebSocket.OPEN) {
               console.log(`Sending results back to client: ${clientId}`);
               sendWsMessage(clientSocket, 'result', results);
               // Optionally close socket after sending results
               // clientSocket.close(); clients.delete(clientId);
-          } else { console.warn(`Client ${clientId} not found/closed.`); }
+          } else { console.warn(`Client ${clientId} not found/closed for results.`); }
           return new Response("Callback received", { status: 200 });
-      } catch (error) { console.error("Error processing callback:", error); return new Response(`Error: ${error.message}`, { status: 400 }); }
+      } catch (error) { console.error("Error processing result callback:", error); return new Response(`Error: ${error.message}`, { status: 400 }); }
   }
   // --- End Workflow Completion Callback ---
+
 
   // --- Static File Serving ---
   try {

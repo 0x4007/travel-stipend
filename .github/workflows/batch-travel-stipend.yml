@@ -138,13 +138,18 @@ jobs:
 
       - name: Calculate Stipend
         env:
+          # Pass matrix vars
           INPUT_ORIGIN: ${{ matrix.origin }}
           INPUT_DESTINATION: ${{ matrix.destination }}
           INPUT_CONFERENCE_START: ${{ matrix.startDate }}
           INPUT_CONFERENCE_END: ${{ matrix.endDate }}
           INPUT_TICKET_PRICE: ${{ matrix.price }}
-          INPUT_OUTPUT_FORMAT: "json"
-        id: calculate_step # Changed id for clarity
+          INPUT_OUTPUT_FORMAT: "json" # Keep JSON for file output
+          # Pass callback info needed by github-action-handler.ts
+          CLIENT_ID: ${{ env.CLIENT_ID }} # Use job-level env var
+          PROXY_CALLBACK_URL: ${{ secrets.PROXY_CALLBACK_URL }} # Use repo secret
+          PROXY_CALLBACK_SECRET: ${{ secrets.PROXY_CALLBACK_SECRET }} # Use repo secret
+        id: calculate_step
         run: |
           echo "::group::Starting calculation for ${{ matrix.destination }} (${{ matrix.startDate }})"
           echo "Input parameters:"
