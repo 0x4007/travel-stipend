@@ -33,6 +33,7 @@
     "test:watch": "bun test --watch",
     "build:ui": "bun build ui/script.ts --outfile=ui/script.js",
     "start:proxy": "bun run api/trigger-workflow.ts",
+    "convert:key": "bash scripts/convert-key-to-pkcs8.sh",
     "rename-to-kebab": "bun rename-to-kebab-case.ts",
     "rename-to-kebab:dry-run": "bun rename-to-kebab-case.ts --dry-run --verbose",
     "tsc:no-emit": "tsc --noEmit",

@@ -31,6 +31,7 @@ This travel stipend calculator helps provide fair and consistent travel stipends
 -   Node.js (v20.10.0 or higher, primarily for compatibility if Bun isn't used)
 -   Git (for submodules and hooks)
 -   [Deno](https://deno.land/) (if deploying the proxy function to Deno Deploy)
+-   `openssl` command-line tool (if needing to convert private key format)
 
 ## Setup
 
@@ -103,6 +104,17 @@ A simple web UI allows triggering calculations via GitHub Actions. This is the r
     *   On the app's page, **generate a private key** (.pem file) and download it. Store this securely. **Do not commit this file to Git.** Add `keys/` or the specific `.pem` filename to your `.gitignore`.
     *   **Install the App:** Install the app on the account/organization containing your `travel-stipend` repository. During installation, note the **Installation ID** (visible in the URL after installing, e.g., `.../installations/12345678`).
     *   Note your **App ID** from the app's settings page.
+    *   **Convert Private Key (If Necessary):** The proxy function expects the private key in unencrypted PKCS#8 PEM format (`-----BEGIN PRIVATE KEY-----`). Keys downloaded from GitHub should already be in this format. If your key starts with something else (like `-----BEGIN RSA PRIVATE KEY-----`), convert it using the provided script:
+        ```bash
+        # Ensure openssl is installed
+        # Make the script executable
+        chmod +x scripts/convert-key-to-pkcs8.sh
+        # Run the script (uses keys/ubiquity-os.2025-03-28.private-key.pem by default)
+        bun run convert:key
+        # Or specify a different input key:
+        # bun run convert:key path/to/your/original-key.pem
+        ```
+        This creates a new file ending in `_pkcs8.pem`. Use the content of **this new file** for the environment variable below.
 2.  **Deploy to Deno Deploy:**
     1.  Go to [dash.deno.com](https://dash.deno.com/) and create a new project.
     2.  Link the project to your GitHub repository (`0x4007/travel-stipend`).
@@ -112,7 +124,7 @@ A simple web UI allows triggering calculations via GitHub Actions. This is the r
     6.  Add the following **secrets**:
         *   `GITHUB_APP_ID`: Your App ID (`975031`).
         *   `GITHUB_APP_INSTALLATION_ID`: Your Installation ID (`60991083`).
-        *   `GITHUB_APP_PRIVATE_KEY`: Paste the **entire content** of your `.pem` private key file.
+        *   `GITHUB_APP_PRIVATE_KEY`: Paste the **entire content** of your **PKCS#8 formatted** `.pem` private key file (the original from GitHub or the converted `_pkcs8.pem` file).
         *   `GITHUB_OWNER`: Your GitHub username or organization (`0x4007`).
         *   `GITHUB_REPO`: The repository name (`travel-stipend`).
         *   `WORKFLOW_ID`: The workflow filename (`batch-travel-stipend.yml`).
@@ -135,7 +147,7 @@ It's possible to test the UI-to-Actions flow locally, but requires careful setup
     ```dotenv
     GITHUB_APP_ID=975031
     GITHUB_APP_INSTALLATION_ID=60991083
-    # Paste the *entire* content of your .pem file below, replacing newlines with \n literal characters
+    # Paste the *entire* content of your PKCS#8 .pem file below, replacing newlines with \n literal characters
     GITHUB_APP_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_KEY_LINE_1\nYOUR_KEY_LINE_2\n...\n-----END PRIVATE KEY-----\n"
     GITHUB_OWNER=0x4007
     GITHUB_REPO=travel-stipend
